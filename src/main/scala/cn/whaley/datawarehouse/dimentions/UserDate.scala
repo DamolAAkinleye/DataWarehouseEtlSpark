@@ -57,8 +57,8 @@ object UserDate extends BaseClass {
 
     val df = sqlContext.createDataFrame(rdd, schema)
 
-    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dimensions/user_date")
-    df.write.parquet("/data_warehouse/dimensions/user_date")
+    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_date")
+    df.write.parquet("/data_warehouse/dw_dimensions/dim_date")
 
   }
 }

@@ -11,12 +11,12 @@ object AppVersion extends BaseClass {
     val jdbcDF = sqlContext.read.format("jdbc").options(MysqlDB.medusaAppVersion).load()
     jdbcDF.registerTempTable("moretv_app_version")
 
-    val df = sqlContext.sql("SELECT cast((id + 10000) as int) as app_version_sk, app_name, app_en_name, " +
+    val df = sqlContext.sql("SELECT cast((id + 10000) as long) as app_version_key, app_name, app_en_name, " +
       "'' as app_id, app_series, version, build_time,  " +
       "'微鲸' as company, '' as product" +
       " from moretv_app_version")
 
-    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dimensions/app_version")
-    df.write.parquet("/data_warehouse/dimensions/app_version")
+    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_app_version")
+    df.write.parquet("/data_warehouse/dw_dimensions/dim_app_version")
   }
 }

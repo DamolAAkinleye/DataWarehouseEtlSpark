@@ -15,14 +15,14 @@ object AccountTotal extends BaseClass {
     val jdbcDF = sqlContext.read.format("jdbc").options(MysqlDB.medusaUCenterMember).load()
     jdbcDF.registerTempTable("bbs_ucenter_members")
 
-    val df = sqlContext.sql("SELECT cast(moretvid as int) as account_sk, moretvid as account_id, " +
+    val df = sqlContext.sql("SELECT cast(moretvid as long) as account_sk, moretvid as account_id, " +
       "username as user_name, email, mobile, " +
-      "from_unixtime(regdate,'yyyy-MM-dd HH:mm:ss') as reg_time, " +
+      "cast(regdate as timestamp) as reg_time, " +
       "registerfrom as register_from " +
       " from bbs_ucenter_members")
 
-    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dimensions/medusa/account")
-    df.write.parquet("/data_warehouse/dimensions/medusa/account")
+    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_medusa_account")
+    df.write.parquet("/data_warehouse/dw_dimensions/dim_medusa_account")
   }
 
 }

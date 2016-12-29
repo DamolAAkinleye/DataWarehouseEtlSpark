@@ -27,8 +27,8 @@ object UserTime extends BaseClass {
     ))
 
     val df = sqlContext.createDataFrame(rdd, schema)
-    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dimensions/user_time")
-    df.write.parquet("/data_warehouse/dimensions/user_time")
+    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_time")
+    df.write.parquet("/data_warehouse/dw_dimensions/dim_time")
 
   }
 
