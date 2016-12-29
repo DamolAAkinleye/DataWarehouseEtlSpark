@@ -3,6 +3,7 @@ package cn.whaley.datawarehouse
 import cn.whaley.sdk.dataexchangeio.DataIO
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.hive.HiveContext
 
 /**
   * Created by Tony on 16/12/21.
@@ -13,6 +14,7 @@ trait BaseClass {
     * define some parameters
     */
   var sc: SparkContext = null
+  var hiveContext:HiveContext = null
   implicit var sqlContext: SQLContext = null
   val config = new SparkConf()
 //    .set("spark.executor.memory", "4g")
@@ -38,6 +40,7 @@ trait BaseClass {
   def init() = {
     sc = new SparkContext(config)
     sqlContext = SQLContext.getOrCreate(sc)
+//    hiveContext = new HiveContext(sc)
 //    DataIO.init("hdfs://hans/test/config.json")
   }
 
