@@ -10,12 +10,17 @@ import org.apache.spark.sql.functions._
 object Test extends BaseClass {
 
   override def execute(args: Array[String]): Unit = {
-    val df = sqlContext.read.load("/data_warehouse/dw_dimensions/dim_app_version")
-    val window = Window.orderBy(df("app_version_sk").desc)
-    df.select(df("app_version_sk"),row_number().over(window).as("r")).show()
 
-    df.registerTempTable("log")
-    sqlContext.sql("select Row_Number() OVER (ORDER BY app_version_sk desc), app_version_sk from log limit 20").show(20)
+    System.out.println(hiveContext)
+
+    val listOfEmployees = List(Employee(1, "iteblog"), Employee(2, "Jason"), Employee(3, "Abhi"))
+    val empFrame = sqlContext.createDataFrame(listOfEmployees)
+    empFrame.registerTempTable("t")
+    sqlContext.sql("select Row_Number() OVER (ORDER BY id), id, name from t limit 20").show(20)
+
+//    val window = Window.orderBy(empFrame("id").desc)
+//    empFrame.select(empFrame("id"), empFrame("name"), row_number().over(window).as("r")).show()
   }
 
+  case class Employee(id: Int, name: String)
 }

@@ -20,7 +20,7 @@ object WebLocation extends BaseClass {
 
     val ipDataRdd = sc.textFile("hdfs://hans/log/ipLocationData/ip_country.txt", 10).map(r => r.split("\t")).map(r => {
       val ip = r(0).split("\\.")
-      Row(ip(0).trim().toLong * 256 * 256 + ip(1).trim().toLong * 256 + ip(2).trim().toLong,
+      Row(ip(0).trim().toLong * 256 * 256 * 256 + ip(1).trim().toLong * 256 * 256 + ip(2).trim().toLong * 256,
         ip(0).trim().toInt, ip(1).trim().toInt, ip(2).trim().toInt,
         r(2), r(3), r(4), r(5), r(8).trim.toDouble, r(9).trim.toDouble)
     })
@@ -81,7 +81,7 @@ object WebLocation extends BaseClass {
         val sec3 = key % 256
         val sec2 = key / 256 % 256
         val sec1 = key / 256 / 256
-        val row = (key, sec1.toInt, sec2.toInt, sec3.toInt,
+        val row = (key * 256, sec1.toInt, sec2.toInt, sec3.toInt,
           r(2), r(3), r(4), r(5), r(6))
         list.append(row)
       }

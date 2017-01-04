@@ -1,0 +1,10 @@
+#Intellij IDEA files
+*.iml
+/out
+/.idea
+#scala files
+*.class
+/project
+
+target
+metastore_db

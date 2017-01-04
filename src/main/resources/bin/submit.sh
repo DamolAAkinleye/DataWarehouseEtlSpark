@@ -73,7 +73,7 @@ $spark_home/bin/spark-submit \
 --executor-memory $spark_executor_memory \
 --driver-memory $spark_driver_memory \
 --conf spark.cores.max=$spark_cores_max  \
+--files $resFiles \
 --jars $jarFiles \
 --queue spark \
---files $resFiles \
 --class "$MainClass" $spark_mainJar $Args

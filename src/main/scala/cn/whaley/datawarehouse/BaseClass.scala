@@ -40,6 +40,7 @@ trait BaseClass {
   def init() = {
     sc = new SparkContext(config)
     sqlContext = SQLContext.getOrCreate(sc)
+
 //    hiveContext = new HiveContext(sc)
 //    DataIO.init("hdfs://hans/test/config.json")
   }
