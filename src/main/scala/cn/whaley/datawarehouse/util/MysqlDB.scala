@@ -29,16 +29,16 @@ object MysqlDB {
       "numPartitions" -> "100")
   }
 
-  def medusaCmsBaseContent = {
+  def medusaCms(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
     Map("url" -> "jdbc:mysql://10.10.2.23:3306/mtv_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-      "dbtable" -> "mtv_basecontent",
+      "dbtable" -> table,
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "bislave",
       "password" -> "slave4bi@whaley",
-      "partitionColumn" -> "id",
-      "lowerBound" -> "1",
-      "upperBound" -> "2001314181",
-      "numPartitions" -> "100")
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
   }
 
   def medusaAppVersion = {

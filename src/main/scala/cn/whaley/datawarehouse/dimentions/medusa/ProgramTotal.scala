@@ -11,7 +11,9 @@ import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
 object ProgramTotal extends BaseClass {
   override def execute(args: Array[String]): Unit = {
 
-    val jdbcDF = sqlContext.read.format("jdbc").options(MysqlDB.medusaCmsBaseContent).load()
+    val jdbcDF = sqlContext.read.format("jdbc")
+      .options(MysqlDB.medusaCms("mtv_basecontent", "id",1, 2001314181, 100))
+      .load()
     jdbcDF.registerTempTable("mtv_basecontent")
 
     val df = sqlContext.sql("SELECT cast(a.id as long) as program_sk, a.sid, a.display_name as title, " +
