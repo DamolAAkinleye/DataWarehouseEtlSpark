@@ -14,15 +14,6 @@
         <project.build.name>DataWarehouseEtlSpark-${project.version}</project.build.name>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>scala-tools.org</id>
-            <name>Scala-Tools Maven2 Repository</name>
-            <url>http://scala-tools.org/repo-releases</url>
-        </repository>
-    </repositories>
-
-
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
