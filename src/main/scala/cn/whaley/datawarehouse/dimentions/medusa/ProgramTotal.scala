@@ -22,6 +22,7 @@ object ProgramTotal extends BaseClass {
       "a.create_time, " +
       "a.publish_time " +
       " from mtv_basecontent a left join mtv_basecontent b on a.parent_id = b.id " +
+      " where a.sid is not null and a.sid <> ''" +
       " ORDER BY a.id")
 
     HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_medusa_program")

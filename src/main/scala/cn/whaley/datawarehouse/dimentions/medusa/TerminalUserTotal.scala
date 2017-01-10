@@ -16,7 +16,8 @@ object TerminalUserTotal extends BaseClass {
 
     val df = sqlContext.sql("SELECT cast(id as long) as terminal_sk, user_id, openTime as open_time, mac, wifi_mac, " +
       "product_model, product_serial, promotion_channel, lastLoginTime as last_login_time " +
-      " from mtv_account")
+      " from mtv_account " +
+      " where user_id is not null and user_id <> ''")
 
     HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_medusa_terminal_user")
     df.write.parquet("/data_warehouse/dw_dimensions/dim_medusa_terminal_user")

@@ -19,7 +19,8 @@ object AccountTotal extends BaseClass {
       "username as user_name, email, mobile, " +
       "cast(regdate as timestamp) as reg_time, " +
       "registerfrom as register_from " +
-      " from bbs_ucenter_members")
+      " from bbs_ucenter_members " +
+      " where account_id is not null and account_id <> ''")
 
     HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_medusa_account")
     df.write.parquet("/data_warehouse/dw_dimensions/dim_medusa_account")
