@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.util
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import org.apache.hadoop.fs.{FileUtil, FileStatus, FileSystem, Path}
 
 /**
   * Created by Tony on 16/12/22.
@@ -43,5 +43,20 @@ object HdfsUtil {
       }
     })
     flag
+  }
+
+  def IsDirExist(path:String):Boolean={
+    var flag = false
+    val conf = new Configuration()
+    val fs = FileSystem.get(conf)
+    flag=fs.exists(new Path(path))
+    flag
+  }
+
+  def copyFilesInDir(srcDir:String,distDir:String) :Boolean = {
+    val conf = new Configuration()
+    val fs= FileSystem.get(conf)
+    val isSuccess=FileUtil.copy(fs,new Path(srcDir),fs,new Path(distDir),false,false,conf)
+    isSuccess
   }
 }
