@@ -16,7 +16,7 @@ object Account extends DimensionBase{
 
   readSourceType = jdbc
 
-  columns.sourceColumnMap = Map(
+  sourceColumnMap = Map(
     "account_id" -> "moretvid",
     "user_name" -> "username",
     "reg_time" -> "cast(regdate as timestamp)",
