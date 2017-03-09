@@ -14,7 +14,7 @@ object Account extends DimensionBase{
   columns.trackingColumns = List()
   columns.otherColumns = List("user_name", "email", "mobile", "reg_time", "register_from")
 
-  readSourceType = custom
+  readSourceType = jdbc
 
   columns.sourceColumnMap = Map(
     "account_id" -> "moretvid",
