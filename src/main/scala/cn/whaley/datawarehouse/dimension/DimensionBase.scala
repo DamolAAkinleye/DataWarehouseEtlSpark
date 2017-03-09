@@ -175,7 +175,7 @@ abstract class DimensionBase extends BaseClass {
         , columns.skName
         , df.selectExpr("max(" + columns.skName + ")").first().getLong(0)
       )
-    )
+    ).orderBy(columns.skName)
 
     println("最终生成的新维度：\n")
     result.show
