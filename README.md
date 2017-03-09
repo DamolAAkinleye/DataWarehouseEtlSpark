@@ -2,7 +2,7 @@
 test evn:
 run machine:     spark01
 run lib:         DataWarehouseEtlSpark-1.0.0-SNAPSHOT.jar
-run script:
+run script:      /ftp/lituo/DataWarehouseEtlSpark-1.0.0-SNAPSHOT-release/bin/
 
 
 
