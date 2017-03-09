@@ -15,6 +15,7 @@ object ParamsParseUtil {
         head("ParamsParse", "1.2")
         opt[Map[String, String]]("paramMap").valueName("k1=v1,k2=v2...").action((x, c) => c.copy(paramMap = x)).
           text("param Map[String,String]")
+        opt[Boolean]("isOnline").action((x, c) => c.copy(isOnline = x))
         opt[Boolean]("deleteOld").action((x, c) => c.copy(deleteOld = x))
         opt[String]("dimensionType").action((x, c) => c.copy(dimensionType = x))
       }
@@ -23,7 +24,7 @@ object ParamsParseUtil {
         case None => throw new RuntimeException("parse error")
       }
     } else {
-      throw new RuntimeException("args is empty,at least need --deleteOld true")
+      throw new RuntimeException("args is empty,at least need --isOnline true")
     }
   }
 
