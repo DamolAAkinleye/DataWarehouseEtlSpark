@@ -94,9 +94,8 @@ abstract class DimensionBase extends BaseClass {
 
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
-      val initTime = DateUtils.parseDate("2000-01-01", "yyyy-MM-dd")
       val result = DataFrameUtil.dfZipWithIndex(
-        DataFrameUtil.addDimTime(filteredSourceDf, initTime, null),
+        DataFrameUtil.addDimTime(filteredSourceDf, DimensionBase.defaultValidTime , null),
         columns.skName
       )
       return result
@@ -280,4 +279,8 @@ abstract class DimensionBase extends BaseClass {
       }
     }
   }
+}
+
+object DimensionBase {
+  val defaultValidTime: Date = DateUtils.parseDate("2000-01-01", "yyyy-MM-dd")
 }
