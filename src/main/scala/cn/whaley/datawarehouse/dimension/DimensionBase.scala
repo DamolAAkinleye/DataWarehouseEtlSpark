@@ -41,14 +41,14 @@ abstract class DimensionBase extends BaseClass {
   var dimensionName: String = _
 
   /**
-    * 是否使用自定义的方法处理原数据，默认未否
-    */
-  var useCustomSourceFilterFunction = false
-
-  /**
-    * 过滤源数据使用的where条件，仅当useCustomSourceFilterFunction设置为false时有效
+    * 过滤源数据使用的where条件，仅当filterSource方法未在子类中重载时有效
     */
   var sourceFilterWhere: String = _
+
+  /**
+    * 维度表字段与源数据字段的对应关系，仅当filterSource方法未在子类中重载时有效
+    */
+  var sourceColumnMap: Map[String, String] = Map()
 
   override def execute(args: Array[String]): Unit = {
 
@@ -69,29 +69,14 @@ abstract class DimensionBase extends BaseClass {
     val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionName
 
     //读取源数据
-    val sourceDF =
-      readSourceType match {
-        case `jdbc` =>
-          sqlContext.read.format("jdbc").options(sourceDb).load()
-        case `custom` =>
-          readSource()
-      }
+    val sourceDf = readSource(readSourceType)
 
     //过滤源数据
-    val filteredSourceDf =
-      if (useCustomSourceFilterFunction)
-        filterSource(sourceDF)
-      else {
-        val filtered = sourceDF.selectExpr(columns.getSourceColumns.map(
-          s => if (columns.sourceColumnMap.contains(s))
-            columns.sourceColumnMap(s) + " as " + s
-          else s
-        ): _*)
-        if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
-      }
+    val filteredSourceDf = filterSource(sourceDf)
 
     //TODO 过滤后源数据主键唯一性判断和处理
 
+    filteredSourceDf.persist()
 
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
@@ -143,10 +128,11 @@ abstract class DimensionBase extends BaseClass {
 
 
     //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，但是未更新dim_invalid_time
+    //如果维度表中已经存在的业务键在源信息中被删除了，则会把该业务键对应行的所有otherColumns设置为null
     val originalExistDf = originalDf.as("a").join(
       filteredSourceDf.as("b"), columns.primaryKeys, "leftouter"
     ).selectExpr(
-      List("a." + columns.skName) ++ columns.primaryKeys //.map(s => "a." + s)
+      List("a." + columns.skName) ++ columns.primaryKeys
         ++ columns.trackingColumns.map(s => "a." + s) ++ columns.otherColumns.map(s => "b." + s)
         ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
     )
@@ -199,36 +185,32 @@ abstract class DimensionBase extends BaseClass {
 
   /**
     * 自定义的源数据读取方法
-    * 仅在readSourceType设置为custom时有效，需在子类中重载实现
+    * 默认是从jdbc中读取，如需自定义，可以在子类中重载实现
     *
     * @return
     */
-  def readSource(): DataFrame = {
-    null
+  def readSource(readSourceType : Value): DataFrame = {
+    if (readSourceType == jdbc) {
+      sqlContext.read.format("jdbc").options(sourceDb).load()
+    } else {
+      null
+    }
   }
 
   /**
     * 处理原数据的自定义的方法
-    * 当useCustomSourceFilterFunction设置为true时有效，需在子类中重载实现
+    * 默认可以通过配置实现，如果需要自定义处理逻辑，可以再在子类中重载实现
     *
     * @param sourceDf
     * @return
     */
   def filterSource(sourceDf: DataFrame): DataFrame = {
-    sourceDf
-  }
-
-  /**
-    * 临时方法，仅在测试阶段使用
-    *
-    * @param args
-    * @param df
-    * @param dimensionType
-    */
-  def tempBackup(args: Array[String], df: DataFrame, dimensionType: String): Unit = {
-    val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionType
-    HdfsUtil.deleteHDFSFileOrPath(onlineDimensionDir)
-    df.write.parquet(onlineDimensionDir)
+      val filtered = sourceDf.selectExpr(columns.getSourceColumns.map(
+        s => if (sourceColumnMap.contains(s))
+          sourceColumnMap(s) + " as " + s
+        else s
+      ): _*)
+      if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
   }
 
   /**
