@@ -54,7 +54,7 @@ abstract class DimensionBase extends BaseClass {
     val result = doExecute()
 
     println("backup start ....")
-    //    tempBackup(args, result, dimensionName)
+    backup(args, result, dimensionName)
     println("backup end ....")
 
     //TODO 新数据验证
@@ -95,7 +95,7 @@ abstract class DimensionBase extends BaseClass {
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
       val result = DataFrameUtil.dfZipWithIndex(
-        DataFrameUtil.addDimTime(filteredSourceDf, DimensionBase.defaultValidTime , null),
+        DataFrameUtil.addDimTime(filteredSourceDf, DimensionBase.defaultValidTime, null),
         columns.skName
       )
       return result
@@ -232,6 +232,7 @@ abstract class DimensionBase extends BaseClass {
 
   /**
     * 用来备份维度数据，然后将维度数据生成在临时目录，当isOnline参数为true的时候，将临时目录的数据替换线上维度
+    *
     * @param args the main args
     * @param df   the DataFrame from execute function
     * @return a Unit.
@@ -242,20 +243,24 @@ abstract class DimensionBase extends BaseClass {
         val cal = Calendar.getInstance
         val date = DateFormatUtils.readFormat.format(cal.getTime)
         val onLineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionType
-        val onLineDimensionBackupDir = DIMENSION_HDFS_BASE_PATH + File.separator + date + File.separator + dimensionType
-        val onLineDimensionDirTmp = s"${onLineDimensionDir}_tmp"
+        val onLineDimensionBackupDir = DIMENSION_HDFS_BASE_PATH_BACKUP + File.separator + date + File.separator + dimensionType
+        val onLineDimensionDirTmp = DIMENSION_HDFS_BASE_PATH_TMP + File.separator + dimensionType
         println("onLineDimensionDir:" + onLineDimensionDir)
         println("onLineDimensionBackupDir:" + onLineDimensionBackupDir)
         println("onLineDimensionDirTmp:" + onLineDimensionDirTmp)
 
-        val isBackupExist = HdfsUtil.IsDirExist(onLineDimensionBackupDir)
-        if (isBackupExist) {
-          println("删除线上维度备份数据:" + onLineDimensionBackupDir)
-          HdfsUtil.deleteHDFSFileOrPath(onLineDimensionBackupDir)
+        println("是否开启备份:"+p.isBackup)
+        if (p.isBackup) {
+          println("开始备份数据....")
+          val isBackupExist = HdfsUtil.IsDirExist(onLineDimensionBackupDir)
+          if (isBackupExist) {
+            println("删除线上维度备份数据:" + onLineDimensionBackupDir)
+            HdfsUtil.deleteHDFSFileOrPath(onLineDimensionBackupDir)
+          }
+          println("生成线上维度备份数据:" + onLineDimensionBackupDir)
+          val isSuccessBackup = HdfsUtil.copyFilesInDir(onLineDimensionDir, onLineDimensionBackupDir)
+          println("备份数据状态:" + isSuccessBackup)
         }
-        println("生成线上维度备份数据:" + onLineDimensionBackupDir)
-        val isSuccessBackup = HdfsUtil.copyFilesInDir(onLineDimensionDir, onLineDimensionBackupDir)
-        println("备份数据状态:" + isSuccessBackup)
 
         val isTmpExist = HdfsUtil.IsDirExist(onLineDimensionDirTmp)
         if (isTmpExist) {
