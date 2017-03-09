@@ -5,13 +5,13 @@ package cn.whaley.datawarehouse.dimension
   */
 class Columns {
 
+  var skName: String = "sk"
+
   var primaryKeys : List[String] = _
 
   var trackingColumns : List[String] = _
 
   var otherColumns : List[String] = _
-
-  var skName: String = "sk"
 
   var validTimeKey : String = "dim_valid_time"
 

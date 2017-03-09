@@ -54,7 +54,7 @@ abstract class DimensionBase extends BaseClass {
     val result = doExecute()
 
     println("backup start ....")
-    tempBackup(args, result, dimensionName)
+    //    tempBackup(args, result, dimensionName)
     println("backup end ....")
 
     //TODO 新数据验证
@@ -107,60 +107,93 @@ abstract class DimensionBase extends BaseClass {
     //读取现有维度
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
-    val addDf =
+    println("现有维度：\n")
+    originalDf.show
+
     //新增的行
+    val addDf =
       filteredSourceDf.as("b").join(
         originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
       ).where(
         "a." + columns.skName + " is null"
       ).selectExpr(
         columns.getSourceColumns.map(s => "b." + s): _*
-      ).unionAll(
-        //追踪列变化的行
-        filteredSourceDf.as("b").join(
-          originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
-        ).where(
-          columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ")
-        ).selectExpr(columns.getSourceColumns.map(s => "b." + s): _*)
       )
-    //    addDf.show
+
+    //更新后维度表中需要添加的行，包括新增的和追踪列变化的
+    val extendDf =
+      if (columns.trackingColumns == null || columns.trackingColumns.isEmpty) {
+        addDf
+      } else {
+        addDf.unionAll(
+          //追踪列变化的行
+          filteredSourceDf.as("b").join(
+            originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
+          ).where(
+            columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ")
+          ).selectExpr(columns.getSourceColumns.map(s => "b." + s): _*)
+        )
+      }
+
+    println("需要增加的行：\n")
+    extendDf.show
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val todayStr = sdf.format(today)
 
-    //变更后需要标注失效时间的列
-    val invalidColumnsDf =
-      filteredSourceDf.as("b").join(
-        originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
-      ).where(
-        columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ")
-      ).selectExpr(List("a." + columns.skName)
-        ++ List("'" + todayStr + "' as " + columns.validTimeKey): _*)
 
-    val df = originalDf.as("a").join(
+    //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，但是未更新dim_invalid_time
+    val originalExistDf = originalDf.as("a").join(
       filteredSourceDf.as("b"), columns.primaryKeys, "leftouter"
     ).selectExpr(
-      List("a." + columns.skName) ++ columns.primaryKeys//.map(s => "a." + s)
+      List("a." + columns.skName) ++ columns.primaryKeys //.map(s => "a." + s)
         ++ columns.trackingColumns.map(s => "a." + s) ++ columns.otherColumns.map(s => "b." + s)
         ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
-    ).as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
-    ).selectExpr(
-      List( columns.skName) ++ columns.primaryKeys
-        ++ columns.trackingColumns ++ columns.otherColumns
-        ++ List(columns.validTimeKey)
-        ++ List("a." + columns.skName ): _*  //if else
     )
-    //    df.show
+
+    //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，并且更新了dim_invalid_time
+    val df =
+      if (columns.trackingColumns == null || columns.trackingColumns.isEmpty) {
+        originalExistDf
+      } else {
+        //变更后需要标注失效时间的行，包含代理键和失效时间两列
+        val invalidColumnsDf =
+          filteredSourceDf.as("b").join(
+            originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
+          ).where(
+            columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ")
+          ).selectExpr(List("a." + columns.skName)
+            ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
+
+        println("需要变更失效时间的行：\n")
+        invalidColumnsDf.show
+
+        //更新失效时间
+        originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
+        ).selectExpr(
+          List(columns.skName) ++ columns.primaryKeys
+            ++ columns.trackingColumns ++ columns.otherColumns
+            ++ List(columns.validTimeKey)
+            ++ List("CASE WHEN invalid." + columns.invalidTimeKey + " is not null THEN invalid." + columns.invalidTimeKey
+            + " ELSE origin." + columns.invalidTimeKey + " END as " + columns.invalidTimeKey): _*
+        )
+      }
+
+    println("原有维度数据更新后的：\n")
+    df.show
 
     //合并上述形成最终结果
     val result = df.unionAll(
       DataFrameUtil.dfZipWithIndex(
-        DataFrameUtil.addDimTime(addDf, today, null)
+        DataFrameUtil.addDimTime(extendDf, today, null)
         , columns.skName
         , df.selectExpr("max(" + columns.skName + ")").first().getLong(0)
       )
     )
-    //    result.show
+
+    println("最终生成的新维度：\n")
+    result.show
+
     result
   }
 
