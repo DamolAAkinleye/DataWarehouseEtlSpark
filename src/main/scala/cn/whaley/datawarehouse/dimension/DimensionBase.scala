@@ -249,14 +249,10 @@ abstract class DimensionBase extends BaseClass {
         println("onLineDimensionBackupDir:" + onLineDimensionBackupDir)
         println("onLineDimensionDirTmp:" + onLineDimensionDirTmp)
 
-        println("是否开启备份:"+p.isBackup)
-        if (p.isBackup) {
-          println("开始备份数据....")
-          val isBackupExist = HdfsUtil.IsDirExist(onLineDimensionBackupDir)
-          if (isBackupExist) {
-            println("删除线上维度备份数据:" + onLineDimensionBackupDir)
-            HdfsUtil.deleteHDFSFileOrPath(onLineDimensionBackupDir)
-          }
+        val isBackupExist = HdfsUtil.IsDirExist(onLineDimensionBackupDir)
+        if (isBackupExist) {
+          println("数据已经备份,跳过备份过程")
+        } else {
           println("生成线上维度备份数据:" + onLineDimensionBackupDir)
           val isSuccessBackup = HdfsUtil.copyFilesInDir(onLineDimensionDir, onLineDimensionBackupDir)
           println("备份数据状态:" + isSuccessBackup)
