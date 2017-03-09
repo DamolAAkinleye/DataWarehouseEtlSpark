@@ -15,5 +15,4 @@ trait LogConfig {
   val EAGLE = "eagle"
   val MTVKIDSLOGIN = "mtvkidsloginlog"
   val ACTIVITY = "activity"
-  val DIMENSION_HDFS_BASE_PATH="/data_warehouse/dw_dimensions"
 }

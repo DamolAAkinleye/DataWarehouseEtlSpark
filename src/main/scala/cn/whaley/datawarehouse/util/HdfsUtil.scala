@@ -45,6 +45,13 @@ object HdfsUtil {
     flag
   }
 
+  def pathIsExist(file:String): Boolean = {
+    val conf = new Configuration()
+    val fs= FileSystem.get(conf)
+    val path = new Path(file)
+    fs.exists(path)
+  }
+
   def IsDirExist(path:String):Boolean={
     var flag = false
     val conf = new Configuration()

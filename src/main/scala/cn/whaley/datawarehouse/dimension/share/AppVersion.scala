@@ -1,7 +1,7 @@
-package cn.whaley.datawarehouse.dimentions
+package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
+import cn.whaley.datawarehouse.util.MysqlDB
 import org.apache.spark.sql.DataFrame
 
 /**
@@ -10,7 +10,7 @@ import org.apache.spark.sql.DataFrame
 object AppVersion extends BaseClass {
   private val tableName = "moretv_app_version"
   private val dimensionType = "dim_app_version"
-  override def execute(args: Array[String]):  (DataFrame,String) = {
+  override def execute(args: Array[String]): Unit = {
     val jdbcDF = sqlContext.read.format("jdbc").options(MysqlDB.medusaAppVersion).load()
     jdbcDF.registerTempTable("moretv_app_version")
 

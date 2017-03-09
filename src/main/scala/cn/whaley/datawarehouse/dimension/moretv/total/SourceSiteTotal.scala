@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimentions.medusa
+package cn.whaley.datawarehouse.dimension.moretv.total
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}

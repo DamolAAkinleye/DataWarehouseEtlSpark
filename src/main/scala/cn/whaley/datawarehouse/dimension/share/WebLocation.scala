@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimentions
+package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.util.HdfsUtil
