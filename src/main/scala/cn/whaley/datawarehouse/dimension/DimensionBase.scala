@@ -75,6 +75,7 @@ abstract class DimensionBase extends BaseClass {
 
     //TODO 过滤后源数据主键唯一性判断和处理
 
+    filteredSourceDf.persist()
 
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
@@ -190,8 +191,9 @@ abstract class DimensionBase extends BaseClass {
   def readSource(readSourceType : Value): DataFrame = {
     if (readSourceType == jdbc) {
       sqlContext.read.format("jdbc").options(sourceDb).load()
+    } else {
+      null
     }
-    null
   }
 
   /**
@@ -208,19 +210,6 @@ abstract class DimensionBase extends BaseClass {
         else s
       ): _*)
       if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
-  }
-
-  /**
-    * 临时方法，仅在测试阶段使用
-    *
-    * @param args
-    * @param df
-    * @param dimensionType
-    */
-  def tempBackup(args: Array[String], df: DataFrame, dimensionType: String): Unit = {
-    val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionType
-    HdfsUtil.deleteHDFSFileOrPath(onlineDimensionDir)
-    df.write.parquet(onlineDimensionDir)
   }
 
   /**
