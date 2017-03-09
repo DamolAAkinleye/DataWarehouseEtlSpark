@@ -140,15 +140,15 @@ abstract class DimensionBase extends BaseClass {
     val df = originalDf.as("a").join(
       filteredSourceDf.as("b"), columns.primaryKeys, "leftouter"
     ).selectExpr(
-      List("a." + columns.skName) ++ columns.primaryKeys//.map(s => "a." + s)
+      List("a." + columns.skName) ++ columns.primaryKeys //.map(s => "a." + s)
         ++ columns.trackingColumns.map(s => "a." + s) ++ columns.otherColumns.map(s => "b." + s)
         ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
     ).as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
     ).selectExpr(
-      List( columns.skName) ++ columns.primaryKeys
+      List(columns.skName) ++ columns.primaryKeys
         ++ columns.trackingColumns ++ columns.otherColumns
         ++ List(columns.validTimeKey)
-        ++ List("a." + columns.skName ): _*  //if else
+        ++ List("a." + columns.skName): _* //if else
     )
     //    df.show
 
@@ -199,8 +199,7 @@ abstract class DimensionBase extends BaseClass {
   }
 
   /**
-    * 用来备份维度数据，然后将维度数据生成在临时目录，最终将临时目录的数据替换线上维度
-    *
+    * 用来备份维度数据，然后将维度数据生成在临时目录，当isOnline参数为true的时候，将临时目录的数据替换线上维度
     * @param args the main args
     * @param df   the DataFrame from execute function
     * @return a Unit.
@@ -234,16 +233,17 @@ abstract class DimensionBase extends BaseClass {
         println("生成线上维度数据到临时目录:" + onLineDimensionDirTmp)
         df.write.parquet(onLineDimensionDirTmp)
 
-        println("数据上线:" + onLineDimensionDir)
-        if (p.deleteOld) {
+        println("数据是否上线:" + p.isOnline)
+        if (p.isOnline) {
+          println("数据上线:" + onLineDimensionDir)
           println("删除线上维度数据:" + onLineDimensionDir)
           HdfsUtil.deleteHDFSFileOrPath(onLineDimensionDir)
+          val isSuccess = HdfsUtil.copyFilesInDir(onLineDimensionDirTmp, onLineDimensionDir)
+          println("数据上线状态:" + isSuccess)
         }
-        val isSuccess = HdfsUtil.copyFilesInDir(onLineDimensionDirTmp, onLineDimensionDir)
-        println("数据上线状态:" + isSuccess)
       }
       case None => {
-        throw new RuntimeException("At least need param --dimensionType.")
+        throw new RuntimeException("parameters wrong")
       }
     }
   }

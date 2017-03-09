@@ -7,6 +7,7 @@ package cn.whaley.datawarehouse.util
 case class Params (
                    deleteOld:Boolean=false, //是否删除旧数据
                    dimensionType:String = "", //维度类型
+                   isOnline:Boolean=false, //是否替换线上维度
                    paramMap: Map[String,String] = Map[String,String]() //参数集合
                   ){
 
