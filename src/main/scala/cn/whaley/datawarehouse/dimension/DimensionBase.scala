@@ -9,6 +9,7 @@ import cn.whaley.datawarehouse.dimension.constant.SourceType._
 import cn.whaley.datawarehouse.util.{DataFrameUtil, DateFormatUtils, HdfsUtil, ParamsParseUtil}
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.io.File
 
@@ -258,13 +259,19 @@ abstract class DimensionBase extends BaseClass {
           println("备份数据状态:" + isSuccessBackup)
         }
 
+        //防止文件碎片
+        df.persist(StorageLevel.MEMORY_AND_DISK)
+        val total_count= BigDecimal(df.collect().size)
+        val partition=Math.max(1,(total_count/THRESHOLD_VALUE).intValue())
+        println("repartition:"+partition)
+
         val isTmpExist = HdfsUtil.IsDirExist(onLineDimensionDirTmp)
         if (isTmpExist) {
           println("删除线上维度临时数据:" + onLineDimensionDirTmp)
           HdfsUtil.deleteHDFSFileOrPath(onLineDimensionDirTmp)
         }
         println("生成线上维度数据到临时目录:" + onLineDimensionDirTmp)
-        df.write.parquet(onLineDimensionDirTmp)
+        df.repartition(partition).write.parquet(onLineDimensionDirTmp)
 
         println("数据是否上线:" + p.isOnline)
         if (p.isOnline) {
