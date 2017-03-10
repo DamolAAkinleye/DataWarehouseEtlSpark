@@ -92,7 +92,7 @@ abstract class DimensionBase extends BaseClass {
     //读取现有维度
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
-    println("现有维度：\n")
+    println("成功获取现有维度")
     originalDf.show
 
     //新增的行
@@ -115,12 +115,12 @@ abstract class DimensionBase extends BaseClass {
           filteredSourceDf.as("b").join(
             originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
           ).where(
-            columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ")
+            columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ") //若trackingColumn原本为null，不增加新行
           ).selectExpr(columns.getSourceColumns.map(s => "b." + s): _*)
         )
       }
 
-    println("需要增加的行：\n")
+    println("计算完成需要增加的行")
     extendDf.show
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -129,11 +129,13 @@ abstract class DimensionBase extends BaseClass {
 
     //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，但是未更新dim_invalid_time
     //如果维度表中已经存在的业务键在源信息中被删除了，则会把该业务键对应行的所有otherColumns设置为null
+    //若trackingColumn原本为null，源数据有值后，会在直接在该主键的所有行上变更，也就是说，历史记录默认不记录null值
     val originalExistDf = originalDf.as("a").join(
       filteredSourceDf.as("b"), columns.primaryKeys, "leftouter"
     ).selectExpr(
       List("a." + columns.skName) ++ columns.primaryKeys
-        ++ columns.trackingColumns.map(s => "a." + s) ++ columns.otherColumns.map(s => "b." + s)
+        ++ columns.trackingColumns.map(s => "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s)
+        ++ columns.otherColumns.map(s => "b." + s)
         ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
     )
 
@@ -151,7 +153,7 @@ abstract class DimensionBase extends BaseClass {
           ).selectExpr(List("a." + columns.skName)
             ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
 
-        println("需要变更失效时间的行：\n")
+        println("计算完成需要变更失效时间的行")
         invalidColumnsDf.show
 
         //更新失效时间
@@ -165,7 +167,7 @@ abstract class DimensionBase extends BaseClass {
         )
       }
 
-    println("原有维度数据更新后的：\n")
+    println("计算完成原有维度数据更新后")
     df.show
 
     //合并上述形成最终结果
@@ -177,7 +179,7 @@ abstract class DimensionBase extends BaseClass {
       )
     ).orderBy(columns.skName)
 
-    println("最终生成的新维度：\n")
+    println("计算完成最终生成的新维度")
     result.show
 
     result
@@ -189,7 +191,7 @@ abstract class DimensionBase extends BaseClass {
     *
     * @return
     */
-  def readSource(readSourceType : Value): DataFrame = {
+  def readSource(readSourceType: Value): DataFrame = {
     if (readSourceType == jdbc) {
       sqlContext.read.format("jdbc").options(sourceDb).load()
     } else {
@@ -205,12 +207,12 @@ abstract class DimensionBase extends BaseClass {
     * @return
     */
   def filterSource(sourceDf: DataFrame): DataFrame = {
-      val filtered = sourceDf.selectExpr(columns.getSourceColumns.map(
-        s => if (sourceColumnMap.contains(s))
-          sourceColumnMap(s) + " as " + s
-        else s
-      ): _*)
-      if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
+    val filtered = sourceDf.selectExpr(columns.getSourceColumns.map(
+      s => if (sourceColumnMap.contains(s))
+        sourceColumnMap(s) + " as " + s
+      else s
+    ): _*)
+    if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
   }
 
   /**
@@ -247,9 +249,9 @@ abstract class DimensionBase extends BaseClass {
 
         //防止文件碎片
         df.persist(StorageLevel.MEMORY_AND_DISK)
-        val total_count= BigDecimal(df.collect().size)
-        val partition=Math.max(1,(total_count/THRESHOLD_VALUE).intValue())
-        println("repartition:"+partition)
+        val total_count = BigDecimal(df.collect().size)
+        val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
+        println("repartition:" + partition)
 
         val isTmpExist = HdfsUtil.IsDirExist(onLineDimensionDirTmp)
         if (isTmpExist) {

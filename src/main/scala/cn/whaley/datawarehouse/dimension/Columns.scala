@@ -18,7 +18,7 @@ class Columns {
   var primaryKeys: List[String] = _
 
   /**
-    * 需要追踪历史记录的列
+    * 需要追踪历史记录的列，记录所有的非null历史记录
     * 配置注意事项：对于已经存在的维度表，增加追踪列只能从otherColumns中移入，不能直接增加新列；可以减少列
     */
   var trackingColumns: List[String] = List()
