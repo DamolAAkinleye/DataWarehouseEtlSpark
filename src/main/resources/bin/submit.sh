@@ -82,7 +82,7 @@ done
 set -x
 $spark_home/bin/spark-submit -v \
 --name ${app_name:-$MainClass} \
---master yarn \
+--master ${spark_master} \
 --executor-memory $spark_executor_memory \
 --driver-memory $spark_driver_memory \
 --files $resFiles \

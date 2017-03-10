@@ -1,8 +1,8 @@
 package cn.whaley.datawarehouse.dimension.moretv
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
-import cn.whaley.datawarehouse.util.MysqlDB
 import cn.whaley.datawarehouse.dimension.constant.SourceType._
+import cn.whaley.datawarehouse.util.MysqlDB
 
 
 /**
@@ -10,7 +10,7 @@ import cn.whaley.datawarehouse.dimension.constant.SourceType._
   *
   * 电视猫账号维度表
   */
-object Account extends DimensionBase{
+object Account extends DimensionBase {
   columns.skName = "account_sk"
   columns.primaryKeys = List("account_id")
   columns.trackingColumns = List()
