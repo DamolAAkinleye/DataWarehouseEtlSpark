@@ -47,6 +47,7 @@ abstract class DimensionBase extends BaseClass {
 
   /**
     * 维度表字段与源数据字段的对应关系，仅当filterSource方法未在子类中重载时有效
+    * key是维度表字段名，value是数据源中获取方式，支持spark sql表达
     */
   var sourceColumnMap: Map[String, String] = Map()
 
@@ -83,7 +84,7 @@ abstract class DimensionBase extends BaseClass {
       val result = DataFrameUtil.dfZipWithIndex(
         DataFrameUtil.addDimTime(filteredSourceDf, DimensionBase.defaultValidTime, null),
         columns.skName
-      )
+      ).orderBy(columns.skName)
       return result
     }
 
@@ -93,7 +94,7 @@ abstract class DimensionBase extends BaseClass {
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
     println("成功获取现有维度")
-    originalDf.show
+//    originalDf.show
 
     //新增的行
     val addDf =
@@ -121,7 +122,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成需要增加的行")
-    extendDf.show
+//    extendDf.show
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val todayStr = sdf.format(today)
@@ -154,7 +155,7 @@ abstract class DimensionBase extends BaseClass {
             ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
 
         println("计算完成需要变更失效时间的行")
-        invalidColumnsDf.show
+//        invalidColumnsDf.show
 
         //更新失效时间
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
@@ -168,7 +169,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成原有维度数据更新后")
-    df.show
+//    df.show
 
     //合并上述形成最终结果
     val result = df.unionAll(
@@ -180,7 +181,7 @@ abstract class DimensionBase extends BaseClass {
     ).orderBy(columns.skName)
 
     println("计算完成最终生成的新维度")
-    result.show
+//    result.show
 
     result
   }
@@ -249,7 +250,7 @@ abstract class DimensionBase extends BaseClass {
 
         //防止文件碎片
         df.persist(StorageLevel.MEMORY_AND_DISK)
-        val total_count = BigDecimal(df.collect().size)
+        val total_count = BigDecimal(df.count())
         val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
         println("repartition:" + partition)
 

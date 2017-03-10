@@ -7,6 +7,8 @@ import cn.whaley.datawarehouse.dimension.constant.SourceType._
 
 /**
   * Created by Tony on 17/3/8.
+  *
+  * 电视猫账号维度表
   */
 object Account extends DimensionBase{
   columns.skName = "account_sk"
@@ -16,6 +18,7 @@ object Account extends DimensionBase{
 
   readSourceType = jdbc
 
+  //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
     "account_id" -> "moretvid",
     "user_name" -> "username",

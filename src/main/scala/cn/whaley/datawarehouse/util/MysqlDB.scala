@@ -25,8 +25,8 @@ object MysqlDB {
       "password" -> "mlw321@moretv",
       "partitionColumn" -> "id",
       "lowerBound" -> "1",
-      "upperBound" -> "514696241",
-      "numPartitions" -> "100")
+      "upperBound" -> "800000000",
+      "numPartitions" -> "300")
   }
 
   def medusaCms(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {

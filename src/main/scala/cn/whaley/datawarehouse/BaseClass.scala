@@ -18,11 +18,11 @@ trait BaseClass {
   val config = new SparkConf()
     //    .set("spark.executor.memory", "4g")
     //    .set("spark.executor.cores", "3")
-    .set("spark.scheduler.mode", "FAIR")
-    .set("spark.eventLog.enabled", "true")
-    .set("spark.eventLog.dir", "hdfs://hans/spark-log/spark-events")
+//    .set("spark.scheduler.mode", "FAIR")
+//    .set("spark.eventLog.enabled", "true")
+//    .set("spark.eventLog.dir", "hdfs://hans/spark-log/spark-events")
     //    .set("spark.cores.max", "72")
-    .set("spark.driver.maxResultSize", "2g")
+//    .set("spark.driver.maxResultSize", "2g")
   //    .setAppName(this.getClass.getSimpleName)
 
 
