@@ -66,4 +66,13 @@ object HdfsUtil {
     val isSuccess=FileUtil.copy(fs,new Path(srcDir),fs,new Path(distDir),false,false,conf)
     isSuccess
   }
+
+  def rename(src:String,dist:String) :Boolean ={
+    val conf = new Configuration()
+    val fs= FileSystem.get(conf)
+    val srcPath = new Path(src)
+    val distPath = new Path(dist)
+    fs.rename(srcPath,distPath)
+  }
+
 }

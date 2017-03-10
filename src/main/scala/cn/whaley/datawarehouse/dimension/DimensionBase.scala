@@ -231,13 +231,15 @@ abstract class DimensionBase extends BaseClass {
         val onLineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionType
         val onLineDimensionBackupDir = DIMENSION_HDFS_BASE_PATH_BACKUP + File.separator + date + File.separator + dimensionType
         val onLineDimensionDirTmp = DIMENSION_HDFS_BASE_PATH_TMP + File.separator + dimensionType
-        println("onLineDimensionDir:" + onLineDimensionDir)
-        println("onLineDimensionBackupDir:" + onLineDimensionBackupDir)
-        println("onLineDimensionDirTmp:" + onLineDimensionDirTmp)
+        val onLineDimensionDirDelete = DIMENSION_HDFS_BASE_PATH_DELETE + File.separator + dimensionType
+        println("线上数据目录:" + onLineDimensionDir)
+        println("线上数据备份目录:" + onLineDimensionBackupDir)
+        println("线上数据临时目录:" + onLineDimensionDirTmp)
+        println("线上数据等待删除目录:" + onLineDimensionDirDelete)
 
-
-        val isExist = HdfsUtil.IsDirExist(onLineDimensionDir)
-        if (isExist) {
+        df.persist(StorageLevel.MEMORY_AND_DISK)
+        val isOnlineFileExist = HdfsUtil.IsDirExist(onLineDimensionDir)
+        if (isOnlineFileExist) {
           val isBackupExist = HdfsUtil.IsDirExist(onLineDimensionBackupDir)
           if (isBackupExist) {
             println("数据已经备份,跳过备份过程")
@@ -246,10 +248,11 @@ abstract class DimensionBase extends BaseClass {
             val isSuccessBackup = HdfsUtil.copyFilesInDir(onLineDimensionDir, onLineDimensionBackupDir)
             println("备份数据状态:" + isSuccessBackup)
           }
+        }else{
+          println("无可用备份数据")
         }
 
         //防止文件碎片
-        df.persist(StorageLevel.MEMORY_AND_DISK)
         val total_count = BigDecimal(df.count())
         val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
         println("repartition:" + partition)
@@ -265,10 +268,21 @@ abstract class DimensionBase extends BaseClass {
         println("数据是否上线:" + p.isOnline)
         if (p.isOnline) {
           println("数据上线:" + onLineDimensionDir)
-          println("删除线上维度数据:" + onLineDimensionDir)
-          HdfsUtil.deleteHDFSFileOrPath(onLineDimensionDir)
-          val isSuccess = HdfsUtil.copyFilesInDir(onLineDimensionDirTmp, onLineDimensionDir)
-          println("数据上线状态:" + isSuccess)
+          if(isOnlineFileExist){
+            println("移动线上维度数据:from " + onLineDimensionDir+" to "+onLineDimensionDirDelete)
+            val isRenameSuccess=HdfsUtil.rename(onLineDimensionDir,onLineDimensionDirDelete)
+            println("isRenameSuccess:"+isRenameSuccess)
+          }
+
+          val isOnlineFileExistAfterRename = HdfsUtil.IsDirExist(onLineDimensionDir)
+          if(isOnlineFileExistAfterRename){
+            throw new RuntimeException("rename failed")
+          }else{
+            val isSuccess = HdfsUtil.rename(onLineDimensionDirTmp, onLineDimensionDir)
+            println("数据上线状态:" + isSuccess)
+          }
+          println("删除过期数据:" + onLineDimensionDirDelete)
+          HdfsUtil.deleteHDFSFileOrPath(onLineDimensionDirDelete)
         }
       }
       case None => {
