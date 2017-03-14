@@ -26,22 +26,21 @@ object MVTopic extends DimensionBase {
   )
 
 
+
   readSourceType = jdbc
+
+  sourceColumnMap = Map(
+    columns.primaryKeys(0) -> "sid",
+    columns.otherColumns(0) -> "title",
+    columns.otherColumns(1) -> "cast(create_time as timestamp)",
+    columns.otherColumns(2) -> "cast(publish_time as timestamp)"
+  )
 
   sourceDb = MysqlDB.medusaCms("mtv_mvtopic", "id", 1, 134, 1)
 
-  override def filterSource(sourceDf: DataFrame): DataFrame = {
+  sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> ''"
 
-    val sq = sqlContext
-    import sq.implicits._
-    import org.apache.spark.sql.functions._
 
-    sourceDf.dropDuplicates("sid" :: Nil)
-      .select(
-        $"sid".as(columns.primaryKeys(0)),
-        $"title".as(columns.otherColumns(0)),
-        $"create_time".cast("timestamp").as(columns.otherColumns(1)),
-        $"publish_time".cast("timestamp").as(columns.otherColumns(2))
-      )
-  }
+
+
 }
