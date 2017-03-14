@@ -88,5 +88,17 @@ object MysqlDB {
       "numPartitions" -> "10")
   }
 
+  def mergerActivity = {
+    Map("url" -> "jdbc:mysql://10.10.2.15:3306/eagletv?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> "mtv_terminal",
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "bi",
+      "password" -> "mlw321@moretv",
+      "partitionColumn" -> "sid",
+      "lowerBound" -> "1",
+      "upperBound" -> "50",
+      "numPartitions" -> "2"
+    )
+  }
 
 }
