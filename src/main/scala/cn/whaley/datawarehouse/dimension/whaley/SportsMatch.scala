@@ -30,5 +30,5 @@ object SportsMatch extends DimensionBase {
   sourceFilterWhere = "match_sid is not null and match_sid <> ''"
   sourceDb = MysqlDB.whaleyCms("sailfish_sport_match","sid",1,700000,10)
 
-  dimensionName = "dim_whaley_mv_sports_match"
+  dimensionName = "dim_whaley_sports_match"
 }
