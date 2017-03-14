@@ -76,4 +76,17 @@ object MysqlDB {
   }
 
 
+  def whaleyTerminalMember = {
+    Map("url" -> "jdbc:mysql://10.10.2.18:3306/terminal_upgrade?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> "mtv_terminal",
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "whaleybi",
+      "password" -> "play4bi@whaley",
+      "partitionColumn" -> "serial_number",
+      "lowerBound" -> "1",
+      "upperBound" -> "500000",
+      "numPartitions" -> "10")
+  }
+
+
 }

@@ -12,7 +12,7 @@ import cn.whaley.datawarehouse.util.MysqlDB
   */
 object Singer extends DimensionBase {
   columns.skName = "singer_sk"
-  columns.primaryKeys = List("singer_code")
+  columns.primaryKeys = List("singer_sid")
   columns.trackingColumns = List()
   columns.otherColumns = List("singer_name")
 
@@ -20,11 +20,12 @@ object Singer extends DimensionBase {
 
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
-
+    "singer_sid" -> "sid",
+    "singer_name" -> "name"
   )
 
-  sourceFilterWhere = "singer_code is not null and singer_code <> ''"
-  sourceDb = MysqlDB.medusaUCenterMember
+  sourceFilterWhere = "singer_sid is not null and singer_sid <> ''"
+  sourceDb = MysqlDB.whaleyTvService("mtv_singer", "sid", 1, 2010000000, 500)
 
   dimensionName = "dim_whaley_singer"
 }

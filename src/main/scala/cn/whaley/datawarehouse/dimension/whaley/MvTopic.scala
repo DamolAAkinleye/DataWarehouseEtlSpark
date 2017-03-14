@@ -20,11 +20,12 @@ object MvTopic extends DimensionBase {
 
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
-
+    "mv_topic_sid" -> "sid",
+    "mv_topic_name" -> "title"
   )
 
   sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> ''"
-  sourceDb = MysqlDB.medusaUCenterMember
+  sourceDb = MysqlDB.whaleyCms("mtv_mvtopic","sid",1,800000000,500)
 
   dimensionName = "dim_whaley_mv_topic"
 }

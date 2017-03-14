@@ -14,17 +14,21 @@ object SportsMatch extends DimensionBase {
   columns.skName = "match_sk"
   columns.primaryKeys = List("match_sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("match_name","match_category","match_date","match_source","league_id")
+  columns.otherColumns = List("match_pid","match_name","match_category","match_date","match_source","league_id")
 
   readSourceType = jdbc
 
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
-
+    "match_sid" -> "sid",
+    "match_pid" -> "pid",
+    "match_name" -> "title",
+    "match_category" -> "category",
+    "match_source" -> "source"
   )
 
   sourceFilterWhere = "match_sid is not null and match_sid <> ''"
-  sourceDb = MysqlDB.medusaUCenterMember
+  sourceDb = MysqlDB.whaleyCms("sailfish_sport_match","match_sid",1,800000000,500)
 
   dimensionName = "dim_whaley_mv_sports_match"
 }
