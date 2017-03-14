@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimension.whaley
+package cn.whaley.datawarehouse.dimension.moretv
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.dimension.constant.SourceType._
@@ -7,13 +7,13 @@ import org.apache.spark.sql.DataFrame
 
 
 /**
-  * Created by czw on 3/13/17.
+  * Created by witnes on 3/13/17.
   *
-  * 微鲸端节目专题维度表
+  * 电视猫_节目专题维度表
   */
 object Subject extends DimensionBase {
 
-  dimensionName = "dim_whaley_subject"
+  dimensionName = "dim_medusa_subject"
 
   columns.skName = "subject_sk"
 
@@ -34,7 +34,7 @@ object Subject extends DimensionBase {
 
   readSourceType = jdbc
 
-  sourceDb = MysqlDB.whaleyCms("mtv_subject", "ID", 1, 4000, 5)
+  sourceDb = MysqlDB.medusaCms("mtv_subject", "ID", 1, 4000, 5)
 
 
   /**
@@ -50,7 +50,7 @@ object Subject extends DimensionBase {
     import sq.implicits._
     import org.apache.spark.sql.functions._
 
-    val contentTypeDb = MysqlDB.whaleyCms("mtv_content_type", "id", 1, 100, 1)
+    val contentTypeDb = MysqlDB.medusaCms("mtv_content_type", "id", 1, 100, 1)
 
     val contentTypeDf = sqlContext.read.format("jdbc").options(contentTypeDb).load()
       .select($"code", $"name")

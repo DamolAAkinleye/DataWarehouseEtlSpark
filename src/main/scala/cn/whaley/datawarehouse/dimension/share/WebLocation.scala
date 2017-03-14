@@ -1,9 +1,12 @@
 package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.HdfsUtil
-import org.apache.spark.sql.Row
+import cn.whaley.datawarehouse.dimension.DimensionBase
+import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types._
+import cn.whaley.datawarehouse.dimension.constant.SourceType._
+import cn.whaley.datawarehouse.dimension.moretv.Subject._
 
 /**
   * Created by Tony on 16/12/23.
@@ -12,13 +15,40 @@ import org.apache.spark.sql.types._
   *
   * 无需自动触发，只需要修改后手动执行一次
   */
-object WebLocation extends BaseClass {
+object WebLocation extends DimensionBase {
 
-  val countryBlackList = List("保留地址", "骨干网")
+  dimensionName = "dim_web_location"
 
-  override def execute(args: Array[String]): Unit = {
+  columns.skName = "web_location_sk"
 
-    val ipDataRdd = sc.textFile("hdfs://hans/log/ipLocationData/ip_country.txt", 10).map(r => r.split("\t")).map(r => {
+  columns.primaryKeys = List("web_location_key")
+
+  columns.trackingColumns = List()
+
+  columns.otherColumns = List(
+    "ip_section_1",
+    "ip_section_2",
+    "ip_section_3",
+    "country",
+    "area",
+    "province",
+    "city",
+    "district",
+    "city_level",
+    "longitude",
+    "latitude",
+    "isp"
+  )
+
+
+  readSourceType = custom
+
+
+  override def readSource(readSourceType: SourceType): DataFrame = {
+    val countryBlackList = List("保留地址", "骨干网")
+
+    val ipDataRdd = sc.textFile("hdfs://hans/log/ipLocationData/ip_country.txt", 10)
+      .map(r => r.split("\t")).map(r => {
       val ip = r(0).split("\\.")
       Row(ip(0).trim().toLong * 256 * 256 * 256 + ip(1).trim().toLong * 256 * 256 + ip(2).trim().toLong * 256,
         ip(0).trim().toInt, ip(1).trim().toInt, ip(2).trim().toInt,
@@ -53,7 +83,8 @@ object WebLocation extends BaseClass {
       StructField("isp", StringType)
     ))
 
-    val ipDataRdd2 = sc.textFile("hdfs://hans/log/ipLocationData/mydata4vipday2.txt", 100).map(r => r.split("\t")).map(r => {
+    val ipDataRdd2 = sc.textFile("hdfs://hans/log/ipLocationData/mydata4vipday2.txt", 100)
+      .map(r => r.split("\t")).map(r => {
       r.map(s => {
         if (s.trim.equals("*")) ""
         else s
@@ -91,7 +122,7 @@ object WebLocation extends BaseClass {
     val ipDataDf2 = sqlContext.createDataFrame(ipDataRdd2, schema2)
     ipDataDf2.registerTempTable("b")
 
-    val df = sqlContext.sql("select if(a.web_location_key is null, b.web_location_key, a.web_location_key) as web_location_key," +
+    sqlContext.sql("select if(a.web_location_key is null, b.web_location_key, a.web_location_key) as web_location_key," +
       "if(a.ip_section_1 is null, b.ip_section_1, a.ip_section_1) as ip_section_1, " +
       "if(a.ip_section_2 is null, b.ip_section_2, a.ip_section_2) as ip_section_2, " +
       "if(a.ip_section_3 is null, b.ip_section_3, a.ip_section_3) as ip_section_3, " +
@@ -100,12 +131,29 @@ object WebLocation extends BaseClass {
       "if(a.province is null or a.province = '', b.province, a.province) as province, " +
       "if(a.city is null or a.city = '', b.city, a.city) as city, " +
       "if(a.district is null or a.district = '', b.district, a.district) as district, " +
-      "'' as city_level, a.longitude, a.latitude, b.isp " +
+      " a.longitude, a.latitude, b.isp " +
       " from a full join b on a.web_location_key = b.web_location_key " +
       " order by web_location_key")
 
-    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_web_location")
-    df.write.parquet("/data_warehouse/dw_dimensions/dim_web_location")
+
+  }
+
+  override def filterSource(sourceDf: DataFrame): DataFrame = {
+
+    val sq = sqlContext
+    import sq.implicits._
+    import org.apache.spark.sql.functions._
+
+    val cityInfoDb = MysqlDB.dwDimensionDb("city_info")
+
+    val cityInfoDf = sqlContext.read.format("jdbc").options(cityInfoDb).load()
+      .select($"city", $"cityLevel".as("city_level"))
+
+    cityInfoDf.join(sourceDf, "city" :: Nil, "rightouter")
+      .select(
+        columns.primaryKeys(0),
+        columns.otherColumns: _*
+      )
 
   }
 }
