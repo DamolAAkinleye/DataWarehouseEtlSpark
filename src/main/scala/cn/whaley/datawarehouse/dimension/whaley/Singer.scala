@@ -8,13 +8,13 @@ import cn.whaley.datawarehouse.util.MysqlDB
 /**
   * Created by czw on 17/3/14.
   *
-  * 微鲸专题维度表
+  * 微鲸端歌手维度表
   */
-object Subject extends DimensionBase {
-  columns.skName = "subject_sk"
-  columns.primaryKeys = List("subject_code")
+object Singer extends DimensionBase {
+  columns.skName = "singer_sk"
+  columns.primaryKeys = List("singer_code")
   columns.trackingColumns = List()
-  columns.otherColumns = List("subject_name", "content_type", "content_type_name")
+  columns.otherColumns = List("singer_name")
 
   readSourceType = jdbc
 
@@ -23,8 +23,8 @@ object Subject extends DimensionBase {
 
   )
 
-  sourceFilterWhere = "subject_code is not null and subject_code <> ''"
-  sourceDb = MysqlDB.
+  sourceFilterWhere = "singer_code is not null and singer_code <> ''"
+  sourceDb = MysqlDB.medusaUCenterMember
 
-  dimensionName = "dim_whaley_subject"
+  dimensionName = "dim_whaley_singer"
 }
