@@ -29,7 +29,7 @@ object PositionItem extends DimensionBase {
     "status"->"status"
   )
 
-  sourceFilterWhere = "position_item_id is not null and position_item_id <> ''"
+  sourceFilterWhere = "position_item_id is not null"
   sourceDb = MysqlDB.medusaCms("mtv_positionItem", "id", 1, 2010000000, 1)
 
   dimensionName = "dim_meusa_position_item"

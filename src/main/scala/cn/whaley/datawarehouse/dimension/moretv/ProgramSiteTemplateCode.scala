@@ -26,7 +26,7 @@ object ProgramSiteTemplateCode extends DimensionBase {
     "status"->"status"
   )
 
-  sourceFilterWhere = "program_site_template_id is not null and program_site_template_id <> ''"
+  sourceFilterWhere = "program_site_template_id is not null"
   sourceDb = MysqlDB.medusaCms("mtv_program_site_templateCode", "id", 1, 2010000000, 1)
 
   dimensionName = "dim_meusa_program_site_template_code"

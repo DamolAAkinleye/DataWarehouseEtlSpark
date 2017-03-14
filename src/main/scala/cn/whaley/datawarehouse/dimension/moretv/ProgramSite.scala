@@ -32,7 +32,7 @@ object ProgramSite extends DimensionBase {
     "type"->"type"
   )
 
-  sourceFilterWhere = "program_site_id is not null and program_site_id <> ''"
+  sourceFilterWhere = "program_site_id is not null"
   sourceDb = MysqlDB.medusaCms("mtv_program_site", "id", 1, 2010000000, 10)
 
   dimensionName = "dim_meusa_program_site"
