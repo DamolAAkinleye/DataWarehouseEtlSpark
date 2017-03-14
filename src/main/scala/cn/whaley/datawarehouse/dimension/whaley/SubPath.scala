@@ -1,0 +1,35 @@
+package cn.whaley.datawarehouse.dimension.whaley
+
+import cn.whaley.datawarehouse.dimension.DimensionBase
+import cn.whaley.datawarehouse.dimension.constant.SourceType._
+import cn.whaley.datawarehouse.util.MysqlDB
+
+/**
+  * Created by zhangyu on 17/3/14.
+  * 站点树维度表
+  */
+object SubPath extends DimensionBase{
+
+   columns.skName = "subpath_sk"
+   columns.primaryKeys = List("subpath_id")
+   columns.trackingColumns = List()
+   columns.otherColumns = List("subpath_code","subpath_name","subpath_content_type","subpath_template_code","subpath_parent_id")
+
+   readSourceType = jdbc
+
+   //维度表的字段对应源数据的获取方式
+   sourceColumnMap = Map(
+     "subpath_id" -> "id",
+     "subpath_code" -> "code",
+     "subpath_name"->"name",
+     "subpath_content_type"->"contentType",
+     "subpath_template_code"->"templateCode",
+     "subpath_parent_id"->"parentId"
+   )
+
+   sourceFilterWhere = "id is not null and id <> '' and status = 1"
+   sourceDb = MysqlDB.whaleyCms("mtv_program_site","id",1,4131,10)
+
+   dimensionName = "dim_whaley_subpath"
+
+ }
