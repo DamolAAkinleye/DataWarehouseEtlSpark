@@ -23,7 +23,7 @@ object Activity extends DimensionBase{
     "activity_name" -> "title"
   )
 
-  sourceFilterWhere = "sid is not null and sid <> ''"
+  sourceFilterWhere = "activity_sid is not null and activity_sid <> ''"
   sourceDb = MysqlDB.mergerActivity
 
   dimensionName = "dim_whaley_activity"
