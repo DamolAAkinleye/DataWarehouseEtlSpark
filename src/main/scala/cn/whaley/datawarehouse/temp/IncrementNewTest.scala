@@ -6,9 +6,9 @@ import cn.whaley.datawarehouse.dimension.DimensionBase
   * Created by Tony on 17/3/8.
   */
 object IncrementNewTest extends DimensionBase{
-  columns.primaryKeys = List("id")
+  columns.primaryKeys = List("code")
   columns.trackingColumns = List("title")
-  columns.otherColumns = List("code", "type")
+  columns.otherColumns = List("type")
   columns.skName = "sk"
 
   sourceDb = {
