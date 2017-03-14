@@ -26,7 +26,7 @@ object Subject extends DimensionBase {
   )
 
   sourceFilterWhere = "subject_code is not null and subject_code <> ''"
-  sourceDb = MysqlDB.whaleyTvService("mtv_subjectItem", "subject_code", 1, 2010000000, 500)
+  sourceDb = MysqlDB.whaleyTvService("mtv_subjectItem", "subject_code", 1, 1500000, 10)
 
   dimensionName = "dim_whaley_subject"
 }
