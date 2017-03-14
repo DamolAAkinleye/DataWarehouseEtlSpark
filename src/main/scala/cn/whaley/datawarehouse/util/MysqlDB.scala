@@ -90,7 +90,7 @@ object MysqlDB {
 
   def mergerActivity =  {
     Map("url" -> "jdbc:mysql://10.10.2.15:3306/eagletv?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-      "dbtable" -> "mtv_terminal",
+      "dbtable" -> "mtv_activity",
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "bi",
       "password" -> "mlw321@moretv",

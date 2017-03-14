@@ -13,7 +13,7 @@ object SubPath extends DimensionBase{
    columns.skName = "subpath_sk"
    columns.primaryKeys = List("subpath_id")
    columns.trackingColumns = List()
-   columns.otherColumns = List("subpath_code","subpath_name","subpath_content_type","subpath_template_code","subpath_parent_id")
+   columns.otherColumns = List("subpath_code","subpath_name","subpath_content_type","subpath_template_code","subpath_parent_id","subpath_status")
 
    readSourceType = jdbc
 
@@ -24,10 +24,11 @@ object SubPath extends DimensionBase{
      "subpath_name"->"name",
      "subpath_content_type"->"contentType",
      "subpath_template_code"->"templateCode",
-     "subpath_parent_id"->"parentId"
+     "subpath_parent_id"->"parentId",
+     "subpath_status"->"status"
    )
 
-   sourceFilterWhere = "id is not null and id <> '' and status = 1"
+   sourceFilterWhere = "subpath_id is not null and subpath_id <> '' and subpath_status = 1"
    sourceDb = MysqlDB.whaleyCms("mtv_program_site","id",1,4131,10)
 
    dimensionName = "dim_whaley_subpath"
