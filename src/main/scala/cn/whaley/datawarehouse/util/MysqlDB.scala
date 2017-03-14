@@ -41,9 +41,9 @@ object MysqlDB {
       "numPartitions" -> numPartitions.toString)
   }
 
-  def medusaAppVersion = {
+  def dwDimensionDb(table: String) = {
     Map("url" -> "jdbc:mysql://10.10.2.16:3306/dw_dimension?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-      "dbtable" -> "moretv_app_version",
+      "dbtable" -> table, //"moretv_app_version",
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "dw_user",
       "password" -> "dw_user@wha1ey")
@@ -75,5 +75,30 @@ object MysqlDB {
       "numPartitions" -> numPartitions.toString)
   }
 
+
+  def whaleyTerminalMember = {
+    Map("url" -> "jdbc:mysql://10.10.2.18:3306/terminal_upgrade?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> "mtv_terminal",
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "whaleybi",
+      "password" -> "play4bi@whaley",
+      "partitionColumn" -> "serial_number",
+      "lowerBound" -> "1",
+      "upperBound" -> "500000",
+      "numPartitions" -> "10")
+  }
+
+  def mergerActivity = {
+    Map("url" -> "jdbc:mysql://10.10.2.15:3306/eagletv?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> "mtv_terminal",
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "bi",
+      "password" -> "mlw321@moretv",
+      "partitionColumn" -> "sid",
+      "lowerBound" -> "1",
+      "upperBound" -> "50",
+      "numPartitions" -> "2"
+    )
+  }
 
 }

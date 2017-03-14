@@ -12,7 +12,7 @@ import cn.whaley.datawarehouse.util.MysqlDB
   */
 object Radio extends DimensionBase {
   columns.skName = "radio_sk"
-  columns.primaryKeys = List("radio_code")
+  columns.primaryKeys = List("radio_sid")
   columns.trackingColumns = List()
   columns.otherColumns = List("radio_name")
 
@@ -20,11 +20,12 @@ object Radio extends DimensionBase {
 
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
-
+    "radio_sid" -> "sid",
+    "radio_name" -> "title"
   )
 
-  sourceFilterWhere = "radio_code is not null and radio_code <> ''"
-  sourceDb = MysqlDB.medusaUCenterMember
+  sourceFilterWhere = "radio_sid is not null and radio_sid <> ''"
+  sourceDb = MysqlDB.whaleyCms("mtv_mvradio","sid",1,10000,2)
 
   dimensionName = "dim_whaley_radio"
 }

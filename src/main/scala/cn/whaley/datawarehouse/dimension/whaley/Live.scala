@@ -12,19 +12,21 @@ import cn.whaley.datawarehouse.util.MysqlDB
   */
 object Live extends DimensionBase {
   columns.skName = "live_sk"
-  columns.primaryKeys = List("live_code")
+  columns.primaryKeys = List("live_sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("live_name","content_type")
+  columns.otherColumns = List("live_channel","live_channel_code")
 
   readSourceType = jdbc
 
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
-
+    "live_sid" -> "sid",
+    "live_channel" -> "station",
+    "live_channel_code" -> "station_code"
   )
 
-  sourceFilterWhere = "live_code is not null and live_code <> ''"
-  sourceDb = MysqlDB.medusaUCenterMember
+  sourceFilterWhere = "live_sid is not null and live_sid <> ''"
+  sourceDb = MysqlDB.whaleyCms("mtv_channel","sid",1,100000,5)
 
   dimensionName = "dim_whaley_live"
 }
