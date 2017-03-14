@@ -9,6 +9,7 @@ import cn.whaley.datawarehouse.dimension.constant.SourceType._
 import cn.whaley.datawarehouse.util.{DataFrameUtil, DateFormatUtils, HdfsUtil, ParamsParseUtil}
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.{count, _}
 import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.io.File
@@ -75,7 +76,8 @@ abstract class DimensionBase extends BaseClass {
     //过滤源数据
     val filteredSourceDf = filterSource(sourceDf)
 
-    //TODO 过滤后源数据主键唯一性判断和处理
+    //过滤后源数据主键唯一性判断和处理
+    checkPrimaryKeys(filteredSourceDf, columns.primaryKeys)
 
     filteredSourceDf.persist()
 
@@ -94,7 +96,7 @@ abstract class DimensionBase extends BaseClass {
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
     println("成功获取现有维度")
-//    originalDf.show
+    //    originalDf.show
 
     //新增的行
     val addDf =
@@ -122,7 +124,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成需要增加的行")
-//    extendDf.show
+    //    extendDf.show
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val todayStr = sdf.format(today)
@@ -155,7 +157,7 @@ abstract class DimensionBase extends BaseClass {
             ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
 
         println("计算完成需要变更失效时间的行")
-//        invalidColumnsDf.show
+        //        invalidColumnsDf.show
 
         //更新失效时间
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
@@ -169,7 +171,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成原有维度数据更新后")
-//    df.show
+    //    df.show
 
     //合并上述形成最终结果
     val result = df.unionAll(
@@ -181,7 +183,7 @@ abstract class DimensionBase extends BaseClass {
     ).orderBy(columns.skName)
 
     println("计算完成最终生成的新维度")
-//    result.show
+    //    result.show
 
     result
   }
@@ -216,6 +218,21 @@ abstract class DimensionBase extends BaseClass {
     if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
   }
 
+  def checkPrimaryKeys(sourceDf: DataFrame, primaryKeys: List[String]): DataFrame = {
+    val duplicatePkDf = sourceDf.groupBy(
+      primaryKeys.map(s => col(s)): _*
+    ).agg(
+      count("*").as("count")
+    ).where("count > 1")
+
+    //当前在出现重复主键时直接报错
+    if (duplicatePkDf.count() > 0) {
+      duplicatePkDf.dropDuplicates(primaryKeys).selectExpr(primaryKeys: _*).show
+      throw new RuntimeException("存在重复业务主键！部分展示如上")
+    }
+    sourceDf
+  }
+
   /**
     * 用来备份维度数据，然后将维度数据生成在临时目录，当isOnline参数为true的时候，将临时目录的数据替换线上维度
     *
@@ -248,7 +265,7 @@ abstract class DimensionBase extends BaseClass {
             val isSuccessBackup = HdfsUtil.copyFilesInDir(onLineDimensionDir, onLineDimensionBackupDir)
             println("备份数据状态:" + isSuccessBackup)
           }
-        }else{
+        } else {
           println("无可用备份数据")
         }
 
@@ -268,16 +285,16 @@ abstract class DimensionBase extends BaseClass {
         println("数据是否上线:" + p.isOnline)
         if (p.isOnline) {
           println("数据上线:" + onLineDimensionDir)
-          if(isOnlineFileExist){
-            println("移动线上维度数据:from " + onLineDimensionDir+" to "+onLineDimensionDirDelete)
-            val isRenameSuccess=HdfsUtil.rename(onLineDimensionDir,onLineDimensionDirDelete)
-            println("isRenameSuccess:"+isRenameSuccess)
+          if (isOnlineFileExist) {
+            println("移动线上维度数据:from " + onLineDimensionDir + " to " + onLineDimensionDirDelete)
+            val isRenameSuccess = HdfsUtil.rename(onLineDimensionDir, onLineDimensionDirDelete)
+            println("isRenameSuccess:" + isRenameSuccess)
           }
 
           val isOnlineFileExistAfterRename = HdfsUtil.IsDirExist(onLineDimensionDir)
-          if(isOnlineFileExistAfterRename){
+          if (isOnlineFileExistAfterRename) {
             throw new RuntimeException("rename failed")
-          }else{
+          } else {
             val isSuccess = HdfsUtil.rename(onLineDimensionDirTmp, onLineDimensionDir)
             println("数据上线状态:" + isSuccess)
           }
