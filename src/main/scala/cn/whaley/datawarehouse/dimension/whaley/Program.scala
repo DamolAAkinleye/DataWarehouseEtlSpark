@@ -17,7 +17,7 @@ object Program extends DimensionBase {
   columns.primaryKeys = List("sid")
   columns.trackingColumns = List()
   columns.otherColumns = List("title", "content_type", "duration", "area", "video_type", "publish_time", "douban_Id", "source", "parent_sid",
-     "year", "language_code", "video_length_type", "create_time","supply_type","tags",)
+     "year", "language_code", "video_length_type", "create_time","supply_type","tags")
 
   sourceColumnMap = Map(
     "content_type" -> "contentType",
@@ -26,7 +26,7 @@ object Program extends DimensionBase {
     "create_time" -> "createTime",
     "video_length_type" -> "videoLengthType",
     "parent_sid" -> "parentId",
-    "douban_Id" -> "dubanId"
+    "douban_Id" -> "doubanId"
   )
 
   sourceFilterWhere = "sid is not null and sid <> ''"

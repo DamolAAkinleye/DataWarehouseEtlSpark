@@ -25,7 +25,7 @@ object Radio extends DimensionBase {
   )
 
   sourceFilterWhere = "radio_sid is not null and radio_sid <> ''"
-  sourceDb = MysqlDB.whaleyCms("mtv_mvradio","radio_sid",1,10000,2)
+  sourceDb = MysqlDB.whaleyCms("mtv_mvradio","sid",1,10000,2)
 
   dimensionName = "dim_whaley_radio"
 }
