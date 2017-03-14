@@ -41,9 +41,9 @@ object MysqlDB {
       "numPartitions" -> numPartitions.toString)
   }
 
-  def medusaAppVersion = {
+  def dwDimensionDb(table: String) = {
     Map("url" -> "jdbc:mysql://10.10.2.16:3306/dw_dimension?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
-      "dbtable" -> "moretv_app_version",
+      "dbtable" -> table, //"moretv_app_version",
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "dw_user",
       "password" -> "dw_user@wha1ey")
