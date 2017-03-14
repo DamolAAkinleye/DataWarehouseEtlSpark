@@ -26,7 +26,7 @@ object Live extends DimensionBase {
   )
 
   sourceFilterWhere = "live_sid is not null and live_sid <> ''"
-  sourceDb = MysqlDB.whaleyCms("mtv_channel","sid",1,800000000,500)
+  sourceDb = MysqlDB.whaleyCms("mtv_channel","sid",1,100000,5)
 
   dimensionName = "dim_whaley_live"
 }

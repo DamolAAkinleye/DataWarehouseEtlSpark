@@ -25,7 +25,7 @@ object MvTopic extends DimensionBase {
   )
 
   sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> ''"
-  sourceDb = MysqlDB.whaleyCms("mtv_mvtopic","sid",1,800000000,500)
+  sourceDb = MysqlDB.whaleyCms("mtv_mvtopic","sid",1,10000,1)
 
   dimensionName = "dim_whaley_mv_topic"
 }
