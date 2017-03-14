@@ -9,7 +9,7 @@ import cn.whaley.datawarehouse.dimension.constant.SourceType._
 import cn.whaley.datawarehouse.util.{DataFrameUtil, DateFormatUtils, HdfsUtil, ParamsParseUtil}
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{count, _}
+import org.apache.spark.sql.functions._
 import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.io.File
@@ -43,6 +43,7 @@ abstract class DimensionBase extends BaseClass {
 
   /**
     * 过滤源数据使用的where条件，仅当filterSource方法未在子类中重载时有效
+    * 应使用维度表字段名
     */
   var sourceFilterWhere: String = _
 
@@ -226,9 +227,10 @@ abstract class DimensionBase extends BaseClass {
     ).where("count > 1")
 
     //当前在出现重复主键时直接报错
-    if (duplicatePkDf.count() > 0) {
+    val duplicatePkCount = duplicatePkDf.count()
+    if (duplicatePkCount > 0) {
       duplicatePkDf.dropDuplicates(primaryKeys).selectExpr(primaryKeys: _*).show
-      throw new RuntimeException("存在重复业务主键！部分展示如上")
+      throw new RuntimeException("存在重复业务主键" + duplicatePkCount + "个！部分展示如上")
     }
     sourceDf
   }
