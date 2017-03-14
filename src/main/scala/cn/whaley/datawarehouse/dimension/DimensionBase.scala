@@ -97,7 +97,7 @@ abstract class DimensionBase extends BaseClass {
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
     println("成功获取现有维度")
-    //    originalDf.show
+//    originalDf.show
 
     //新增的行
     val addDf =
@@ -125,7 +125,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成需要增加的行")
-    //    extendDf.show
+//    extendDf.show
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val todayStr = sdf.format(today)
@@ -158,7 +158,7 @@ abstract class DimensionBase extends BaseClass {
             ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
 
         println("计算完成需要变更失效时间的行")
-        //        invalidColumnsDf.show
+//        invalidColumnsDf.show
 
         //更新失效时间
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
@@ -172,14 +172,22 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成原有维度数据更新后")
-    //    df.show
+//    df.show
 
     //合并上述形成最终结果
+    val offset =
+      if (df.count() > 0) {
+        df.agg(max(columns.skName)).first().getLong(0)
+      } else {
+        println("WARN! 原维度表为空")
+        0
+      }
+
     val result = df.unionAll(
       DataFrameUtil.dfZipWithIndex(
         DataFrameUtil.addDimTime(extendDf, today, null)
         , columns.skName
-        , df.selectExpr("max(" + columns.skName + ")").first().getLong(0)
+        , offset
       )
     ).orderBy(columns.skName)
 

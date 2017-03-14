@@ -21,14 +21,14 @@ object SubPath extends DimensionBase{
    sourceColumnMap = Map(
      "subpath_id" -> "id",
      "subpath_code" -> "code",
-     "subpath_name"->"name",
-     "subpath_content_type"->"contentType",
-     "subpath_template_code"->"templateCode",
-     "subpath_parent_id"->"parentId",
-     "subpath_status"->"status"
+     "subpath_name" -> "name",
+     "subpath_content_type" -> "contentType",
+     "subpath_template_code" -> "templateCode",
+     "subpath_parent_id" -> "parentId",
+     "subpath_status" -> "status"
    )
 
-   sourceFilterWhere = "subpath_id is not null and subpath_id <> '' and subpath_status = 1"
+   sourceFilterWhere = "subpath_id is not null and subpath_status = 1"
    sourceDb = MysqlDB.whaleyCms("mtv_program_site","id",1,4131,10)
 
    dimensionName = "dim_whaley_subpath"

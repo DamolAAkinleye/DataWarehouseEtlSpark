@@ -3,6 +3,7 @@ package cn.whaley.datawarehouse.dimension.moretv
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.dimension.constant.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
+import org.apache.spark.sql.DataFrame
 
 /**
   * Created by witnes on 3/14/17.
@@ -28,17 +29,22 @@ object LiveProgram extends DimensionBase {
 
   sourceDb = MysqlDB.medusaCms("mtv_live_program", "id", 1, 250, 1)
 
-  sourceColumnMap = Map(
-    columns.primaryKeys(0) -> "sid",
-    columns.otherColumns(0) -> "title",
-    columns.otherColumns(1) -> "source",
-    columns.otherColumns(2) -> "site",
-    columns.otherColumns(3) -> "create_time",
-    columns.otherColumns(4) -> "publish_time"
-  )
+  override def filterSource(sourceDf: DataFrame): DataFrame = {
 
-  sourceFilterWhere = "live_program_sid is not null and live_program_sid <> ''"
+    val sq = sqlContext
+    import sq.implicits._
+    import org.apache.spark.sql.functions._
 
+    sourceDf.filter($"sid".isNotNull).dropDuplicates("sid" :: Nil)
+      .select(
+        $"sid".as(columns.primaryKeys(0)),
+        $"title".as(columns.otherColumns(0)),
+        $"source".as(columns.otherColumns(1)),
+        $"site".as(columns.otherColumns(2)),
+        $"create_time".cast("timestamp").as(columns.otherColumns(3)),
+        $"publish_time".cast("timestamp").as(columns.otherColumns(4))
+      )
+  }
 
 
 }
