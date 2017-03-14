@@ -28,13 +28,13 @@ object Channel extends DimensionBase {
     columns.otherColumns(1) -> "station",
     columns.otherColumns(2) -> "station_code",
     columns.otherColumns(3) -> "source",
-    columns.otherColumns(4) -> "create_time",
-    columns.otherColumns(5) -> "publish_time"
+    columns.otherColumns(4) -> "cast(create_time as timestamp)",
+    columns.otherColumns(5) -> "cast(publish_time as timestamp)"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_channel", "id", 1, 134, 1)
 
-  sourceFilterWhere = "sid is not null and sid <> ''"
+  sourceFilterWhere = "channel_code is not null and channel_code <> ''"
 
 
 }

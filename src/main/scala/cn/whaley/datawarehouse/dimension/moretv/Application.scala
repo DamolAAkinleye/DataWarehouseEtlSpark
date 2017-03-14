@@ -18,10 +18,16 @@ object Application extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List("application_name", "application_version", "application_version_name")
+  columns.otherColumns = List(
+    "application_name",
+    "application_version",
+    "application_version_name"
+  )
 
 
   readSourceType = jdbc
+
+  sourceDb = MysqlDB.medusaCms("mtv_application", "id", 1, 134, 1)
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
@@ -30,11 +36,7 @@ object Application extends DimensionBase {
     columns.otherColumns(2) -> "version_name"
   )
 
-  sourceDb = MysqlDB.medusaCms("mtv_application", "id", 1, 134, 1)
-
-  sourceFilterWhere = "sid is not null and sid <> ''"
-
-
+  sourceFilterWhere = "application_sid is not null and application_sid <> ''"
 
 
 }

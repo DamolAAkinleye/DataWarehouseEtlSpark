@@ -37,7 +37,7 @@ object LiveProgram extends DimensionBase {
     columns.otherColumns(4) -> "publish_time"
   )
 
-  sourceFilterWhere = "sid is not null and sid <> ''"
+  sourceFilterWhere = "live_program_sid is not null and live_program_sid <> ''"
 
 
 

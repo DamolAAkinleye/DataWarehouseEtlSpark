@@ -19,7 +19,12 @@ object SportsMatch extends DimensionBase {
   columns.primaryKeys = List("match_sid")
 
   columns.otherColumns = List(
-    "match_title", "match_sub_title", "match_category", "match_date", "match_source", "league_id"
+    "match_title",
+    "match_sub_title",
+    "match_category",
+    "match_date",
+    "match_source",
+    "league_id"
   )
 
 
@@ -27,17 +32,18 @@ object SportsMatch extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.otherColumns(1) -> "title",
-    columns.otherColumns(2) -> "sub_title",
-    columns.otherColumns(3) -> "category",
-    columns.otherColumns(4) -> "match_date",
-    columns.otherColumns(5) -> "source",
-    columns.otherColumns(6) -> "league_id"
+    columns.otherColumns(0) -> "title",
+    columns.otherColumns(1) -> "sub_title",
+    columns.otherColumns(2) -> "category",
+    columns.otherColumns(3) -> "match_date",
+    columns.otherColumns(4) -> "source",
+    columns.otherColumns(5) -> "league_id"
   )
+
 
   sourceDb = MysqlDB.medusaCms("sailfish_sport_match", "id", 1, 7000, 10)
 
-  sourceFilterWhere = "sid is not null and sid <> ''"
+  sourceFilterWhere = "match_sid is not null and match_sid <> ''"
 
 
 

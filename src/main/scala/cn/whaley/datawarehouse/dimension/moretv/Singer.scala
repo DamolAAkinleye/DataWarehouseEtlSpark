@@ -18,7 +18,11 @@ object Singer extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List("singer_name", "singer_area", "singer_birthday", "singer_create_time", "singer_publish_time")
+  columns.otherColumns = List(
+    "singer_name",
+    "singer_area",
+    "singer_birthday"
+  )
 
 
   readSourceType = jdbc
@@ -29,13 +33,11 @@ object Singer extends DimensionBase {
     columns.primaryKeys(0) -> "sid",
     columns.otherColumns(0) -> "name",
     columns.otherColumns(1) -> "area",
-    columns.otherColumns(2) -> "birthday",
-    columns.otherColumns(3) -> "create_time",
-    columns.otherColumns(4) -> "publish_time"
+    columns.otherColumns(2) -> "birthday"
   )
 
-  sourceDb = MysqlDB.medusaCms("mtv_mvtopic", "id", 1, 550, 1)
+  sourceDb = MysqlDB.medusaCms("mtv_singer", "id", 1, 550, 1)
 
-  sourceFilterWhere = "sid is not null and sid <> ''"
+  sourceFilterWhere = "singer_id is not null and singer_id <> ''"
 
 }

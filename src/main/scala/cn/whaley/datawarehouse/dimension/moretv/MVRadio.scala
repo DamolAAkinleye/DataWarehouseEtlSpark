@@ -18,14 +18,18 @@ object MVRadio extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List("mv_radio_title", "mv_radio_create_time", "mv_radio_publish_time")
+  columns.otherColumns = List(
+    "mv_radio_title",
+    "mv_radio_create_time",
+    "mv_radio_publish_time"
+  )
 
 
   readSourceType = jdbc
 
   sourceDb = MysqlDB.medusaCms("mtv_mvradio", "id", 1, 134, 1)
 
-  sourceFilterWhere = "sid is not null and sid <> ''"
+  sourceFilterWhere = "mv_radio_id is not null and mv_radio_id <> ''"
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",

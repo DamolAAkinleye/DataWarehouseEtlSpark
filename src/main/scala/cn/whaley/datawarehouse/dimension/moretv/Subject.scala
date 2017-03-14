@@ -11,7 +11,7 @@ import org.apache.spark.sql.DataFrame
   *
   * 电视猫_节目专题维度表
   */
-object ProgramSubject extends DimensionBase {
+object Subject extends DimensionBase {
 
   dimensionName = "dim_medusa_subject"
 
@@ -23,15 +23,18 @@ object ProgramSubject extends DimensionBase {
 
   columns.otherColumns = List(
 
-    "subject_name", "subject_title", "subject_content_type",
-    "subject_content_type_name", "subject_create_time", "subject_publish_time"
+    "subject_name",
+    "subject_title",
+    "subject_content_type",
+    "subject_content_type_name",
+    "subject_create_time",
+    "subject_publish_time"
 
   )
 
   readSourceType = jdbc
 
   sourceDb = MysqlDB.medusaCms("mtv_subject", "ID", 1, 4000, 5)
-
 
 
   /**
@@ -52,19 +55,18 @@ object ProgramSubject extends DimensionBase {
     val contentTypeDf = sqlContext.read.format("jdbc").options(contentTypeDb).load()
       .select($"code", $"name")
 
-    sourceDf.filter($"code".isNotNull && $"code" != "").as("s")
-      .withColumn("code", regexp_extract($"code", "[a-z]*", 0))
+    sourceDf.filter($"code".isNotNull && $"code" != "")
+      .withColumn("codev", regexp_extract($"code", "[a-z]*", 0)).as("s")
 
-      .join(contentTypeDf.as("c"), "code" :: Nil, "inner")
-
+      .join(contentTypeDf.as("c"), $"s.codev" === $"c.code", "left_outer")
       .select(
         $"s.code".as(columns.primaryKeys(0)),
         $"s.name".as(columns.otherColumns(0)),
         $"s.title".as(columns.otherColumns(1)),
         $"c.code".as(columns.otherColumns(2)),
         $"c.name".as(columns.otherColumns(3)),
-        unix_timestamp($"s.create_time").as(columns.otherColumns(3)),
-        unix_timestamp($"s.publish_time").as(columns.otherColumns(4))
+        $"s.create_time".cast("timestamp").as(columns.otherColumns(4)),
+        $"s.publish_time".cast("timestamp").as(columns.otherColumns(5))
       )
 
   }

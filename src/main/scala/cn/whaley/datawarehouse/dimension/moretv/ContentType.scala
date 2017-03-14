@@ -29,6 +29,6 @@ object ContentType extends DimensionBase {
 
   sourceDb = MysqlDB.medusaCms("mtv_content_type", "code", 1, 100, 1)
 
-  sourceFilterWhere = "code is not null and code <> ''"
+  sourceFilterWhere = "content_type_code is not null and content_type_code <> ''"
 
 }
