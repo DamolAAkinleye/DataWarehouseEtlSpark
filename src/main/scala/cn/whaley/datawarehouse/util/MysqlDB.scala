@@ -48,4 +48,32 @@ object MysqlDB {
       "user" -> "dw_user",
       "password" -> "dw_user@wha1ey")
   }
+
+
+
+  def whaleyTvService(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+    Map("url" -> "jdbc:mysql://10.10.2.21:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "bislave",
+      "password" -> "slave4bi@whaley",
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
+  }
+
+  def whaleyCms(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+    Map("url" -> "jdbc:mysql://10.10.2.22:3306/mtv_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "bislave",
+      "password" -> "slave4bi@whaley",
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
+  }
+
+
 }
