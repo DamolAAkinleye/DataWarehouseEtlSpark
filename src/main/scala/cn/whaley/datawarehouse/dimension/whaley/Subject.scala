@@ -24,7 +24,7 @@ object Subject extends DimensionBase {
   )
 
   sourceFilterWhere = "subject_code is not null and subject_code <> ''"
-  sourceDb = MysqlDB.
+  sourceDb = MysqlDB.medusaUCenterMember
 
   dimensionName = "dim_whaley_subject"
 }
