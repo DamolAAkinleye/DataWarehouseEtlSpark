@@ -21,8 +21,7 @@ object Singer extends DimensionBase {
   columns.otherColumns = List(
     "singer_name",
     "singer_area",
-    "singer_birthday"
-  )
+    "singer_birthday")
 
 
   readSourceType = jdbc
