@@ -87,6 +87,18 @@ object MysqlDB {
       "numPartitions" -> numPartitions.toString)
   }
 
+  def whaleyDimension(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+    Map("url" -> "jdbc:mysql://10.10.2.16:3306/dw_dimension?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "dw_user",
+      "password" -> "dw_user@whaley",
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
+  }
+
 
   def whaleyTerminalMember = {
     Map("url" -> "jdbc:mysql://10.10.2.18:3306/terminal_upgrade?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
@@ -99,6 +111,8 @@ object MysqlDB {
       "upperBound" -> "500000",
       "numPartitions" -> "10")
   }
+
+
 
   def mergerActivity =  {
     Map("url" -> "jdbc:mysql://10.10.2.15:3306/eagletv?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",

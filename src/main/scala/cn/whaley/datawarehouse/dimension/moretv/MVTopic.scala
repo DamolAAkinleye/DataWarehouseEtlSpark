@@ -3,6 +3,7 @@ package cn.whaley.datawarehouse.dimension.moretv
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.dimension.constant.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
+import org.apache.spark.sql.DataFrame
 
 /**
   * Created by witnes on 3/13/17.
