@@ -21,6 +21,7 @@ object Position extends DimensionBase {
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
     "position_code" -> "code",
+    "position_title"->"title",
     "position_content_type" -> "name",
     "type"->"type",
     "status"->"status"
