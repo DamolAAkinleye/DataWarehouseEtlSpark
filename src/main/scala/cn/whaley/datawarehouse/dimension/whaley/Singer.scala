@@ -25,7 +25,7 @@ object Singer extends DimensionBase {
   )
 
   sourceFilterWhere = "singer_sid is not null and singer_sid <> ''"
-  sourceDb = MysqlDB.whaleyTvService("mtv_singer", "sid", 1, 500000, 10)
+  sourceDb = MysqlDB.whaleyCms("mtv_singer", "sid", 1, 500000, 10)
 
   dimensionName = "dim_whaley_singer"
 }
