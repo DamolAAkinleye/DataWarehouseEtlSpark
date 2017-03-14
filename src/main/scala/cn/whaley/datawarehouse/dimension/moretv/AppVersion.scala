@@ -25,7 +25,7 @@ object AppVersion extends DimensionBase {
   )
 
   sourceDb = MysqlDB.dwDimensionDb(tableName)
-  private val dimensionType = "dim_app_version"
+  dimensionName = "dim_app_version"
 
 
 //  override def execute(args: Array[String]): Unit = {
