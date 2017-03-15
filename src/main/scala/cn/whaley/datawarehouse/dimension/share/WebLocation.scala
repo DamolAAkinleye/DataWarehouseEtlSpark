@@ -127,13 +127,16 @@ object WebLocation extends DimensionBase {
       "if(a.ip_section_2 is null, b.ip_section_2, a.ip_section_2) as ip_section_2, " +
       "if(a.ip_section_3 is null, b.ip_section_3, a.ip_section_3) as ip_section_3, " +
       "if(a.country is null or a.country = '', b.country, a.country) as country, " +
-      "'' as area, " +
       "if(a.province is null or a.province = '', b.province, a.province) as province, " +
       "if(a.city is null or a.city = '', b.city, a.city) as city, " +
       "if(a.district is null or a.district = '', b.district, a.district) as district, " +
       " a.longitude, a.latitude, b.isp " +
       " from a full join b on a.web_location_key = b.web_location_key " +
       " order by web_location_key")
+      .select(
+        "web_location_key", "ip_section_1", "ip_section_2", "ip_section_3",
+        "country", "province", "city", "district", "longitude", "latitude", "isp"
+      )
 
 
   }
@@ -147,7 +150,7 @@ object WebLocation extends DimensionBase {
     val cityInfoDb = MysqlDB.dwDimensionDb("city_info")
 
     val cityInfoDf = sqlContext.read.format("jdbc").options(cityInfoDb).load()
-      .select($"city", $"cityLevel".as("city_level"))
+      .select($"city", $"area", $"cityLevel".as("city_level"))
 
     cityInfoDf.join(sourceDf, "city" :: Nil, "rightouter")
       .select(
