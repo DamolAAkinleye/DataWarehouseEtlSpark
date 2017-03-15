@@ -99,6 +99,18 @@ object MysqlDB {
       "numPartitions" -> numPartitions.toString)
   }
 
+  def whaleyAvccount(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+    Map("url" -> "jdbc:mysql://10.10.2.20:3306/ucenter?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "bislave",
+      "password" -> "slave4bi@whaley",
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
+  }
+
 
   def whaleyTerminalMember = {
     Map("url" -> "jdbc:mysql://10.10.2.18:3306/terminal_upgrade?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
