@@ -18,8 +18,7 @@ object ProductSN extends DimensionBase {
   columns.primaryKeys = List("product_sn")
   columns.trackingColumns = List()
   columns.otherColumns = List("product_line", "product_model","user_id","rom_version","mac","open_time","wifi_mac","ip", "vip_type","country", "area","province", "city", "isp", "city_level")
-  //columns.otherColumns = List("product_line", "product_model","user_id","rom_version","mac","open_time","wifi_mac","ip",
-  //"vip_type")
+
 
   sourceDb = MysqlDB.whaleyTerminalMember
 
@@ -27,14 +26,6 @@ object ProductSN extends DimensionBase {
   dimensionName = "dim_whaley_product_sn"
 
   override def filterSource(sourceDf: DataFrame): DataFrame = {
-    val s = sqlContext
-    val cal = Calendar.getInstance()
-    cal.add(Calendar.DAY_OF_MONTH,-1)
-    val format = new SimpleDateFormat("yyyy-MM-dd")
-    val date = format.format(cal.getTime)
-    println(date)
-
-
 
 
     sourceDf.registerTempTable("mtv_terminal")
