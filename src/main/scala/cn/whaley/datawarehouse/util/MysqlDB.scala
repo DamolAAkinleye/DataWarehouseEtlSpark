@@ -99,7 +99,7 @@ object MysqlDB {
       "numPartitions" -> numPartitions.toString)
   }
 
-  def whaleyAvccount(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+  def whaleyAccount(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
     Map("url" -> "jdbc:mysql://10.10.2.20:3306/ucenter?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
       "dbtable" -> table,
       "driver" -> "com.mysql.jdbc.Driver",
@@ -137,6 +137,18 @@ object MysqlDB {
       "upperBound" -> "50",
       "numPartitions" -> "2"
     )
+  }
+
+  def whaleyApp(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+    Map("url" -> "jdbc:mysql://10.10.72:124/app_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "biread",
+      "password" -> "bigdataTV@608_810",
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
   }
 
 }
