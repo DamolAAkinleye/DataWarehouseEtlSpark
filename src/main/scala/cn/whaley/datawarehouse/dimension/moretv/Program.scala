@@ -14,7 +14,7 @@ object Program extends DimensionBase {
   columns.skName = "program_sk"
   columns.primaryKeys = List("sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("title", "content_type", "content_type_name", "duration", "video_type", "episode_index", "parent_sid",
+  columns.otherColumns = List("title", "content_type", "content_type_name", "duration", "video_type", "episode_index",
     "area", "year", "video_length_type", "create_time", "publish_time")
 
   sourceDb = MysqlDB.medusaCms("mtv_basecontent", "id", 1, 2010000000, 500)
@@ -41,10 +41,10 @@ object Program extends DimensionBase {
 
     sqlContext.sql("SELECT a.sid, a.display_name as title, " +
       "a.content_type, c.name as content_type_name, a.duration, a.video_type, a.episode as episode_index, " +
-      "b.sid as parent_sid, a.area, a.year, a.videoLengthType as video_length_type, " +
+      "a.area, a.year, a.videoLengthType as video_length_type, " +
       "a.create_time, " +
       "a.publish_time " +
-      " from program_table a left join program_table b on a.parent_id = b.id " +
+      " from program_table a" +
       " left join content_type c on a.content_type = c.code " +
       " where a.sid is not null and a.sid <> ''" +
       " ORDER BY a.id")
