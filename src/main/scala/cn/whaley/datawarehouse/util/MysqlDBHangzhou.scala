@@ -139,4 +139,16 @@ object MysqlDBHangzhou {
     )
   }
 
+  def whaleyApp(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+    Map("url" -> "jdbc:mysql://10.10.72.124:3306/app_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "biread",
+      "password" -> "bigdataTV@608_810",
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
+  }
+
 }

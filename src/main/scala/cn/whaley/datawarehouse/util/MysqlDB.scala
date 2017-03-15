@@ -45,8 +45,8 @@ object MysqlDB {
     Map("url" -> "jdbc:mysql://bigdata-extsvr-db_bi2:3306/dw_dimension?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
       "dbtable" -> table, //"moretv_app_version",
       "driver" -> "com.mysql.jdbc.Driver",
-      "user" -> "dw_user",
-      "password" -> "dw_user@wha1ey")
+      "user" -> "bi",
+      "password" -> "mlw321@moretv")
   }
 
   def whaleyCms(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
@@ -123,6 +123,18 @@ object MysqlDB {
       "upperBound" -> "50",
       "numPartitions" -> "2"
     )
+  }
+
+  def whaleyApp(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions:Int ) = {
+    Map("url" -> "jdbc:mysql://10.10.72.124:3306/app_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "biread",
+      "password" -> "bigdataTV@608_810",
+      "partitionColumn" -> partitionColumn,
+      "lowerBound" -> lowerBound.toString,
+      "upperBound" -> upperBound.toString,
+      "numPartitions" -> numPartitions.toString)
   }
 
 }
