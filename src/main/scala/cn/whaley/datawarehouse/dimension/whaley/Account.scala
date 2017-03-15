@@ -20,7 +20,7 @@ object Account extends DimensionBase {
     "union_id","mobile","email_pwd","register_from","gender","device","birthday","update_time")
 
 
-  sourceDb = MysqlDB.whaleyAvccount("bbs_ucenter_helios_members","uid",1,1000000000,10)
+  sourceDb = MysqlDB.whaleyAccount("bbs_ucenter_helios_members","uid",1,1000000000,10)
 
   dimensionName = "dim_whaley_account"
 
@@ -34,7 +34,7 @@ object Account extends DimensionBase {
       "from `bbs_ucenter_helios_members` where uid is not null and heliosid is not null and heliosid <> '' ").registerTempTable("userMembers")
 
 
-    val userMemberDb = MysqlDB.whaleyAvccount("bbs_ucenter_helios_memberfields","uid",1,1000000000,10)
+    val userMemberDb = MysqlDB.whaleyAccount("bbs_ucenter_helios_memberfields","uid",1,1000000000,10)
     sqlContext.read.format("jdbc").options(userMemberDb).load().registerTempTable("bbs_ucenter_helios_memberfields")
     sqlContext.sql("select uid,gender,device,birthday,from_unixtime(update_time) as update_time from `bbs_ucenter_helios_memberfields`" +
       " where uid is not null ").registerTempTable("userMeberfields")
