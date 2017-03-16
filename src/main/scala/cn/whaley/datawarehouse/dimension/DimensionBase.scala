@@ -87,7 +87,7 @@ abstract class DimensionBase extends BaseClass {
       val result = DataFrameUtil.dfZipWithIndex(
         DataFrameUtil.addDimTime(filteredSourceDf, DimensionBase.defaultValidTime, null),
         columns.skName
-      ).orderBy(columns.skName)
+      )
       return result
     }
 
@@ -189,7 +189,7 @@ abstract class DimensionBase extends BaseClass {
         , columns.skName
         , offset
       )
-    ).orderBy(columns.skName)
+    )
 
     println("计算完成最终生成的新维度")
     //    result.show
@@ -290,7 +290,7 @@ abstract class DimensionBase extends BaseClass {
           HdfsUtil.deleteHDFSFileOrPath(onLineDimensionDirTmp)
         }
         println("生成线上维度数据到临时目录:" + onLineDimensionDirTmp)
-        df.repartition(partition).write.parquet(onLineDimensionDirTmp)
+        df.repartition(partition).orderBy(columns.skName).write.parquet(onLineDimensionDirTmp)
 
         println("数据是否上线:" + p.isOnline)
         if (p.isOnline) {
