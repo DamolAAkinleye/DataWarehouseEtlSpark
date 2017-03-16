@@ -65,10 +65,10 @@
 
         <!-- workflow-->
         <fileSet>
-            <directory>src/main/resources</directory>
+            <directory>src/main/resources/workflow/</directory>
             <outputDirectory>./</outputDirectory>
             <includes>
-                <include>workflow/dimension/</include>
+                <include>dimension/</include>
             </includes>
         </fileSet>
 
