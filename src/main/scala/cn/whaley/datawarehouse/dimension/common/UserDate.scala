@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimension.share
+package cn.whaley.datawarehouse.dimension.common
 
 import java.text.SimpleDateFormat
 import java.util.Calendar

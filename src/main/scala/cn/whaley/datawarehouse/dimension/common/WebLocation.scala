@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimension.share
+package cn.whaley.datawarehouse.dimension.common
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.dimension.DimensionBase
