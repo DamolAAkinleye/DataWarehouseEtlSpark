@@ -6,11 +6,10 @@
 
     <groupId>cn.whaley</groupId>
     <artifactId>DataWarehouseEtlSpark</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <properties>
         <scala.version>2.10.6</scala.version>
-        <assembly-desc>src/assembly/assembly-dir.xml</assembly-desc>
         <project.build.name>DataWarehouseEtlSpark-${project.version}</project.build.name>
     </properties>
 
@@ -155,7 +154,19 @@
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>${assembly-desc}</descriptor>
+                                <descriptor>src/assembly/assembly-dir.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>make-dimension-etl-zip</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/dimention-etl-zip.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
