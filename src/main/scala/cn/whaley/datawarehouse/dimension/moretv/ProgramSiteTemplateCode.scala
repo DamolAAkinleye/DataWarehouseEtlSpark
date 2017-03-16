@@ -6,9 +6,9 @@ import cn.whaley.datawarehouse.util.MysqlDB
 
 
 /**
-  * Created by Tony on 17/3/8.
+  * Created by Chubby on 17/3/8.
   *
-  * 电视猫账号维度表
+  * 电视猫菜单树模板Code维度表
   */
 object ProgramSiteTemplateCode extends DimensionBase {
   columns.skName = "program_site_template_code_sk"
@@ -29,5 +29,5 @@ object ProgramSiteTemplateCode extends DimensionBase {
   sourceFilterWhere = "program_site_template_id is not null"
   sourceDb = MysqlDB.medusaCms("mtv_program_site_templateCode", "id", 1, 2010000000, 1)
 
-  dimensionName = "dim_meusa_program_site_template_code"
+  dimensionName = "dim_medusa_program_site_template_code"
 }

@@ -6,9 +6,9 @@ import cn.whaley.datawarehouse.util.MysqlDB
 
 
 /**
-  * Created by Tony on 17/3/8.
+  * Created by Chubby on 17/3/8.
   *
-  * 电视猫账号维度表
+  * 电视猫固定位维度表
   */
 object FixEntrance extends DimensionBase {
   columns.skName = "medusa_fix_entrance_sk"

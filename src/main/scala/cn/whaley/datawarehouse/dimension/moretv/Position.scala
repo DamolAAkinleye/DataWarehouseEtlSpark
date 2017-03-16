@@ -6,9 +6,9 @@ import cn.whaley.datawarehouse.util.MysqlDB
 
 
 /**
-  * Created by Tony on 17/3/8.
+  * Created by Chubby on 17/3/8.
   *
-  * 电视猫账号维度表
+  * 电视猫推荐位维度表
   */
 object Position extends DimensionBase {
   columns.skName = "position_sk"
@@ -30,5 +30,5 @@ object Position extends DimensionBase {
   sourceFilterWhere = "position_code is not null and position_code <> ''"
   sourceDb = MysqlDB.medusaCms("mtv_position", "id", 1, 2010000000, 1)
 
-  dimensionName = "dim_meusa_position"
+  dimensionName = "dim_medusa_position"
 }
