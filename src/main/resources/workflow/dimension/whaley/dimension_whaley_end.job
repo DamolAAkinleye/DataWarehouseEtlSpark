@@ -1,0 +1,3 @@
+type=command
+dependencies=dimension_whaley_Account,dimension_whaley_Activity
+command=echo "dimension whaley is end ..."

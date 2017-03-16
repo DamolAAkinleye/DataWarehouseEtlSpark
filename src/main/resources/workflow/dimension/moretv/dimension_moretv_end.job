@@ -1,0 +1,4 @@
+type=command
+dependencies=dimension_moretv_Account,dimension_moretv_Application,dimension_moretv_Channel,dimension_moretv_ContentType,dimension_moretv_FixEntrance
+command=echo "dimension moretv is end ..."
+
