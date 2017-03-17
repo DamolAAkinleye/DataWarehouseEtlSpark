@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ~/.bash_profile
+#source ~/.bash_profile
 
 
 #set -x
@@ -66,7 +66,7 @@ do
     fi
 done
 
-for file in ../lib/*.jar
+for file in /data/apps/azkaban/etl/lib/*.jar
 do
     if [[ "$file" == *${spark_mainJarName} ]]; then
         echo "skip $file"
