@@ -14,10 +14,10 @@ object Channel extends DimensionBase {
 
   columns.skName = "channel_sk"
 
-  columns.primaryKeys = List("channel_code")
+  columns.primaryKeys = List("channel_sid")
 
   columns.otherColumns = List(
-    "channel_name", "channel_source_code", "channel_source_name", "channel_create_time", "channel_publish_time"
+    "channel_station", "channel_station_code", "channel_source", "channel_create_time", "channel_publish_time"
   )
 
 
