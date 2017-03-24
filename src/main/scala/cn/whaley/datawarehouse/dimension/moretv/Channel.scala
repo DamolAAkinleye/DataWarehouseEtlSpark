@@ -17,7 +17,7 @@ object Channel extends DimensionBase {
   columns.primaryKeys = List("channel_sid")
 
   columns.otherColumns = List(
-    "channel_station", "channel_station_code", "channel_source", "channel_create_time", "channel_publish_time"
+    "channel_name", "channel_code", "channel_source_name", "channel_create_time", "channel_publish_time"
   )
 
 
@@ -34,7 +34,7 @@ object Channel extends DimensionBase {
 
   sourceDb = MysqlDB.medusaCms("mtv_channel", "id", 1, 134, 1)
 
-  sourceFilterWhere = "channel_code is not null and channel_code <> ''"
+  sourceFilterWhere = "channel_sid is not null and channel_sid <> ''"
 
 
 }
