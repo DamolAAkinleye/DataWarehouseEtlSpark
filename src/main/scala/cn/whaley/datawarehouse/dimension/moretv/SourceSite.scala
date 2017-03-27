@@ -12,7 +12,7 @@ object SourceSite extends DimensionBase {
   columns.skName = "source_site_sk"
   columns.primaryKeys = List("source_site_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("content_type", "main_category", "main_category_code", "second_category",
+  columns.otherColumns = List("site_content_type", "main_category", "main_category_code", "second_category",
     "second_category_code", "third_category", "third_category_code", "fourth_category", "fourth_category_code")
 
   readSourceType = jdbc
@@ -25,7 +25,7 @@ object SourceSite extends DimensionBase {
     sourceDf.filter("status = 1").filter("id <> 1").registerTempTable("mtv_program_site")
 
     //最大包含四级目录，从包含4几目录的站点树开始
-    val df4 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType content_type, " +
+    val df4 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType site_content_type, " +
       "d.name AS main_category, d.code AS main_category_code, " +
       "c.name AS second_category, c.code AS second_category_code, " +
       "b.name AS third_category, b.code AS third_category_code," +
@@ -36,7 +36,7 @@ object SourceSite extends DimensionBase {
       " INNER JOIN mtv_program_site AS d ON ( c.parentId = d.id)" +
       " WHERE d.parentId IN (0, 1)")
 
-    val df3 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType content_type," +
+    val df3 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType site_content_type," +
       "c.name AS main_category, c.code AS main_category_code,  " +
       "b.name AS second_category, b.code AS second_category_code, " +
       "a.name AS third_category, a.code AS third_category_code," +
@@ -46,7 +46,7 @@ object SourceSite extends DimensionBase {
       " INNER JOIN mtv_program_site AS c ON ( b.parentId = c.id )" +
       " WHERE c.parentId IN (0,1)")
 
-    val df2 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType AS content_type, " +
+    val df2 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType AS site_content_type, " +
       "b.name AS main_category, b.code AS main_category_code, " +
       "a.name AS second_category, a.code AS second_category_code, " +
       "null AS third_category, null AS third_category_code, " +
