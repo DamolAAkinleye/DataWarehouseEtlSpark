@@ -25,7 +25,7 @@ object WebLocation extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List(
+  columns.allColumns = List(
     "ip_section_1",
     "ip_section_2",
     "ip_section_3",
@@ -155,7 +155,7 @@ object WebLocation extends DimensionBase {
     cityInfoDf.join(sourceDf, "city" :: Nil, "rightouter")
       .select(
         columns.primaryKeys(0),
-        columns.otherColumns: _*
+        columns.allColumns: _*
       )
 
   }

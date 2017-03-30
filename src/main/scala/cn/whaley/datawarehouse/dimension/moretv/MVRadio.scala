@@ -18,7 +18,8 @@ object MVRadio extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List(
+  columns.allColumns = List(
+    "mv_radio_id",
     "mv_radio_title",
     "mv_radio_create_time",
     "mv_radio_publish_time"
@@ -33,9 +34,9 @@ object MVRadio extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.otherColumns(0) -> "title",
-    columns.otherColumns(1) -> "create_time",
-    columns.otherColumns(2) -> "publish_time"
+    columns.allColumns(0) -> "title",
+    columns.allColumns(1) -> "create_time",
+    columns.allColumns(2) -> "publish_time"
   )
 
 

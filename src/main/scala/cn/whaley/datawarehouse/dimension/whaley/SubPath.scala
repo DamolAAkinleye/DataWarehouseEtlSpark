@@ -13,7 +13,7 @@ object SubPath extends DimensionBase{
    columns.skName = "subpath_sk"
    columns.primaryKeys = List("subpath_id")
    columns.trackingColumns = List()
-   columns.otherColumns = List("subpath_code","subpath_name","subpath_content_type","subpath_template_code","subpath_parent_id","subpath_status")
+   columns.allColumns = List("subpath_id","subpath_code","subpath_name","subpath_content_type","subpath_template_code","subpath_parent_id","subpath_status")
 
    readSourceType = jdbc
 

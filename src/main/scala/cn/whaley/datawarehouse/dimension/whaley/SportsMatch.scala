@@ -14,7 +14,7 @@ object SportsMatch extends DimensionBase {
   columns.skName = "match_sk"
   columns.primaryKeys = List("match_sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("match_pid","match_name","match_category","match_date","match_source","league_id")
+  columns.allColumns = List("match_sid","match_pid","match_name","match_category","match_date","match_source","league_id")
 
   readSourceType = jdbc
 

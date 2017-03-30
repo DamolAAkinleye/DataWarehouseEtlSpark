@@ -16,7 +16,7 @@ object ProductSN extends DimensionBase {
   columns.skName = "product_sn_sk"
   columns.primaryKeys = List("product_sn")
   columns.trackingColumns = List()
-  columns.otherColumns = List("product_line", "product_model", "user_id", "rom_version", "mac", "open_time", "wifi_mac", "ip", "vip_type", "country", "area", "province", "city","district", "isp", "city_level")
+  columns.allColumns = List("product_sn","product_line", "product_model", "user_id", "rom_version", "mac", "open_time", "wifi_mac", "ip", "vip_type", "country", "area", "province", "city","district", "isp", "city_level")
 
 
   sourceDb = MysqlDB.whaleyTerminalMember

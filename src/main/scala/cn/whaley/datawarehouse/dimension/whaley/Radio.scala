@@ -14,7 +14,7 @@ object Radio extends DimensionBase {
   columns.skName = "radio_sk"
   columns.primaryKeys = List("radio_sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("radio_name")
+  columns.allColumns = List("radio_sid","radio_name")
 
   readSourceType = jdbc
 

@@ -19,7 +19,8 @@ object MVTopic extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List(
+  columns.allColumns = List(
+    "mv_topic_sid",
     "mv_topic_name",
     "mv_topic_create_time",
     "mv_topic_publish_time"
@@ -31,9 +32,9 @@ object MVTopic extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.otherColumns(0) -> "title",
-    columns.otherColumns(1) -> "cast(create_time as timestamp)",
-    columns.otherColumns(2) -> "cast(publish_time as timestamp)"
+    columns.allColumns(0) -> "title",
+    columns.allColumns(1) -> "cast(create_time as timestamp)",
+    columns.allColumns(2) -> "cast(publish_time as timestamp)"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_mvtopic", "id", 1, 134, 1)

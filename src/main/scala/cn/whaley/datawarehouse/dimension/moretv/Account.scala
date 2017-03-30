@@ -14,7 +14,7 @@ object Account extends DimensionBase {
   columns.skName = "account_sk"
   columns.primaryKeys = List("account_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("user_name", "email", "mobile", "reg_time", "register_from")
+  columns.allColumns = List("account_id", "user_name", "email", "mobile", "reg_time", "register_from")
 
   readSourceType = jdbc
 

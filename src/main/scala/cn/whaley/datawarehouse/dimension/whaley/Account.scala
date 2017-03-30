@@ -14,7 +14,7 @@ object Account extends DimensionBase {
   columns.skName = "account_sk"
   columns.primaryKeys = List("account_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("uid", "user_name", "password", "email", "reg_ip",
+  columns.allColumns = List("account_id", "uid", "user_name", "password", "email", "reg_ip",
     "reg_time", "last_login_ip", "last_login_time", "status",
     "union_id", "mobile", "email_pwd", "register_from", "gender", "device", "birthday", "update_time")
 

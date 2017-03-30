@@ -24,10 +24,10 @@ class Columns {
   var trackingColumns: List[String] = List()
 
   /**
-    * 其他列
+    * 对应源数据表的所有列，包括业务键和追踪历史记录的列
     * 可以在维度生成或自由增加或减少列
     */
-  var otherColumns: List[String] = _
+  var allColumns: List[String] = _
 
   /**
     * 生效时间
@@ -46,7 +46,18 @@ class Columns {
     * @return
     */
   def getSourceColumns: List[String] = {
-    primaryKeys ++ trackingColumns ++ otherColumns
+    allColumns
+  }
+
+  def getOtherColumns: List[String] = {
+    var columns = allColumns
+    if(primaryKeys != null) {
+      primaryKeys.foreach(e=> columns = columns.drop(columns.indexOf(e)))
+    }
+    if(trackingColumns != null) {
+      trackingColumns.foreach(e=> columns = columns.drop(columns.indexOf(e)))
+    }
+    columns
   }
 
 }

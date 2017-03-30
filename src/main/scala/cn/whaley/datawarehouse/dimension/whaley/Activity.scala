@@ -13,7 +13,7 @@ object Activity extends DimensionBase{
   columns.skName = "activity_sk"
   columns.primaryKeys = List("activity_sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("activity_name")
+  columns.allColumns = List("activity_sid", "activity_name")
 
   readSourceType = jdbc
 

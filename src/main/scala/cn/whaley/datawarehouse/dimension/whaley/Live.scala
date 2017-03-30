@@ -14,7 +14,7 @@ object Live extends DimensionBase {
   columns.skName = "live_sk"
   columns.primaryKeys = List("live_sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("live_channel","live_channel_code")
+  columns.allColumns = List("live_sid","live_channel","live_channel_code")
 
   readSourceType = jdbc
 

@@ -16,8 +16,8 @@ object Channel extends DimensionBase {
 
   columns.primaryKeys = List("channel_sid")
 
-  columns.otherColumns = List(
-    "channel_name", "channel_code", "channel_source_name", "channel_create_time", "channel_publish_time"
+  columns.allColumns = List(
+    "channel_sid", "channel_name", "channel_code", "channel_source_name", "channel_create_time", "channel_publish_time"
   )
 
 
@@ -25,11 +25,11 @@ object Channel extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.otherColumns(0) -> "station",
-    columns.otherColumns(1) -> "station_code",
-    columns.otherColumns(2) -> "source",
-    columns.otherColumns(3) -> "cast(create_time as timestamp)",
-    columns.otherColumns(4) -> "cast(publish_time as timestamp)"
+    columns.allColumns(0) -> "station",
+    columns.allColumns(1) -> "station_code",
+    columns.allColumns(2) -> "source",
+    columns.allColumns(3) -> "cast(create_time as timestamp)",
+    columns.allColumns(4) -> "cast(publish_time as timestamp)"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_channel", "id", 1, 134, 1)

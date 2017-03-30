@@ -14,7 +14,7 @@ object ProductModel extends DimensionBase {
   columns.skName = "product_model_sk"
   columns.primaryKeys = List("product_model")
   columns.trackingColumns = List()
-  columns.otherColumns = List("brand_name", "product_first_type", "product_secondary_type")
+  columns.allColumns = List("product_model", "brand_name", "product_first_type", "product_secondary_type")
 
   readSourceType = jdbc
 

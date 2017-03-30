@@ -13,7 +13,7 @@ object LauncherEntrance extends DimensionBase{
   columns.skName = "launcher_entrance_sk"
   columns.primaryKeys = List("launcher_entrance_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("access_area","access_area_name","access_location","access_location_name")
+  columns.allColumns = List("launcher_entrance_id","access_area","access_area_name","access_location","access_location_name")
 
   readSourceType = jdbc
 

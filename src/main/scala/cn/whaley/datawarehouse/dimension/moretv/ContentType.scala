@@ -17,14 +17,14 @@ object ContentType extends DimensionBase {
 
   columns.primaryKeys = List("content_type_code")
 
-  columns.otherColumns = List("content_type_name")
+  columns.allColumns = List("content_type_code", "content_type_name")
 
 
   readSourceType = jdbc
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "code",
-    columns.otherColumns(0) -> "name"
+    columns.allColumns(0) -> "name"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_content_type", "code", 1, 100, 1)

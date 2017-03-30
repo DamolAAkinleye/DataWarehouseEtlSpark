@@ -9,7 +9,7 @@ import cn.whaley.datawarehouse.util.MysqlDB
 object IncrementNewTest extends DimensionBase{
   columns.primaryKeys = List("code")
   columns.trackingColumns = List("title")
-  columns.otherColumns = List("type")
+  columns.allColumns = List("code","title","type")
   columns.skName = "sk"
 
   sourceDb = MysqlDB.dwDimensionDb("test")

@@ -14,7 +14,7 @@ object Program extends DimensionBase {
   columns.skName = "program_sk"
   columns.primaryKeys = List("sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("title", "content_type", "content_type_name", "duration", "video_type", "episode_index",
+  columns.allColumns = List("sid", "title", "content_type", "content_type_name", "duration", "video_type", "episode_index",
     "area", "year", "video_length_type", "create_time", "publish_time")
 
   sourceDb = MysqlDB.medusaCms("mtv_basecontent", "id", 1, 2010000000, 500)

@@ -14,7 +14,7 @@ object MvTopic extends DimensionBase {
   columns.skName = "mv_topic_sk"
   columns.primaryKeys = List("mv_topic_sid")
   columns.trackingColumns = List()
-  columns.otherColumns = List("mv_topic_name")
+  columns.allColumns = List("mv_topic_sid","mv_topic_name")
 
   readSourceType = jdbc
 

@@ -14,7 +14,7 @@ object PositionItem extends DimensionBase {
   columns.skName = "position_item_sk"
   columns.primaryKeys = List("position_item_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("position_code", "position_index","item_sid","item_name","type","status")
+  columns.allColumns = List("position_item_id", "position_code", "position_index","item_sid","item_name","type","status")
 
   readSourceType = jdbc
 

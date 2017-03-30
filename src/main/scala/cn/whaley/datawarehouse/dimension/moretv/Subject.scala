@@ -21,15 +21,14 @@ object Subject extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List(
-
+  columns.allColumns = List(
+    "subject_code",
     "subject_name",
     "subject_title",
     "subject_content_type",
     "subject_content_type_name",
     "subject_create_time",
     "subject_publish_time"
-
   )
 
   readSourceType = jdbc
@@ -61,12 +60,12 @@ object Subject extends DimensionBase {
       .join(contentTypeDf.as("c"), $"s.codev" === $"c.code", "left_outer")
       .select(
         $"s.code".as(columns.primaryKeys(0)),
-        $"s.name".as(columns.otherColumns(0)),
-        $"s.title".as(columns.otherColumns(1)),
-        $"c.code".as(columns.otherColumns(2)),
-        $"c.name".as(columns.otherColumns(3)),
-        $"s.create_time".cast("timestamp").as(columns.otherColumns(4)),
-        $"s.publish_time".cast("timestamp").as(columns.otherColumns(5))
+        $"s.name".as(columns.allColumns(0)),
+        $"s.title".as(columns.allColumns(1)),
+        $"c.code".as(columns.allColumns(2)),
+        $"c.name".as(columns.allColumns(3)),
+        $"s.create_time".cast("timestamp").as(columns.allColumns(4)),
+        $"s.publish_time".cast("timestamp").as(columns.allColumns(5))
       )
 
   }

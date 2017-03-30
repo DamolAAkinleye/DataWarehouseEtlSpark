@@ -14,7 +14,8 @@ object ProgramSiteTemplateCode extends DimensionBase {
   columns.skName = "program_site_template_code_sk"
   columns.primaryKeys = List("program_site_template_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("program_site_template_code","program_site_template_name", "status")
+  columns.allColumns = List("program_site_template_id", "program_site_template_code",
+    "program_site_template_name", "status")
 
   readSourceType = jdbc
 

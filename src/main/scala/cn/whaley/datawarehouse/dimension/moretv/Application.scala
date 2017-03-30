@@ -18,7 +18,8 @@ object Application extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List(
+  columns.allColumns = List(
+    "application_sid",
     "application_name",
     "application_version",
     "application_version_name"
@@ -31,9 +32,9 @@ object Application extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.otherColumns(0) -> "title",
-    columns.otherColumns(1) -> "version",
-    columns.otherColumns(2) -> "version_name"
+    columns.allColumns(0) -> "title",
+    columns.allColumns(1) -> "version",
+    columns.allColumns(2) -> "version_name"
   )
 
   sourceFilterWhere = "application_sid is not null and application_sid <> ''"

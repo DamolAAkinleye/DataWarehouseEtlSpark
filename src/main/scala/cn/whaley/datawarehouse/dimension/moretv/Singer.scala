@@ -18,7 +18,8 @@ object Singer extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List(
+  columns.allColumns = List(
+    "singer_id",
     "singer_name",
     "singer_area",
     "singer_birthday")
@@ -30,9 +31,9 @@ object Singer extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.otherColumns(0) -> "name",
-    columns.otherColumns(1) -> "area",
-    columns.otherColumns(2) -> "birthday"
+    columns.allColumns(0) -> "name",
+    columns.allColumns(1) -> "area",
+    columns.allColumns(2) -> "birthday"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_singer", "id", 1, 550, 1)

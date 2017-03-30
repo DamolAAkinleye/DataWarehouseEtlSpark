@@ -13,7 +13,7 @@ object App extends DimensionBase{
   columns.skName = "application_sk"
   columns.primaryKeys = List("application_apk")
   columns.trackingColumns = List()
-  columns.otherColumns = List("application_name")
+  columns.allColumns = List("application_apk", "application_name")
 
   readSourceType = jdbc
 

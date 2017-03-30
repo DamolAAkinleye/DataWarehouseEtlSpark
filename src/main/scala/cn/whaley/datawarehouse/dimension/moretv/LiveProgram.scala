@@ -19,8 +19,8 @@ object LiveProgram extends DimensionBase {
 
   columns.trackingColumns = List()
 
-  columns.otherColumns = List(
-    "live_program_title", "live_program_source", "live_program_site", "live_program_create_time",
+  columns.allColumns = List(
+    "live_program_sid", "live_program_title", "live_program_source", "live_program_site", "live_program_create_time",
     "live_program_publish_time"
   )
 
@@ -38,11 +38,11 @@ object LiveProgram extends DimensionBase {
     sourceDf.filter($"sid".isNotNull).dropDuplicates("sid" :: Nil)
       .select(
         $"sid".as(columns.primaryKeys(0)),
-        $"title".as(columns.otherColumns(0)),
-        $"source".as(columns.otherColumns(1)),
-        $"site".as(columns.otherColumns(2)),
-        $"create_time".cast("timestamp").as(columns.otherColumns(3)),
-        $"publish_time".cast("timestamp").as(columns.otherColumns(4))
+        $"title".as(columns.allColumns(0)),
+        $"source".as(columns.allColumns(1)),
+        $"site".as(columns.allColumns(2)),
+        $"create_time".cast("timestamp").as(columns.allColumns(3)),
+        $"publish_time".cast("timestamp").as(columns.allColumns(4))
       )
   }
 

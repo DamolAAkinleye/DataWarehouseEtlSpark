@@ -12,8 +12,17 @@ object SourceSite extends DimensionBase {
   columns.skName = "source_site_sk"
   columns.primaryKeys = List("source_site_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("site_content_type", "main_category", "main_category_code", "second_category",
-    "second_category_code", "third_category", "third_category_code", "fourth_category", "fourth_category_code")
+  columns.allColumns = List(
+    "source_site_id",
+    "site_content_type",
+    "main_category",
+    "main_category_code",
+    "second_category",
+    "second_category_code",
+    "third_category",
+    "third_category_code",
+    "fourth_category",
+    "fourth_category_code")
 
   readSourceType = jdbc
 

@@ -13,8 +13,8 @@ import cn.whaley.datawarehouse.util.MysqlDB
 object FixEntrance extends DimensionBase {
   columns.skName = "medusa_fix_entrance_sk"
   columns.primaryKeys = List("code")
-  columns.trackingColumns = List("name")
-  columns.otherColumns = List()
+  columns.trackingColumns = List()
+  columns.allColumns = List("code", "name")
 
   readSourceType = jdbc
 

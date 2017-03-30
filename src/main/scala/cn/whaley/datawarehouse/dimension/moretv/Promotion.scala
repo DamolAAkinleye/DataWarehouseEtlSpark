@@ -14,7 +14,7 @@ object Promotion extends DimensionBase {
   columns.skName = "promotion_sk"
   columns.primaryKeys = List("promotion_code")
   columns.trackingColumns = List()
-  columns.otherColumns = List("promotion_name", "promotion_type")
+  columns.allColumns = List("promotion_code", "promotion_name", "promotion_type")
 
   readSourceType = jdbc
 

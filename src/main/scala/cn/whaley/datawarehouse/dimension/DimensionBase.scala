@@ -137,9 +137,15 @@ abstract class DimensionBase extends BaseClass {
     val originalExistDf = originalDf.as("a").join(
       filteredSourceDf.as("b"), columns.primaryKeys, "leftouter"
     ).selectExpr(
-      List("a." + columns.skName) ++ columns.primaryKeys
-        ++ columns.trackingColumns.map(s => "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s)
-        ++ columns.otherColumns.map(s => "b." + s)
+      List("a." + columns.skName) //++ columns.primaryKeys
+        //        ++ columns.trackingColumns.map(s => "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s)
+        //        ++ columns.allColumns.map(s => "b." + s)
+        ++ columns.getSourceColumns.map(s => {
+        if (columns.primaryKeys.contains(s)) s
+        else if (columns.trackingColumns.contains(s)) "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s
+        else if (columns.getSourceColumns.contains(s)) "b." + s
+        else s
+      })
         ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
     )
 
@@ -163,8 +169,7 @@ abstract class DimensionBase extends BaseClass {
         //更新失效时间
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
         ).selectExpr(
-          List(columns.skName) ++ columns.primaryKeys
-            ++ columns.trackingColumns ++ columns.otherColumns
+          List(columns.skName) ++ columns.getSourceColumns
             ++ List(columns.validTimeKey)
             ++ List("CASE WHEN invalid." + columns.invalidTimeKey + " is not null THEN invalid." + columns.invalidTimeKey
             + " ELSE origin." + columns.invalidTimeKey + " END as " + columns.invalidTimeKey): _*

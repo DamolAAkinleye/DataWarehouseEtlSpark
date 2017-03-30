@@ -13,7 +13,14 @@ object TerminalUser extends DimensionBase {
   columns.skName = "user_sk"
   columns.primaryKeys = List("user_id")
   columns.trackingColumns = List()
-  columns.otherColumns = List("open_time", "mac", "wifi_mac", "product_model", "product_serial", "promotion_channel",
+  columns.allColumns = List(
+    "user_id",
+    "open_time",
+    "mac",
+    "wifi_mac",
+    "product_model",
+    "product_serial",
+    "promotion_channel",
     "last_login_time")
 
   sourceColumnMap = Map(
