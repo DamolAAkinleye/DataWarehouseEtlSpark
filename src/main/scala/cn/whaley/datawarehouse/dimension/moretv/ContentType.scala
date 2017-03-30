@@ -24,7 +24,7 @@ object ContentType extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "code",
-    columns.allColumns(0) -> "name"
+    columns.allColumns(1) -> "name"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_content_type", "code", 1, 100, 1)

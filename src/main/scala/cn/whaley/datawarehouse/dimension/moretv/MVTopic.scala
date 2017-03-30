@@ -32,9 +32,9 @@ object MVTopic extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.allColumns(0) -> "title",
-    columns.allColumns(1) -> "cast(create_time as timestamp)",
-    columns.allColumns(2) -> "cast(publish_time as timestamp)"
+    columns.allColumns(1) -> "title",
+    columns.allColumns(2) -> "cast(create_time as timestamp)",
+    columns.allColumns(3) -> "cast(publish_time as timestamp)"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_mvtopic", "id", 1, 134, 1)

@@ -33,12 +33,12 @@ object SportsMatch extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.allColumns(0) -> "title",
-    columns.allColumns(1) -> "sub_title",
-    columns.allColumns(2) -> "category",
-    columns.allColumns(3) -> "match_date",
-    columns.allColumns(4) -> "source",
-    columns.allColumns(5) -> "league_id"
+    columns.allColumns(1) -> "title",
+    columns.allColumns(2) -> "sub_title",
+    columns.allColumns(3) -> "category",
+    columns.allColumns(4) -> "match_date",
+    columns.allColumns(5) -> "source",
+    columns.allColumns(6) -> "league_id"
   )
 
 

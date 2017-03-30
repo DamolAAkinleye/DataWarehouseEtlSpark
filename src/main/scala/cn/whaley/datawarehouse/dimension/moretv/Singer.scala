@@ -31,9 +31,9 @@ object Singer extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.allColumns(0) -> "name",
-    columns.allColumns(1) -> "area",
-    columns.allColumns(2) -> "birthday"
+    columns.allColumns(1) -> "name",
+    columns.allColumns(2) -> "area",
+    columns.allColumns(3) -> "birthday"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_singer", "id", 1, 550, 1)

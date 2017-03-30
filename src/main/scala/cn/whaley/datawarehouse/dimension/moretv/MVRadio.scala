@@ -34,9 +34,9 @@ object MVRadio extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.allColumns(0) -> "title",
-    columns.allColumns(1) -> "create_time",
-    columns.allColumns(2) -> "publish_time"
+    columns.allColumns(1) -> "title",
+    columns.allColumns(2) -> "create_time",
+    columns.allColumns(3) -> "publish_time"
   )
 
 

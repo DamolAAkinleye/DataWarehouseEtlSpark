@@ -38,11 +38,11 @@ object LiveProgram extends DimensionBase {
     sourceDf.filter($"sid".isNotNull).dropDuplicates("sid" :: Nil)
       .select(
         $"sid".as(columns.primaryKeys(0)),
-        $"title".as(columns.allColumns(0)),
-        $"source".as(columns.allColumns(1)),
-        $"site".as(columns.allColumns(2)),
-        $"create_time".cast("timestamp").as(columns.allColumns(3)),
-        $"publish_time".cast("timestamp").as(columns.allColumns(4))
+        $"title".as(columns.allColumns(1)),
+        $"source".as(columns.allColumns(2)),
+        $"site".as(columns.allColumns(3)),
+        $"create_time".cast("timestamp").as(columns.allColumns(4)),
+        $"publish_time".cast("timestamp").as(columns.allColumns(5))
       )
   }
 

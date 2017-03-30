@@ -32,9 +32,9 @@ object Application extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.allColumns(0) -> "title",
-    columns.allColumns(1) -> "version",
-    columns.allColumns(2) -> "version_name"
+    columns.allColumns(1) -> "title",
+    columns.allColumns(2) -> "version",
+    columns.allColumns(3) -> "version_name"
   )
 
   sourceFilterWhere = "application_sid is not null and application_sid <> ''"

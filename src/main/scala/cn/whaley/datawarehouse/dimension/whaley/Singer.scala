@@ -14,7 +14,7 @@ object Singer extends DimensionBase {
   columns.skName = "singer_sk"
   columns.primaryKeys = List("singer_sid")
   columns.trackingColumns = List()
-  columns.allColumns = List("singer_name")
+  columns.allColumns = List("singer_sid", "singer_name")
 
   readSourceType = jdbc
 

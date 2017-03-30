@@ -25,11 +25,11 @@ object Channel extends DimensionBase {
 
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
-    columns.allColumns(0) -> "station",
-    columns.allColumns(1) -> "station_code",
-    columns.allColumns(2) -> "source",
-    columns.allColumns(3) -> "cast(create_time as timestamp)",
-    columns.allColumns(4) -> "cast(publish_time as timestamp)"
+    columns.allColumns(1) -> "station",
+    columns.allColumns(2) -> "station_code",
+    columns.allColumns(3) -> "source",
+    columns.allColumns(4) -> "cast(create_time as timestamp)",
+    columns.allColumns(5) -> "cast(publish_time as timestamp)"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_channel", "id", 1, 134, 1)

@@ -60,12 +60,12 @@ object Subject extends DimensionBase {
       .join(contentTypeDf.as("c"), $"s.codev" === $"c.code", "left_outer")
       .select(
         $"s.code".as(columns.primaryKeys(0)),
-        $"s.name".as(columns.allColumns(0)),
-        $"s.title".as(columns.allColumns(1)),
-        $"c.code".as(columns.allColumns(2)),
-        $"c.name".as(columns.allColumns(3)),
-        $"s.create_time".cast("timestamp").as(columns.allColumns(4)),
-        $"s.publish_time".cast("timestamp").as(columns.allColumns(5))
+        $"s.name".as(columns.allColumns(1)),
+        $"s.title".as(columns.allColumns(2)),
+        $"c.code".as(columns.allColumns(3)),
+        $"c.name".as(columns.allColumns(4)),
+        $"s.create_time".cast("timestamp").as(columns.allColumns(5)),
+        $"s.publish_time".cast("timestamp").as(columns.allColumns(6))
       )
 
   }
