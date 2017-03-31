@@ -30,7 +30,7 @@ object SubPath extends DimensionBase{
      "subpath_root"->"root"
    )
 
-   sourceFilterWhere = "subpath_id is not null and subpath_status = 1 and root != 0"
+   sourceFilterWhere = "subpath_id is not null and subpath_status = 1 and subpath_root != 0"
    sourceDb = MysqlDB.whaleyCms("mtv_program_site","id",1,4131,10)
 
    dimensionName = "dim_whaley_subpath"
