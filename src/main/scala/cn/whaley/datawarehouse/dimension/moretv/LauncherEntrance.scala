@@ -14,16 +14,20 @@ object LauncherEntrance extends DimensionBase {
   columns.trackingColumns = List()
   columns.allColumns = List(
     "launcher_entrance_id",
-    "area_code",
-    "area_name",
-    "location_code",
-    "location_name")
+    "launcher_area_code",
+    "launcher_area_name",
+    "launcher_location_code",
+    "launcher_location_name")
 
   readSourceType = jdbc
 
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
-    "launcher_entrance_id" -> "id"
+    "launcher_entrance_id" -> "id",
+    "launcher_area_code" -> "area_code",
+    "launcher_area_name" -> "area_name",
+    "launcher_location_code" -> "location_code",
+    "launcher_location_name" -> "location_name"
   )
 
   sourceDb = MysqlDB.dwDimensionDb("moretv_launcher_entrance")
