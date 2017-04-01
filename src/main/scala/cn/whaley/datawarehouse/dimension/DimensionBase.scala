@@ -105,6 +105,17 @@ abstract class DimensionBase extends BaseClass {
     println("成功获取现有维度")
     if (debug) originalDf.show
 
+    val newColumns =
+      if (columns.getSourceColumns.size == originalDf.schema.fields.length) {
+        List()
+      } else {
+        var temp = columns.getSourceColumns
+        originalDf.schema.fields.map(_.name).foreach(s => temp = temp.drop(columns.getSourceColumns.indexOf(s)))
+        temp
+      }
+
+    if (debug) println("新增加列：" + newColumns)
+
     //新增的行
     val addDf =
       filteredSourceDf.as("b").join(
@@ -120,7 +131,8 @@ abstract class DimensionBase extends BaseClass {
       filteredSourceDf.as("b").join(
         originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
       ).where(
-        columns.trackingColumns.map(s => s"a.$s != b.$s").mkString(" or ") //若trackingColumn原本为null，不增加新行
+        //若trackingColumn原本为null，不增加新行
+        columns.trackingColumns.filter(!newColumns.contains(_)).map(s => s"a.$s != b.$s").mkString(" or ")
       )
 
     //更新后维度表中需要添加的行，包括新增的和追踪列变化的
@@ -150,12 +162,15 @@ abstract class DimensionBase extends BaseClass {
       "leftouter"
     ).selectExpr(List("a." + columns.skName)
       ++ columns.getSourceColumns.map(s => {
-      if (columns.primaryKeys.contains(s)) s"a.$s"
+      if (newColumns.contains(s)) s"b.$s"
+      else if (columns.primaryKeys.contains(s)) s"a.$s"
       else if (columns.trackingColumns.contains(s)) s"CASE WHEN a.$s is not null THEN a.$s ELSE b.$s END as $s"
       else "CASE WHEN b." + columns.primaryKeys.head + s" is not null THEN b.$s ELSE a.$s END as $s"
     })
       ++ List(columns.validTimeKey).map(s => "a." + s)
       ++ List(columns.invalidTimeKey).map(s =>
+      //"a." + s   //如果源数据确保主键不会变，则可以使用这个逻辑。在这个逻辑下，可以允许filteredSourceDf只包含源数据中变动的行，
+      //同时要注意，在需要增加列时，filteredSourceDf必须要包含完整源数据
       "CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null THEN '$todayStr' ELSE a.$s END as $s")
       : _*
     )
