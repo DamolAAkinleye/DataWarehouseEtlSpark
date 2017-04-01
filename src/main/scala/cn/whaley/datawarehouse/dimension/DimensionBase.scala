@@ -69,7 +69,8 @@ abstract class DimensionBase extends BaseClass {
 
   def doExecute(): DataFrame = {
 
-    //TODO 初始化参数处理和验证
+    //初始化参数处理和验证
+    valid()
 
     val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionName
 
@@ -120,7 +121,7 @@ abstract class DimensionBase extends BaseClass {
         addDf
       } else {
         addDf.unionAll(
-          //追踪列变化的行
+          //因为追踪列变化而新增的行
           filteredSourceDf.as("b").join(
             originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
           ).where(
@@ -143,10 +144,7 @@ abstract class DimensionBase extends BaseClass {
       filteredSourceDf.as("b"),
       columns.primaryKeys.map(s => originalDf(s) === filteredSourceDf(s)).reduceLeft(_ && _),
       "leftouter"
-    ).selectExpr(
-      List("a." + columns.skName) //++ columns.primaryKeys
-        //        ++ columns.trackingColumns.map(s => "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s)
-        //        ++ columns.allColumns.map(s => "b." + s)
+    ).selectExpr(List("a." + columns.skName)
         ++ columns.getSourceColumns.map(s => {
         if (columns.primaryKeys.contains(s)) s"a.$s"
         else if (columns.trackingColumns.contains(s)) s"CASE WHEN a.$s is not null THEN a.$s ELSE b.$s END as $s"
@@ -209,6 +207,24 @@ abstract class DimensionBase extends BaseClass {
     if(debug) result.show
 
     result
+  }
+
+  /**
+    * 验证参数，优化配置
+    */
+  def valid(): Unit = {
+    columns.trackingColumns = if (columns.trackingColumns == null) List() else columns.trackingColumns
+    if(columns.primaryKeys == null || columns.primaryKeys.isEmpty){
+      throw new RuntimeException("业务主键未设置！")
+    }
+    if(columns.getSourceColumns == null || columns.getSourceColumns.isEmpty){
+      throw new RuntimeException("维度表列未设置！")
+    }
+    (columns.primaryKeys ++ columns.trackingColumns).foreach(s =>
+      if(!columns.getSourceColumns.contains(s)) {
+        throw new RuntimeException("列" + s + "应该同时在allColumns中添加")
+      }
+    )
   }
 
   /**
