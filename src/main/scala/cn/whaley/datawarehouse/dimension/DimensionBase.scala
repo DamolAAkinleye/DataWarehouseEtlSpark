@@ -136,11 +136,13 @@ abstract class DimensionBase extends BaseClass {
     val todayStr = sdf.format(today)
 
 
-    //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，但是未更新dim_invalid_time
+    //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，更新了因源数据删除导致的失效，但是未更新因为追踪历史记录的列变化导致的失效
     //如果维度表中已经存在的业务键在源信息中被删除了，则会保留维度表中的值
     //若trackingColumn原本为null，源数据有值后，会在直接在该主键的所有行上变更，也就是说，历史记录默认不记录null值
     val originalExistDf = originalDf.as("a").join(
-      filteredSourceDf.as("b"), columns.primaryKeys, "leftouter"
+      filteredSourceDf.as("b"),
+      columns.primaryKeys.map(s => originalDf(s) === filteredSourceDf(s)).reduceLeft(_ && _),
+      "leftouter"
     ).selectExpr(
       List("a." + columns.skName) //++ columns.primaryKeys
         //        ++ columns.trackingColumns.map(s => "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s)
@@ -148,9 +150,12 @@ abstract class DimensionBase extends BaseClass {
         ++ columns.getSourceColumns.map(s => {
         if (columns.primaryKeys.contains(s)) "a." + s
         else if (columns.trackingColumns.contains(s)) "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s
-        else "CASE WHEN b." + s + " is not null THEN b." + s + " ELSE a." + s + " END as " + s
+        else "CASE WHEN b." + columns.primaryKeys.head + " is not null THEN b." + s + " ELSE a." + s + " END as " + s
       })
-        ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
+        ++ List(columns.validTimeKey).map(s => "a." + s)
+        ++ List(columns.invalidTimeKey).map(s =>
+        "CASE WHEN b." + columns.primaryKeys.head + " is null and a."+ s + " is null THEN '" + todayStr
+          + "' ELSE a." + s + " END as " + s): _*
     )
 
     //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，并且更新了dim_invalid_time
@@ -237,6 +242,12 @@ abstract class DimensionBase extends BaseClass {
   }
 
   def checkPrimaryKeys(sourceDf: DataFrame, primaryKeys: List[String]): DataFrame = {
+
+    val primaryKeyNullCount = sourceDf.where(primaryKeys.map(s => s + " is null").mkString(" or ")).count
+    if (primaryKeyNullCount > 0){
+      throw new RuntimeException("存在业务主键是null")
+    }
+
     val duplicatePkDf = sourceDf.groupBy(
       primaryKeys.map(s => col(s)): _*
     ).agg(
