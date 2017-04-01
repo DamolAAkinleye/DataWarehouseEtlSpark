@@ -84,7 +84,7 @@ abstract class DimensionBase extends BaseClass {
     checkPrimaryKeys(filteredSourceDf, columns.primaryKeys)
 
     println("成功获取源数据")
-    if(debug) filteredSourceDf.show
+    if (debug) filteredSourceDf.show
 
     filteredSourceDf.persist()
 
@@ -103,7 +103,7 @@ abstract class DimensionBase extends BaseClass {
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
     println("成功获取现有维度")
-    if(debug) originalDf.show
+    if (debug) originalDf.show
 
     //新增的行
     val addDf =
@@ -115,6 +115,14 @@ abstract class DimensionBase extends BaseClass {
         columns.getSourceColumns.map(s => "b." + s): _*
       )
 
+    //找到追踪列变化的信息包含的dataframe, 用于增加追踪列变化的行以及将变化前的行标注为失效
+    val changedTrackingColumnDf =
+      filteredSourceDf.as("b").join(
+        originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
+      ).where(
+        columns.trackingColumns.map(s => s"a.$s != b.$s").mkString(" or ") //若trackingColumn原本为null，不增加新行
+      )
+
     //更新后维度表中需要添加的行，包括新增的和追踪列变化的
     val extendDf =
       if (columns.trackingColumns == null || columns.trackingColumns.isEmpty) {
@@ -122,16 +130,12 @@ abstract class DimensionBase extends BaseClass {
       } else {
         addDf.unionAll(
           //因为追踪列变化而新增的行
-          filteredSourceDf.as("b").join(
-            originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
-          ).where(
-            columns.trackingColumns.map(s => s"a.$s != b.$s").mkString(" or ") //若trackingColumn原本为null，不增加新行
-          ).selectExpr(columns.getSourceColumns.map(s => s"b.$s"): _*)
+          changedTrackingColumnDf.selectExpr(columns.getSourceColumns.map(s => s"b.$s"): _*)
         )
       }
 
     println("计算完成需要增加的行")
-    if(debug) extendDf.show
+    if (debug) extendDf.show
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val todayStr = sdf.format(today)
@@ -145,15 +149,15 @@ abstract class DimensionBase extends BaseClass {
       columns.primaryKeys.map(s => originalDf(s) === filteredSourceDf(s)).reduceLeft(_ && _),
       "leftouter"
     ).selectExpr(List("a." + columns.skName)
-        ++ columns.getSourceColumns.map(s => {
-        if (columns.primaryKeys.contains(s)) s"a.$s"
-        else if (columns.trackingColumns.contains(s)) s"CASE WHEN a.$s is not null THEN a.$s ELSE b.$s END as $s"
-        else "CASE WHEN b." + columns.primaryKeys.head + s" is not null THEN b.$s ELSE a.$s END as $s"
-      })
-        ++ List(columns.validTimeKey).map(s => "a." + s)
-        ++ List(columns.invalidTimeKey).map(s =>
-        "CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null THEN '$todayStr' ELSE a.$s END as $s")
-        : _*
+      ++ columns.getSourceColumns.map(s => {
+      if (columns.primaryKeys.contains(s)) s"a.$s"
+      else if (columns.trackingColumns.contains(s)) s"CASE WHEN a.$s is not null THEN a.$s ELSE b.$s END as $s"
+      else "CASE WHEN b." + columns.primaryKeys.head + s" is not null THEN b.$s ELSE a.$s END as $s"
+    })
+      ++ List(columns.validTimeKey).map(s => "a." + s)
+      ++ List(columns.invalidTimeKey).map(s =>
+      "CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null THEN '$todayStr' ELSE a.$s END as $s")
+      : _*
     )
 
     //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，并且更新了dim_invalid_time
@@ -163,28 +167,23 @@ abstract class DimensionBase extends BaseClass {
       } else {
         //变更后需要标注失效时间的行，包含代理键和失效时间两列
         val invalidColumnsDf =
-          filteredSourceDf.as("b").join(
-            originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
-          ).where(
-            columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ")
-          ).selectExpr(List("a." + columns.skName)
+          changedTrackingColumnDf.selectExpr(List("a." + columns.skName)
             ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
 
         println("计算完成需要变更失效时间的行")
-        if(debug) invalidColumnsDf.show
+        if (debug) invalidColumnsDf.show
 
         //更新失效时间
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
         ).selectExpr(
-          List(columns.skName) ++ columns.getSourceColumns
-            ++ List(columns.validTimeKey)
+          List(columns.skName) ++ columns.getSourceColumns ++ List(columns.validTimeKey)
             ++ List("CASE WHEN invalid." + columns.invalidTimeKey + " is not null THEN invalid." + columns.invalidTimeKey
             + " ELSE origin." + columns.invalidTimeKey + " END as " + columns.invalidTimeKey): _*
         )
       }
 
     println("计算完成原有维度数据更新后")
-    if(debug) df.show
+    if (debug) df.show
 
     //合并上述形成最终结果
     val offset =
@@ -204,7 +203,7 @@ abstract class DimensionBase extends BaseClass {
     )
 
     println("计算完成最终生成的新维度")
-    if(debug) result.show
+    if (debug) result.show
 
     result
   }
@@ -214,14 +213,14 @@ abstract class DimensionBase extends BaseClass {
     */
   def valid(): Unit = {
     columns.trackingColumns = if (columns.trackingColumns == null) List() else columns.trackingColumns
-    if(columns.primaryKeys == null || columns.primaryKeys.isEmpty){
+    if (columns.primaryKeys == null || columns.primaryKeys.isEmpty) {
       throw new RuntimeException("业务主键未设置！")
     }
-    if(columns.getSourceColumns == null || columns.getSourceColumns.isEmpty){
+    if (columns.getSourceColumns == null || columns.getSourceColumns.isEmpty) {
       throw new RuntimeException("维度表列未设置！")
     }
     (columns.primaryKeys ++ columns.trackingColumns).foreach(s =>
-      if(!columns.getSourceColumns.contains(s)) {
+      if (!columns.getSourceColumns.contains(s)) {
         throw new RuntimeException("列" + s + "应该同时在allColumns中添加")
       }
     )
@@ -260,7 +259,7 @@ abstract class DimensionBase extends BaseClass {
   def checkPrimaryKeys(sourceDf: DataFrame, primaryKeys: List[String]): DataFrame = {
 
     val primaryKeyNullCount = sourceDf.where(primaryKeys.map(s => s + " is null").mkString(" or ")).count
-    if (primaryKeyNullCount > 0){
+    if (primaryKeyNullCount > 0) {
       throw new RuntimeException("存在业务主键是null")
     }
 
