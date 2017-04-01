@@ -148,8 +148,7 @@ abstract class DimensionBase extends BaseClass {
         ++ columns.getSourceColumns.map(s => {
         if (columns.primaryKeys.contains(s)) "a." + s
         else if (columns.trackingColumns.contains(s)) "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s
-        else if (columns.getSourceColumns.contains(s)) "CASE WHEN b." + s + " is not null THEN b." + s + " ELSE a." + s + " END as " + s
-        else s
+        else "CASE WHEN b." + s + " is not null THEN b." + s + " ELSE a." + s + " END as " + s
       })
         ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
     )
