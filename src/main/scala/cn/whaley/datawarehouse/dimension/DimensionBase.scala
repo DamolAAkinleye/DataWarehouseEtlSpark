@@ -124,8 +124,8 @@ abstract class DimensionBase extends BaseClass {
           filteredSourceDf.as("b").join(
             originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
           ).where(
-            columns.trackingColumns.map(s => "a." + s + " != b." + s).mkString(" or ") //若trackingColumn原本为null，不增加新行
-          ).selectExpr(columns.getSourceColumns.map(s => "b." + s): _*)
+            columns.trackingColumns.map(s => s"a.$s != b.$s").mkString(" or ") //若trackingColumn原本为null，不增加新行
+          ).selectExpr(columns.getSourceColumns.map(s => s"b.$s"): _*)
         )
       }
 
@@ -148,14 +148,14 @@ abstract class DimensionBase extends BaseClass {
         //        ++ columns.trackingColumns.map(s => "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s)
         //        ++ columns.allColumns.map(s => "b." + s)
         ++ columns.getSourceColumns.map(s => {
-        if (columns.primaryKeys.contains(s)) "a." + s
-        else if (columns.trackingColumns.contains(s)) "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s
-        else "CASE WHEN b." + columns.primaryKeys.head + " is not null THEN b." + s + " ELSE a." + s + " END as " + s
+        if (columns.primaryKeys.contains(s)) s"a.$s"
+        else if (columns.trackingColumns.contains(s)) s"CASE WHEN a.$s is not null THEN a.$s ELSE b.$s END as $s"
+        else "CASE WHEN b." + columns.primaryKeys.head + s" is not null THEN b.$s ELSE a.$s END as $s"
       })
         ++ List(columns.validTimeKey).map(s => "a." + s)
         ++ List(columns.invalidTimeKey).map(s =>
-        "CASE WHEN b." + columns.primaryKeys.head + " is null and a."+ s + " is null THEN '" + todayStr
-          + "' ELSE a." + s + " END as " + s): _*
+        "CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null THEN '$todayStr' ELSE a.$s END as $s")
+        : _*
     )
 
     //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，并且更新了dim_invalid_time
