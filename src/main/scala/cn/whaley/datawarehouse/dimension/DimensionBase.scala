@@ -53,6 +53,8 @@ abstract class DimensionBase extends BaseClass {
     */
   var sourceColumnMap: Map[String, String] = Map()
 
+  var debug = false
+
   override def execute(args: Array[String]): Unit = {
 
     val result = doExecute()
@@ -80,6 +82,9 @@ abstract class DimensionBase extends BaseClass {
     //过滤后源数据主键唯一性判断和处理
     checkPrimaryKeys(filteredSourceDf, columns.primaryKeys)
 
+    println("成功获取源数据")
+    if(debug) filteredSourceDf.show
+
     filteredSourceDf.persist()
 
     //首次创建维度
@@ -97,7 +102,7 @@ abstract class DimensionBase extends BaseClass {
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
     println("成功获取现有维度")
-//    originalDf.show
+    if(debug) originalDf.show
 
     //新增的行
     val addDf =
@@ -125,14 +130,14 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成需要增加的行")
-//    extendDf.show
+    if(debug) extendDf.show
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val todayStr = sdf.format(today)
 
 
     //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，但是未更新dim_invalid_time
-    //如果维度表中已经存在的业务键在源信息中被删除了，则会把该业务键对应行的所有otherColumns设置为null
+    //如果维度表中已经存在的业务键在源信息中被删除了，则会保留维度表中的值
     //若trackingColumn原本为null，源数据有值后，会在直接在该主键的所有行上变更，也就是说，历史记录默认不记录null值
     val originalExistDf = originalDf.as("a").join(
       filteredSourceDf.as("b"), columns.primaryKeys, "leftouter"
@@ -141,9 +146,9 @@ abstract class DimensionBase extends BaseClass {
         //        ++ columns.trackingColumns.map(s => "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s)
         //        ++ columns.allColumns.map(s => "b." + s)
         ++ columns.getSourceColumns.map(s => {
-        if (columns.primaryKeys.contains(s)) s
+        if (columns.primaryKeys.contains(s)) "a." + s
         else if (columns.trackingColumns.contains(s)) "CASE WHEN a." + s + " is not null THEN a." + s + " ELSE b." + s + " END as " + s
-        else if (columns.getSourceColumns.contains(s)) "b." + s
+        else if (columns.getSourceColumns.contains(s)) "CASE WHEN b." + s + " is not null THEN b." + s + " ELSE a." + s + " END as " + s
         else s
       })
         ++ List(columns.validTimeKey, columns.invalidTimeKey).map(s => "a." + s): _*
@@ -164,7 +169,7 @@ abstract class DimensionBase extends BaseClass {
             ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
 
         println("计算完成需要变更失效时间的行")
-//        invalidColumnsDf.show
+        if(debug) invalidColumnsDf.show
 
         //更新失效时间
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
@@ -177,7 +182,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成原有维度数据更新后")
-//    df.show
+    if(debug) df.show
 
     //合并上述形成最终结果
     val offset =
@@ -197,7 +202,7 @@ abstract class DimensionBase extends BaseClass {
     )
 
     println("计算完成最终生成的新维度")
-    //    result.show
+    if(debug) result.show
 
     result
   }
