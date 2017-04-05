@@ -131,8 +131,12 @@ abstract class DimensionBase extends BaseClass {
       filteredSourceDf.as("b").join(
         originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
       ).where(
-        //若trackingColumn原本为null，不增加新行
-        columns.trackingColumns.filter(!newColumns.contains(_)).map(s => s"a.$s != b.$s").mkString(" or ")
+        if(columns.trackingColumns == null || !columns.trackingColumns.exists(!newColumns.contains(_))) {
+          "1=1"
+        }else {
+          //若trackingColumn原本为null，不增加新行
+          columns.trackingColumns.filter(!newColumns.contains(_)).map(s => s"a.$s != b.$s").mkString(" or ")
+        }
       )
 
     //更新后维度表中需要添加的行，包括新增的和追踪列变化的
