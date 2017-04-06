@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.dimension.moretv.total
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
+import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB, Params}
 
 /**
   * Created by Tony on 16/12/22.
@@ -9,7 +9,7 @@ import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
   * 电视猫终端用户信息全量更新
   */
 object TerminalUserTotal extends BaseClass {
-  override def execute(args: Array[String]): Unit = {
+  override def execute(params: Params): Unit = {
 
     val jdbcDF = sqlContext.read.format("jdbc").options(MysqlDB.medusaTvServiceAccount).load()
     jdbcDF.registerTempTable("mtv_account")

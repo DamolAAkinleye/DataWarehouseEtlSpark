@@ -1,6 +1,7 @@
 package cn.whaley.datawarehouse.temp
 
 import cn.whaley.datawarehouse.BaseClass
+import cn.whaley.datawarehouse.util.Params
 import org.apache.spark.sql.expressions.Window
 import org.apache.spark.sql.functions._
 
@@ -9,7 +10,7 @@ import org.apache.spark.sql.functions._
   */
 object Test extends BaseClass {
 
-  override def execute(args: Array[String]): Unit = {
+  override def execute(params: Params): Unit = {
 
     System.out.println(hiveContext)
 

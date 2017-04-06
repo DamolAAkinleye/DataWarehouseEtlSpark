@@ -3,7 +3,7 @@ package cn.whaley.datawarehouse.temp
 import java.util.{Calendar, Date}
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil}
+import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
 import org.apache.commons.lang3.time.DateUtils
 
 
@@ -22,7 +22,7 @@ object IncrementTest extends BaseClass {
   val INVALID_TIME_KEY = "dim_invalid_time"
 
 
-  override def execute(args: Array[String]): Unit = {
+  override def execute(params: Params): Unit = {
 
     val COLUMNS = PRIMARY_KEYS ++ TRACKING_COLUMNS ++ OTHER_COLUMNS
 

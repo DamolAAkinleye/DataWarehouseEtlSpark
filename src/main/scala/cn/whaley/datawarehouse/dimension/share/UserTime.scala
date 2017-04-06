@@ -1,7 +1,7 @@
-package cn.whaley.datawarehouse.dimension.common
+package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.HdfsUtil
+import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
@@ -14,7 +14,7 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
   */
 object UserTime extends BaseClass {
 
-  override def execute(args: Array[String]): Unit = {
+  override def execute(params: Params): Unit = {
 
     val rdd = sc.makeRDD(getTimeSeq.map(s => Row.fromTuple(s)))
 

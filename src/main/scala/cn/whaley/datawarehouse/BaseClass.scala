@@ -1,5 +1,6 @@
 package cn.whaley.datawarehouse
 
+import cn.whaley.datawarehouse.util.{Params, ParamsParseUtil}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.{SparkConf, SparkContext}
@@ -8,23 +9,13 @@ import org.apache.spark.{SparkConf, SparkContext}
   * Created by Tony on 16/12/21.
   */
 trait BaseClass {
-
+  val config = new SparkConf()
   /**
     * define some parameters
     */
   var sc: SparkContext = null
-  var hiveContext: HiveContext = null
   implicit var sqlContext: SQLContext = null
-  val config = new SparkConf()
-    //    .set("spark.executor.memory", "4g")
-    //    .set("spark.executor.cores", "3")
-//    .set("spark.scheduler.mode", "FAIR")
-//    .set("spark.eventLog.enabled", "true")
-//    .set("spark.eventLog.dir", "hdfs://hans/spark-log/spark-events")
-    //    .set("spark.cores.max", "72")
-//    .set("spark.driver.maxResultSize", "2g")
-  //    .setAppName(this.getClass.getSimpleName)
-
+  var hiveContext: HiveContext = null
 
   def main(args: Array[String]) {
     System.out.println("init start ....")
@@ -32,7 +23,14 @@ trait BaseClass {
     System.out.println("init success ....")
 
     println("execute start ....")
-    execute(args)
+    ParamsParseUtil.parse(args) match {
+      case Some(p) => {
+        execute(p)
+      }
+      case None => {
+        throw new RuntimeException("parameters wrong")
+      }
+    }
     println("execute end ....")
 
   }
@@ -52,7 +50,7 @@ trait BaseClass {
   /**
     * this method do not complete.Sub class that extends BaseClass complete this method
     */
-  def execute(args: Array[String])
+  def execute(params: Params)
 
   /**
     * release resource

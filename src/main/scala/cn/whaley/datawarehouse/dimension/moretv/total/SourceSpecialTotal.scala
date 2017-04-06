@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.dimension.moretv.total
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
+import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB, Params}
 
 /**
   * Created by Tony on 17/1/6.
@@ -11,7 +11,7 @@ import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
   * 包含专题subject, 明星star, 音乐电台station, 歌手singer, 音乐精选集omnibus, 音乐榜单
   */
 object SourceSpecialTotal extends BaseClass {
-  override def execute(args: Array[String]): Unit = {
+  override def execute(params: Params): Unit = {
 
     sqlContext.udf.register("extractSubjectTypeFromCode",extractSubjectTypeFromCode _)
 

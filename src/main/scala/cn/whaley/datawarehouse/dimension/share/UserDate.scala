@@ -1,10 +1,10 @@
-package cn.whaley.datawarehouse.dimension.common
+package cn.whaley.datawarehouse.dimension.share
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.HdfsUtil
+import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
@@ -18,7 +18,7 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
   */
 object UserDate extends BaseClass {
 
-  override def execute(args: Array[String]): Unit = {
+  override def execute(params: Params): Unit = {
 
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
     var date = dateFormat.parse("2010-01-01") //设置的开始时间
