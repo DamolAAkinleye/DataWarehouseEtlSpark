@@ -1,6 +1,6 @@
 package cn.whaley.datawarehouse.fact.moretv
 
-import cn.whaley.datawarehouse.fact.EtlBase
+import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.common.{DimensionColumn, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.util.DateFormatUtils
@@ -12,7 +12,7 @@ import org.apache.spark.sql.functions._
 /**
   * Created by Tony on 17/4/5.
   */
-object UserLogin extends EtlBase {
+object UserLogin extends FactEtlBase {
 
   topicName = "medusa_user_login"
 

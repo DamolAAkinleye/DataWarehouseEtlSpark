@@ -5,8 +5,8 @@ import java.util.{Calendar, Date}
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.dimension.constant.Constants._
-import cn.whaley.datawarehouse.dimension.constant.SourceType._
 import cn.whaley.datawarehouse.global.Globals._
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util._
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
@@ -25,12 +25,12 @@ abstract class DimensionBase extends BaseClass {
     */
   val columns = new Columns
 
-  /**
-    * 读取原始数据dataframe的方式，默认是jdbc
-    *
-    * @see [[SourceType]]
-    */
-  var readSourceType: Value = jdbc
+  //  /**
+  //    * 读取原始数据dataframe的方式，默认是jdbc
+  //    *
+  //    * @see [[SourceType]]
+  //    */
+  //  var readSourceType: Value = jdbc
 
   /**
     * 来源读取配置jdbc参数，仅当readSourceType设置为jdbc时有效
@@ -56,24 +56,22 @@ abstract class DimensionBase extends BaseClass {
 
   var debug = false
 
-  override def execute(params: Params): Unit = {
+  //  override def execute(params: Params): Unit = {
+  //
+  //    val result = doExecute()
+  //
+  //    println("backup start ....")
+  //    backup(params, result, dimensionName)
+  //    println("backup end ....")
+  //
+  //    //TODO 新数据验证
+  //
+  //  }
 
-    val result = doExecute()
 
-    println("backup start ....")
-    backup(params, result, dimensionName)
-    println("backup end ....")
-
-    //TODO 新数据验证
-
-  }
-
-  private def doExecute(): DataFrame = {
-
+  override def extract(params: Params): DataFrame = {
     //初始化参数处理和验证
     valid()
-
-    val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionName
 
     //读取源数据
     val sourceDf = readSource(readSourceType)
@@ -88,6 +86,81 @@ abstract class DimensionBase extends BaseClass {
     if (debug) filteredSourceDf.show
 
     filteredSourceDf.persist()
+  }
+
+  /**
+    * 验证参数，优化配置
+    */
+  private def valid(): Unit = {
+    columns.trackingColumns = if (columns.trackingColumns == null) List() else columns.trackingColumns
+    if (columns.primaryKeys == null || columns.primaryKeys.isEmpty) {
+      throw new RuntimeException("业务主键未设置！")
+    }
+    if (columns.getSourceColumns == null || columns.getSourceColumns.isEmpty) {
+      throw new RuntimeException("维度表列未设置！")
+    }
+    (columns.primaryKeys ++ columns.trackingColumns).foreach(s =>
+      if (!columns.getSourceColumns.contains(s)) {
+        throw new RuntimeException("列" + s + "应该同时在allColumns中添加")
+      }
+    )
+  }
+
+  /**
+    * 自定义的源数据读取方法
+    * 默认是从jdbc中读取，如需自定义，可以在子类中重载实现
+    *
+    * @return
+    */
+  def readSource(readSourceType: Value): DataFrame = {
+    if (readSourceType == null || readSourceType == jdbc) {
+      sqlContext.read.format("jdbc").options(sourceDb).load()
+    } else {
+      null
+    }
+  }
+
+  /**
+    * 处理原数据的自定义的方法
+    * 默认可以通过配置实现，如果需要自定义处理逻辑，可以再在子类中重载实现
+    *
+    * @param sourceDf
+    * @return
+    */
+  def filterSource(sourceDf: DataFrame): DataFrame = {
+    val filtered = sourceDf.selectExpr(columns.getSourceColumns.map(
+      s => if (sourceColumnMap.contains(s))
+        sourceColumnMap(s) + " as " + s
+      else s
+    ): _*)
+    if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
+  }
+
+  private def checkPrimaryKeys(sourceDf: DataFrame, primaryKeys: List[String]): DataFrame = {
+
+    val primaryKeyNullCount = sourceDf.where(primaryKeys.map(s => s + " is null").mkString(" or ")).count
+    if (primaryKeyNullCount > 0) {
+      throw new RuntimeException("存在业务主键是null")
+    }
+
+    val duplicatePkDf = sourceDf.groupBy(
+      primaryKeys.map(s => col(s)): _*
+    ).agg(
+      count("*").as("count")
+    ).where("count > 1")
+
+    //当前在出现重复主键时直接报错
+    val duplicatePkCount = duplicatePkDf.count()
+    if (duplicatePkCount > 0) {
+      duplicatePkDf.dropDuplicates(primaryKeys).selectExpr(primaryKeys: _*).show
+      throw new RuntimeException("存在重复业务主键" + duplicatePkCount + "个！部分展示如上")
+    }
+    sourceDf
+  }
+
+  override def transform(params: Params, filteredSourceDf: DataFrame): DataFrame = {
+
+    val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionName
 
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
@@ -228,74 +301,8 @@ abstract class DimensionBase extends BaseClass {
     result
   }
 
-  /**
-    * 验证参数，优化配置
-    */
-  private def valid(): Unit = {
-    columns.trackingColumns = if (columns.trackingColumns == null) List() else columns.trackingColumns
-    if (columns.primaryKeys == null || columns.primaryKeys.isEmpty) {
-      throw new RuntimeException("业务主键未设置！")
-    }
-    if (columns.getSourceColumns == null || columns.getSourceColumns.isEmpty) {
-      throw new RuntimeException("维度表列未设置！")
-    }
-    (columns.primaryKeys ++ columns.trackingColumns).foreach(s =>
-      if (!columns.getSourceColumns.contains(s)) {
-        throw new RuntimeException("列" + s + "应该同时在allColumns中添加")
-      }
-    )
-  }
-
-  /**
-    * 自定义的源数据读取方法
-    * 默认是从jdbc中读取，如需自定义，可以在子类中重载实现
-    *
-    * @return
-    */
-  def readSource(readSourceType: Value): DataFrame = {
-    if (readSourceType == jdbc) {
-      sqlContext.read.format("jdbc").options(sourceDb).load()
-    } else {
-      null
-    }
-  }
-
-  /**
-    * 处理原数据的自定义的方法
-    * 默认可以通过配置实现，如果需要自定义处理逻辑，可以再在子类中重载实现
-    *
-    * @param sourceDf
-    * @return
-    */
-  def filterSource(sourceDf: DataFrame): DataFrame = {
-    val filtered = sourceDf.selectExpr(columns.getSourceColumns.map(
-      s => if (sourceColumnMap.contains(s))
-        sourceColumnMap(s) + " as " + s
-      else s
-    ): _*)
-    if (sourceFilterWhere != null) filtered.where(sourceFilterWhere) else filtered
-  }
-
-  private def checkPrimaryKeys(sourceDf: DataFrame, primaryKeys: List[String]): DataFrame = {
-
-    val primaryKeyNullCount = sourceDf.where(primaryKeys.map(s => s + " is null").mkString(" or ")).count
-    if (primaryKeyNullCount > 0) {
-      throw new RuntimeException("存在业务主键是null")
-    }
-
-    val duplicatePkDf = sourceDf.groupBy(
-      primaryKeys.map(s => col(s)): _*
-    ).agg(
-      count("*").as("count")
-    ).where("count > 1")
-
-    //当前在出现重复主键时直接报错
-    val duplicatePkCount = duplicatePkDf.count()
-    if (duplicatePkCount > 0) {
-      duplicatePkDf.dropDuplicates(primaryKeys).selectExpr(primaryKeys: _*).show
-      throw new RuntimeException("存在重复业务主键" + duplicatePkCount + "个！部分展示如上")
-    }
-    sourceDf
+  override def load(params: Params, df: DataFrame): Unit = {
+    backup(params, df, dimensionName)
   }
 
   /**

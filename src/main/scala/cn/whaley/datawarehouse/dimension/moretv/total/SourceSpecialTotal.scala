@@ -2,6 +2,7 @@ package cn.whaley.datawarehouse.dimension.moretv.total
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB, Params}
+import org.apache.spark.sql.DataFrame
 
 /**
   * Created by Tony on 17/1/6.
@@ -115,4 +116,23 @@ object SourceSpecialTotal extends BaseClass {
     if (list.isEmpty) "" else list.head
   }
 
+  /**
+    * 源数据读取函数, ETL中的Extract
+    * 如需自定义，可以在子类中重载实现
+    *
+    * @return
+    */
+  override def extract(params: Params): DataFrame = ???
+
+  /**
+    * 数据转换函数，ETL中的Transform
+    *
+    * @return
+    */
+  override def transform(params: Params, df: DataFrame): DataFrame = ???
+
+  /**
+    * 数据存储函数，ETL中的Load
+    */
+  override def load(params: Params, df: DataFrame): Unit = ???
 }

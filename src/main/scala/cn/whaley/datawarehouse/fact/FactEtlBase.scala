@@ -3,8 +3,8 @@ package cn.whaley.datawarehouse.fact
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.fact.common.{DimensionColumn, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.constant.LogPath
-import cn.whaley.datawarehouse.fact.constant.SourceType._
 import cn.whaley.datawarehouse.global.Globals._
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{StructField, StructType}
@@ -17,7 +17,7 @@ import scala.reflect.io.File
 /**
   * Created by Tony on 17/4/5.
   */
-abstract class EtlBase extends BaseClass {
+abstract class FactEtlBase extends BaseClass {
 
   private val INDEX_NAME = "source_index"
 
@@ -27,21 +27,37 @@ abstract class EtlBase extends BaseClass {
 
   var parquetPath: String = _
 
-  var sourceType: Value = parquet
-
   var addColumns: List[UserDefinedColumn] = _
 
   var dimensionColumns: List[DimensionColumn] = _
 
-  override def execute(params: Params): Unit = {
-    val result = doExecute(params)
+  //  override def execute(params: Params): Unit = {
+  //    val result = doExecute(params)
+  //
+  //    HdfsUtil.deleteHDFSFileOrPath(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
+  //    result.write.parquet(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
+  //  }
 
-    HdfsUtil.deleteHDFSFileOrPath(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
-    result.write.parquet(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
+  override def extract(params: Params): DataFrame = {
+    readSource(params.startDate)
   }
 
-  private def doExecute(params: Params): DataFrame = {
-    val sourceDf = readSource(params.startDate)
+  def readSource(startDate: String): DataFrame = {
+    if (readSourceType == null || readSourceType == parquet) {
+      readFromParquet(parquetPath, startDate)
+    } else {
+      null
+    }
+  }
+
+  def readFromParquet(path: String, startDate: String): DataFrame = {
+    val filePath = path.replace(LogPath.DATE_ESCAPE, startDate)
+    val sourceDf = sqlContext.read.parquet(filePath)
+    sourceDf
+    //    sourceDf.selectExpr(columnsFromSourceMap.map(s => s._2 + " as " + s._1).toArray: _*)
+  }
+
+  override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
 
     val filteredSourceDf = filterRows(sourceDf)
 
@@ -54,22 +70,6 @@ abstract class EtlBase extends BaseClass {
         ++ dimensionDf.schema.fields.filter(_.name != INDEX_NAME).map("b." + _.name)
         : _*
     )
-
-  }
-
-  def readSource(startDate: String): DataFrame = {
-    if (sourceType == parquet) {
-      readFromParquet(parquetPath, startDate)
-    } else {
-      null
-    }
-  }
-
-  def readFromParquet(path: String, startDate: String): DataFrame = {
-    val filePath = path.replace(LogPath.DATE_ESCAPE, startDate)
-    val sourceDf = sqlContext.read.parquet(filePath)
-    sourceDf
-    //    sourceDf.selectExpr(columnsFromSourceMap.map(s => s._2 + " as " + s._1).toArray: _*)
   }
 
   private def filterRows(sourceDf: DataFrame): DataFrame = {
@@ -106,6 +106,11 @@ abstract class EtlBase extends BaseClass {
     } else {
       sqlContext.createDataFrame(List[Row](), StructType(Array[StructField]()))
     }
+  }
+
+  override def load(params: Params, df: DataFrame): Unit = {
+    HdfsUtil.deleteHDFSFileOrPath(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
+    df.write.parquet(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
   }
 
 

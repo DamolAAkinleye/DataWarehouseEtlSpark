@@ -2,7 +2,7 @@ package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
 /**
@@ -51,4 +51,24 @@ object UserTime extends BaseClass {
     })
     result.toList
   }
+
+  /**
+    * 源数据读取函数, ETL中的Extract
+    * 如需自定义，可以在子类中重载实现
+    *
+    * @return
+    */
+  override def extract(params: Params): DataFrame = ???
+
+  /**
+    * 数据转换函数，ETL中的Transform
+    *
+    * @return
+    */
+  override def transform(params: Params, df: DataFrame): DataFrame = ???
+
+  /**
+    * 数据存储函数，ETL中的Load
+    */
+  override def load(params: Params, df: DataFrame): Unit = ???
 }
