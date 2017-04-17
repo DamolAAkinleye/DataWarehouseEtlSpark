@@ -13,9 +13,9 @@ import org.apache.spark.sql.DataFrame
   */
 object MemberShipGoods extends DimensionBase {
   columns.skName = "membership_goods_sk"
-  columns.primaryKeys = List("membership_goods_id")
+  columns.primaryKeys = List("goods_no")
   columns.trackingColumns = List()
-  columns.allColumns = List("membership_goods_id","goods_no","goods_name",
+  columns.allColumns = List("goods_no","goods_name",
     "goods_tag","prime_price","discount","real_price","status","goods_type",
     "goods_title", "is_display","create_time","update_time","publish_time",
     "start_time","end_time")
@@ -32,22 +32,21 @@ object MemberShipGoods extends DimensionBase {
     import org.apache.spark.sql.functions._
     sourceDf.
       select(
-        $"id".as(columns.primaryKeys(0)),
-        $"goodsNo".as(columns.allColumns(1)),
-        $"goodsName".as(columns.allColumns(2)),
-        $"goodsUseTag".as(columns.allColumns(3)),
-        $"primePrice".as(columns.allColumns(4)),
-        $"discount".cast("double")as(columns.allColumns(5)),
-        $"realPrice".as(columns.allColumns(6)),
-        $"goodsStatus".as(columns.allColumns(7)),
-        $"goodsType".as(columns.allColumns(8)),
+        $"goodsNo".as(columns.allColumns(0)),
+        $"goodsName".as(columns.allColumns(1)),
+        $"goodsUseTag".as(columns.allColumns(2)),
+        $"primePrice".as(columns.allColumns(3)),
+        $"discount".cast("double")as(columns.allColumns(4)),
+        $"realPrice".as(columns.allColumns(5)),
+        $"goodsStatus".as(columns.allColumns(6)),
+        $"goodsType".as(columns.allColumns(7)),
+        $"goodsTitle".as(columns.allColumns(8)),
         $"isDisplay".as(columns.allColumns(9)),
-        $"goodsTitle".as(columns.allColumns(10)),
-        $"createTime".cast("timestamp").as(columns.allColumns(11)),
-        $"updateTime".cast("timestamp").as(columns.allColumns(12)),
-        $"publishTime".cast("timestamp").as(columns.allColumns(13)),
-        $"startTime".cast("timestamp").as(columns.allColumns(14)),
-        $"endTime".cast("timestamp").as(columns.allColumns(15))
+        $"createTime".cast("timestamp").as(columns.allColumns(10)),
+        $"updateTime".cast("timestamp").as(columns.allColumns(11)),
+        $"publishTime".cast("timestamp").as(columns.allColumns(12)),
+        $"startTime".cast("timestamp").as(columns.allColumns(13)),
+        $"endTime".cast("timestamp").as(columns.allColumns(14))
       )
   }
 
