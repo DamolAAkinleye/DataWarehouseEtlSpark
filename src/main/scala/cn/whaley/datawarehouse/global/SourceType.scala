@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimension.constant
+package cn.whaley.datawarehouse.global
 
 /**
   * Created by Tony on 17/3/8.
@@ -6,5 +6,6 @@ package cn.whaley.datawarehouse.dimension.constant
 object SourceType extends Enumeration{
   type SourceType = Value
   val jdbc = Value
-  val custom = Value  //自定义去除源数据
+  val parquet = Value
+  val custom = Value  //自定义获取源数据
 }

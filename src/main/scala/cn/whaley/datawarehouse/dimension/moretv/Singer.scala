@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.dimension.moretv
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
-import cn.whaley.datawarehouse.dimension.constant.SourceType._
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
 
 /**

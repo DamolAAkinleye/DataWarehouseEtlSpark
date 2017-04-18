@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimension.common
+package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.util.MysqlDB

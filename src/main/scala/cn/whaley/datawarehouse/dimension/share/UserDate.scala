@@ -1,12 +1,12 @@
-package cn.whaley.datawarehouse.dimension.common
+package cn.whaley.datawarehouse.dimension.share
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.HdfsUtil
+import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
 import org.apache.commons.lang3.time.DateUtils
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 
 /**
@@ -18,7 +18,7 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
   */
 object UserDate extends BaseClass {
 
-  override def execute(args: Array[String]): Unit = {
+  override def execute(params: Params): Unit = {
 
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
     var date = dateFormat.parse("2010-01-01") //设置的开始时间
@@ -61,4 +61,24 @@ object UserDate extends BaseClass {
     df.write.parquet("/data_warehouse/dw_dimensions/dim_date")
 
   }
+
+  /**
+    * 源数据读取函数, ETL中的Extract
+    * 如需自定义，可以在子类中重载实现
+    *
+    * @return
+    */
+  override def extract(params: Params): DataFrame = ???
+
+  /**
+    * 数据转换函数，ETL中的Transform
+    *
+    * @return
+    */
+  override def transform(params: Params, df: DataFrame): DataFrame = ???
+
+  /**
+    * 数据存储函数，ETL中的Load
+    */
+  override def load(params: Params, df: DataFrame): Unit = ???
 }
