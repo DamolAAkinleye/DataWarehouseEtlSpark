@@ -43,7 +43,9 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   def readSource(startDate: String): DataFrame = {
-    if (readSourceType == null || readSourceType == parquet) {
+    if(startDate == null){
+      null
+    } else if (readSourceType == null || readSourceType == parquet) {
       readFromParquet(parquetPath, startDate)
     } else {
       null
@@ -109,8 +111,8 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
-    HdfsUtil.deleteHDFSFileOrPath(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
-    df.write.parquet(MEDUSA_FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate)
+    HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate + File.separator + "all")
+    df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate + File.separator + "all")
   }
 
 

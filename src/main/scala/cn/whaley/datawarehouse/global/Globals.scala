@@ -7,7 +7,6 @@ object Globals {
 
   val HDFS_BASE_PATH = "/data_warehouse"
   val DIMENSION_HDFS_BASE_PATH: String = HDFS_BASE_PATH + "/dw_dimensions"
-  val MEDUSA_FACT_HDFS_BASE_PATH: String = HDFS_BASE_PATH + "/dw_medusa"
-  val WHALEY_FACT_HDFS_BASE_PATH: String = HDFS_BASE_PATH + "/dw_whaley"
+  val FACT_HDFS_BASE_PATH: String = HDFS_BASE_PATH + "/dw_facts"
 
 }
