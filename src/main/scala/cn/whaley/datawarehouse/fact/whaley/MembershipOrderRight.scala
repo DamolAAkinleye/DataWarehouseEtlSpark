@@ -24,8 +24,8 @@ object MembershipOrderRight extends FactEtlBase{
     ("membership_account", "whaleyAccount"),
     ("order_id", "whaleyOrder"),
     ("product_id", "whaleyProduct"),
-    ("prime_price", "totalPrice"),
-    ("payment_amount", "paymentAmount"),
+    ("prime_price", "case when dim_whaley_membership_order_delivered.is_buy = 0 then 0 else source.totalPrice end  "),
+    ("payment_amount", "case when dim_whaley_membership_order_delivered.is_buy = 0 then 0 else source.paymentAmount end "),
     ("duration", "duration"),
     ("duration_day", "duration_day")
   )
@@ -58,7 +58,7 @@ object MembershipOrderRight extends FactEtlBase{
     val dolphin_whaley_delivered_order = MysqlDB.whaleyDolphin("dolphin_whaley_delivered_order","id",1, 1000000000, 10)
     sqlContext.read.format("jdbc").options(dolphin_whaley_delivered_order).load()
       .filter("status = 1 and substr(sn,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("delivered_order")
-    val sql =
+    val sql1 =
       s"""
          | select a.sn,a.whaleyAccount,a.whaleyOrder,a.goodsNo,
          |    b.whaleyProduct,a.totalPrice,a.paymentAmount,
@@ -70,6 +70,18 @@ object MembershipOrderRight extends FactEtlBase{
          |  on a.sn = b.sn and a.whaleyOrder = b.orderId
          |  where (a.orderStatus = 4 and substr(b.create_time,1,10) = '${day}')
          |    or (a.orderStatus != 4 and substr(a.overTime,1,10) = '${day}')
+       """.stripMargin
+
+    val sql =
+      s"""
+         | select a.sn,a.whaleyAccount,a.whaleyOrder,a.goodsNo,
+         |    b.whaleyProduct,a.totalPrice,a.paymentAmount,
+         |    b.duration,b.duration_day
+         |  from
+         |     account_order a
+         |  left join
+         |  delivered_order  b
+         |  on a.sn = b.sn and a.whaleyOrder = b.orderId
        """.stripMargin
     sqlContext.sql(sql)
   }
