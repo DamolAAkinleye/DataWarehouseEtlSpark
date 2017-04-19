@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.dimension.moretv
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
-import cn.whaley.datawarehouse.dimension.constant.SourceType._
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
 import org.apache.spark.sql.DataFrame
 
@@ -39,7 +39,8 @@ object MVTopic extends DimensionBase {
 
   sourceDb = MysqlDB.medusaCms("mtv_mvtopic", "id", 1, 134, 1)
 
-  sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> ''"
+  //临时过滤34fhwxac9wtv防止报错
+  sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> '' and mv_topic_sid <> '34fhwxac9wtv'"
 
 
 

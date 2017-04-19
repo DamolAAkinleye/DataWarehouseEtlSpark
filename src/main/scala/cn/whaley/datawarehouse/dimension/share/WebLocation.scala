@@ -1,11 +1,11 @@
-package cn.whaley.datawarehouse.dimension.common
+package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types._
-import cn.whaley.datawarehouse.dimension.constant.SourceType._
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.dimension.moretv.Subject._
 
 /**
