@@ -16,7 +16,7 @@ object HolidayDetail extends DimensionBase {
   columns.primaryKeys = List("dim_day_id")
 
   columns.allColumns = List(
-    "dim_day_id", "dim_day_info", "dim_name", "dim_type_infp"
+    "dim_day_id", "dim_day_info", "dim_name", "dim_type_info"
   )
 
 
@@ -26,12 +26,12 @@ object HolidayDetail extends DimensionBase {
     columns.primaryKeys(0) -> "id",
     columns.allColumns(1) -> "day",
     columns.allColumns(2) -> "name",
-    columns.allColumns(3) -> "type"
+    columns.allColumns(3) -> "type_info"
   )
 
   sourceDb = MysqlDB.dwDimensionDb("holiday_detail")
 
-  sourceFilterWhere = "day is not null and day <> ''"
+  sourceFilterWhere = "dim_day_info is not null and dim_day_info <> ''"
 
 
 }
