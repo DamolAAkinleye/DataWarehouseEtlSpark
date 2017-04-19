@@ -43,7 +43,7 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   def readSource(startDate: String): DataFrame = {
-    if(startDate == null){
+    if (startDate == null) {
       null
     } else if (readSourceType == null || readSourceType == parquet) {
       readFromParquet(parquetPath, startDate)
@@ -62,14 +62,32 @@ abstract class FactEtlBase extends BaseClass {
   override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
 
     val filteredSourceDf = filterRows(sourceDf)
+    filteredSourceDf.dropDuplicates()
 
     val completeSourceDf = addNewColumns(filteredSourceDf)
+    completeSourceDf.persist()
+
+//    println("完整事实表行数：" + completeSourceDf.count())
+//    completeSourceDf.show()
+
 
     val dimensionDf = parseDimension(completeSourceDf)
 
-    completeSourceDf.as("a").join(dimensionDf.as("b"), List(INDEX_NAME), "leftouter").selectExpr(
-      columnsFromSource.map(c => c._2 + " as " + c._1)
-        ++ dimensionDf.schema.fields.filter(_.name != INDEX_NAME).map("b." + _.name)
+//    println("维度关联表行数：" + dimensionDf.count())
+//    dimensionDf.show()
+
+    var df = completeSourceDf.join(dimensionDf, List(INDEX_NAME), "leftouter").as("source")
+    if (dimensionColumns != null) {
+      dimensionColumns.foreach(c => {
+        val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
+        df = df.join(dimensionDf.as(c.dimensionName),
+          df(c.dimensionSkName) === dimensionDf(c.dimensionSkName),
+          "leftouter")
+      })
+    }
+    df.selectExpr(
+      columnsFromSource.map(c => if (c._2.contains(" ") || c._2.contains(".")) c._2 else "source."+ c._2 + " as " + c._1)
+        ++ dimensionDf.schema.fields.filter(_.name != INDEX_NAME).map("source." + _.name)
         : _*
     )
   }
@@ -92,17 +110,40 @@ abstract class FactEtlBase extends BaseClass {
     var dimensionColumnDf: DataFrame = null
     if (dimensionColumns != null) {
       dimensionColumns.foreach(c => {
-        val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
-        val df = sourceDf.as("a").join(dimensionDf.as("b"),
-          c.joinColumnList.head.map(s => sourceDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _),
-          "leftouter").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName)
+        val dimensionDfBase = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
+        var df: DataFrame = null
+        c.joinColumnList.foreach(jc => {
+          var dimensionDf = dimensionDfBase
+          if (jc.whereClause != null && !jc.whereClause.isEmpty) {
+            dimensionDf = dimensionDf.where(jc.whereClause)
+          }
+          if (jc.orderBy != null && jc.orderBy.nonEmpty) {
+            dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
+          }
+          dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)
+          if (df == null) {
+            df = sourceDf.as("a").join(dimensionDf.as("b"),
+              jc.columnPairs.map(s => sourceDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _),
+              "inner").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName)
+          } else {
+            df = sourceDf.as("a").join(df.as("dim"), sourceDf(INDEX_NAME) === df(INDEX_NAME), "leftouter").join(
+              dimensionDf.as("b"),
+              jc.columnPairs.map(s => sourceDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _) && isnull(df(c.dimensionSkName)),
+              "inner").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName).unionAll(df)
+          }
+        })
+        df = sourceDf.as("a").join(df.as("b"), sourceDf(INDEX_NAME)=== df(INDEX_NAME), "leftouter").selectExpr(
+          "a." + INDEX_NAME, "b." + c.dimensionSkName)
+//        println(df.count())
         if (dimensionColumnDf == null) {
           dimensionColumnDf = df
         } else {
           dimensionColumnDf = dimensionColumnDf.join(df, INDEX_NAME)
         }
-      })
+      }
+      )
     }
+
     if (dimensionColumnDf != null) {
       dimensionColumnDf
     } else {

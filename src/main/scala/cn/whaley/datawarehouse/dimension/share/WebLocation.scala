@@ -26,6 +26,7 @@ object WebLocation extends DimensionBase {
   columns.trackingColumns = List()
 
   columns.allColumns = List(
+    "web_location_key",
     "ip_section_1",
     "ip_section_2",
     "ip_section_3",
