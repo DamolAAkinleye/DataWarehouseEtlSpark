@@ -15,7 +15,7 @@ object Program extends DimensionBase {
   columns.primaryKeys = List("sid")
   columns.trackingColumns = List()
   columns.allColumns = List("sid", "title", "content_type", "content_type_name", "duration", "video_type", "episode_index",
-    "area", "year", "video_length_type", "create_time", "publish_time")
+    "area", "year", "video_length_type", "create_time", "publish_time", "cast")
 
   sourceDb = MysqlDB.medusaCms("mtv_basecontent", "id", 1, 2010000000, 500)
 
@@ -32,6 +32,7 @@ object Program extends DimensionBase {
       " first(duration) duration, first(parent_id) parent_id, first(video_type) video_type," +
       " first(episode) episode, first(area) area, first(year) year, " +
       " first(videoLengthType) videoLengthType, first(create_time) create_time, first(publish_time) publish_time " +
+      " first(cast) cast " +
       " from mtv_basecontent where sid is not null and sid <> '' and display_name is not null " +
       " group by sid ").registerTempTable("program_table")
 
@@ -43,7 +44,7 @@ object Program extends DimensionBase {
       "a.content_type, c.name as content_type_name, a.duration, a.video_type, a.episode as episode_index, " +
       "a.area, a.year, a.videoLengthType as video_length_type, " +
       "a.create_time, " +
-      "a.publish_time " +
+      "a.publish_time, a.cast" +
       " from program_table a" +
       " left join content_type c on a.content_type = c.code " +
       " where a.sid is not null and a.sid <> ''" +

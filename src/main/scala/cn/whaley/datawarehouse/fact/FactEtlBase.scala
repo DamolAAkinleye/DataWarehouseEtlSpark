@@ -67,14 +67,14 @@ abstract class FactEtlBase extends BaseClass {
     val completeSourceDf = addNewColumns(filteredSourceDf)
     completeSourceDf.persist()
 
-//    println("完整事实表行数：" + completeSourceDf.count())
-//    completeSourceDf.show()
+    //    println("完整事实表行数：" + completeSourceDf.count())
+    //    completeSourceDf.show()
 
 
     val dimensionDf = parseDimension(completeSourceDf)
 
-//    println("维度关联表行数：" + dimensionDf.count())
-//    dimensionDf.show()
+    //    println("维度关联表行数：" + dimensionDf.count())
+    //    dimensionDf.show()
 
     var df = completeSourceDf.join(dimensionDf, List(INDEX_NAME), "leftouter").as("source")
     if (dimensionColumns != null) {
@@ -86,7 +86,11 @@ abstract class FactEtlBase extends BaseClass {
       })
     }
     df.selectExpr(
-      columnsFromSource.map(c => if (c._2.contains(" ") || c._2.contains(".")) c._2 else "source."+ c._2 + " as " + c._1)
+      columnsFromSource.map(
+        c => if (c._2.contains(" ") || c._2.contains("."))
+          c._2 + " as " + c._1
+        else
+          "source." + c._2 + " as " + c._1)
         ++ dimensionDf.schema.fields.filter(_.name != INDEX_NAME).map("source." + _.name)
         : _*
     )
@@ -132,9 +136,9 @@ abstract class FactEtlBase extends BaseClass {
               "inner").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName).unionAll(df)
           }
         })
-        df = sourceDf.as("a").join(df.as("b"), sourceDf(INDEX_NAME)=== df(INDEX_NAME), "leftouter").selectExpr(
+        df = sourceDf.as("a").join(df.as("b"), sourceDf(INDEX_NAME) === df(INDEX_NAME), "leftouter").selectExpr(
           "a." + INDEX_NAME, "b." + c.dimensionSkName)
-//        println(df.count())
+        //        println(df.count())
         if (dimensionColumnDf == null) {
           dimensionColumnDf = df
         } else {
