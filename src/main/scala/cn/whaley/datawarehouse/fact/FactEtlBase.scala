@@ -152,8 +152,8 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
-    HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate + File.separator + "all")
-    df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate + File.separator + "all")
+    HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate + File.separator + "00")
+    df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.startDate + File.separator + "00")
   }
 
 
