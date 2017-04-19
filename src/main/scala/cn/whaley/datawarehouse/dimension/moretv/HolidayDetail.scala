@@ -1,9 +1,8 @@
 package cn.whaley.datawarehouse.dimension.moretv
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
-import cn.whaley.datawarehouse.dimension.constant.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
-
+import cn.whaley.datawarehouse.global.SourceType._
 /**
   * Created by Chubby on 3/13/17.
   * 节假日信息
