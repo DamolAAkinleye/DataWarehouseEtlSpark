@@ -6,7 +6,7 @@
 *.class
 /project
 
-*/.DS_Store
+*.DS_Store
 .DS_Store
 target
 metastore_db
