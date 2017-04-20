@@ -38,7 +38,7 @@ object UserLogin extends FactEtlBase {
     ("product_version", "productVersion"),
     ("promotion_channel", "promotionChannel"),
     ("sn", "sn"),
-    ("timestamp", "timestamp"),
+    ("log_timestamp", "timestamp"),
     ("user_id", "userId"),
     ("user_type", "userType"),
     ("version", "version"),

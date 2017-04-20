@@ -18,7 +18,7 @@ object AppVersion extends DimensionBase {
 
   //维度表的字段对应源数据的获取方式
   sourceColumnMap = Map(
-    "app_version_key" -> "cast((id + 10000) as long)",
+    "app_version_key" -> "cast(id as long)",
     "app_id" -> "''",
     "company" -> "'微鲸'",
     "product" -> "''"
