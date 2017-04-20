@@ -178,7 +178,7 @@ abstract class DimensionBase extends BaseClass {
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
 
     println("成功获取现有维度")
-    if (debug) originalDf.show
+    if (debug) originalDf.show; originalDf.printSchema()
 
     val newColumns = {
       val index = new ListBuffer[Int]
@@ -223,7 +223,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成需要增加的行")
-    if (debug) extendDf.show
+    if (debug) extendDf.show; extendDf.printSchema()
 
     val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     val todayStr = sdf.format(today)
@@ -247,7 +247,8 @@ abstract class DimensionBase extends BaseClass {
       ++ List(columns.invalidTimeKey).map(s =>
       //"a." + s   //如果源数据确保主键不会变，则可以使用这个逻辑。在这个逻辑下，可以允许filteredSourceDf只包含源数据中变动的行，
       //同时要注意，在需要增加列时，filteredSourceDf必须要包含完整源数据
-      "CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null THEN '$todayStr' ELSE a.$s END as $s")
+      "CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null " +
+        s"THEN cast('$todayStr' as timestamp) ELSE a.$s END as $s")
       : _*
     )
 
@@ -259,10 +260,10 @@ abstract class DimensionBase extends BaseClass {
         //变更后需要标注失效时间的行，包含代理键和失效时间两列
         val invalidColumnsDf =
           changedTrackingColumnDf.selectExpr(List("a." + columns.skName)
-            ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
+            ++ List("cast('" + todayStr + "' as timestamp) as " + columns.invalidTimeKey): _*)
 
         println("计算完成需要变更失效时间的行")
-        if (debug) invalidColumnsDf.show
+        if (debug) invalidColumnsDf.show; invalidColumnsDf.printSchema()
 
         //更新失效时间
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
@@ -274,7 +275,7 @@ abstract class DimensionBase extends BaseClass {
       }
 
     println("计算完成原有维度数据更新后")
-    if (debug) df.show
+    if (debug) df.show; df.printSchema()
 
     //合并上述形成最终结果
     val offset =
@@ -294,7 +295,7 @@ abstract class DimensionBase extends BaseClass {
     )
 
     println("计算完成最终生成的新维度")
-    if (debug) result.show
+    if (debug) result.show; df.printSchema()
 
     result
   }
