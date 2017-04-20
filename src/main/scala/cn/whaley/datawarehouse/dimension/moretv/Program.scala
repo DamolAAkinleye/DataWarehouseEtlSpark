@@ -31,7 +31,7 @@ object Program extends DimensionBase {
     sqlContext.sql("select sid, first(id) id, first(display_name) display_name, first(content_type) content_type, " +
       " first(duration) duration, first(parent_id) parent_id, first(video_type) video_type," +
       " first(episode) episode, first(area) area, first(year) year, " +
-      " first(videoLengthType) videoLengthType, first(create_time) create_time, first(publish_time) publish_time " +
+      " first(videoLengthType) videoLengthType, first(create_time) create_time, first(publish_time) publish_time, " +
       " first(cast) cast " +
       " from mtv_basecontent where sid is not null and sid <> '' and display_name is not null " +
       " group by sid ").registerTempTable("program_table")
