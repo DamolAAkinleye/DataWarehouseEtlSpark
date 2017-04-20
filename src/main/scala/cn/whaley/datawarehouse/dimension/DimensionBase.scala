@@ -198,7 +198,7 @@ abstract class DimensionBase extends BaseClass {
         columns.getSourceColumns.map(s => "b." + s): _*
       )
 
-    //找到追踪列变化的信息包含的dataframe, 用于增加追踪列变化的行以及将变化前的行标注为失效
+    //找到追踪列变化的信息包含的dataframe。用于增加追踪列变化的行以及将变化前的行标注为失效
     val changedTrackingColumnDf =
       filteredSourceDf.as("b").join(
         originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
@@ -214,11 +214,13 @@ abstract class DimensionBase extends BaseClass {
     //更新后维度表中需要添加的行，包括新增的和追踪列变化的
     val extendDf =
       if (columns.trackingColumns == null || columns.trackingColumns.isEmpty) {
-        addDf
+        DataFrameUtil.addDimTime(addDf, DimensionBase.defaultValidTime, null)
       } else {
-        addDf.unionAll(
+        DataFrameUtil.addDimTime(addDf, DimensionBase.defaultValidTime, null).unionAll(
           //因为追踪列变化而新增的行
-          changedTrackingColumnDf.selectExpr(columns.getSourceColumns.map(s => s"b.$s"): _*)
+          DataFrameUtil.addDimTime(
+            changedTrackingColumnDf.selectExpr(columns.getSourceColumns.map(s => s"b.$s"): _*),
+            today, null)
         )
       }
 
@@ -288,7 +290,7 @@ abstract class DimensionBase extends BaseClass {
 
     val result = df.unionAll(
       DataFrameUtil.dfZipWithIndex(
-        DataFrameUtil.addDimTime(extendDf, today, null)
+        extendDf
         , columns.skName
         , offset
       )
