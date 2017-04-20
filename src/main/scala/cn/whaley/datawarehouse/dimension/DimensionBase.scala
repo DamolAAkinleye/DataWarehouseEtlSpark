@@ -13,6 +13,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.storage.StorageLevel
 
+import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
 
 /**
@@ -179,14 +180,11 @@ abstract class DimensionBase extends BaseClass {
     println("成功获取现有维度")
     if (debug) originalDf.show
 
-    val newColumns =
-      if (columns.getSourceColumns.size == originalDf.schema.fields.length) {
-        List()
-      } else {
-        var temp = columns.getSourceColumns
-        originalDf.schema.fields.map(_.name).foreach(s => temp = temp.drop(columns.getSourceColumns.indexOf(s)))
-        temp
-      }
+    val newColumns = {
+      val index = new ListBuffer[Int]
+      originalDf.schema.fields.map(_.name).foreach(s => index += columns.getSourceColumns.indexOf(s))
+      columns.getSourceColumns.filter(s => !index.contains(columns.getSourceColumns.indexOf(s)))
+    }
 
     if (debug) println("新增加列：" + newColumns)
 
