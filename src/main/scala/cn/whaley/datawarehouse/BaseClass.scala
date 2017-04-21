@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse
 
 import cn.whaley.datawarehouse.global.SourceType._
-import cn.whaley.datawarehouse.util.{Params, ParamsParseUtil}
+import cn.whaley.datawarehouse.util.{DateFormatUtils, Params, ParamsParseUtil}
 import org.apache.spark.sql.hive.HiveContext
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -34,13 +34,25 @@ trait BaseClass {
     println("execute start ....")
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
-        execute(p)
+        if (p.startDate != null) {
+          var date = p.startDate
+          p.paramMap.put("date", date)
+          execute(p)
+          while (p.endDate != null && date < p.endDate) {
+            date = DateFormatUtils.enDateAdd(date, 1)
+            p.paramMap.put("date", date)
+            execute(p)
+          }
+        } else {
+          execute(p)
+        }
       }
       case None => {
         throw new RuntimeException("parameters wrong")
       }
     }
     println("execute end ....")
+    destroy()
 
   }
 

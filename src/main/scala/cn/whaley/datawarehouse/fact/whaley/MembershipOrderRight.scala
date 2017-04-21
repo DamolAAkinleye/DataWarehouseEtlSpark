@@ -31,15 +31,15 @@ object MembershipOrderRight extends FactEtlBase{
   )
 
   dimensionColumns = List(
-    DimensionColumn("dim_whaley_membership_account_order",
+    new DimensionColumn("dim_whaley_membership_account_order",
       List(DimensionJoinCondition(Map("sn" -> "product_sn","whaleyOrder" -> "order_id"))), "membership_order_sk"),
-    DimensionColumn("dim_whaley_membership_order_delivered",
+    new DimensionColumn("dim_whaley_membership_order_delivered",
       List(DimensionJoinCondition(Map("sn" -> "product_sn","whaleyOrder" -> "order_id","whaleyProduct" -> "product_id"))), "membership_order_delivered_sk"),
-    DimensionColumn("dim_whaley_membership_goods",
+    new DimensionColumn("dim_whaley_membership_goods",
       List(DimensionJoinCondition(Map("goodsNo" -> "goods_no"))), "membership_goods_sk"),
-    DimensionColumn("dim_whaley_membership_right",
+    new DimensionColumn("dim_whaley_membership_right",
       List(DimensionJoinCondition(Map("sn" -> "product_sn","whaleyAccount" -> "membership_account","whaleyProduct" -> "product_id"))), "membership_right_sk"),
-    DimensionColumn("dim_whaley_product_sn",
+    new DimensionColumn("dim_whaley_product_sn",
       List(DimensionJoinCondition(Map("sn" -> "product_sn"))), "product_sn_sk")
   )
 

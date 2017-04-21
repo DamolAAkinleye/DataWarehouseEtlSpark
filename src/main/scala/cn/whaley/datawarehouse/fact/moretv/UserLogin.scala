@@ -47,15 +47,15 @@ object UserLogin extends FactEtlBase {
   )
 
   dimensionColumns = List(
-    DimensionColumn("dim_web_location",
+    new DimensionColumn("dim_web_location",
       List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))), "web_location_sk"),
-    DimensionColumn("dim_medusa_terminal_user",
+    new DimensionColumn("dim_medusa_terminal_user",
       List(DimensionJoinCondition(Map("userId" -> "user_id"))), "user_sk"),
-    DimensionColumn("dim_medusa_product_model",
+    new DimensionColumn("dim_medusa_product_model",
       List(DimensionJoinCondition(Map("productModel" -> "product_model"))), "product_model_sk"),
-    DimensionColumn("dim_medusa_promotion",
+    new DimensionColumn("dim_medusa_promotion",
       List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
-    DimensionColumn("dim_app_version",
+    new DimensionColumn("dim_app_version",
       List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))), "app_version_sk")
   )
 
