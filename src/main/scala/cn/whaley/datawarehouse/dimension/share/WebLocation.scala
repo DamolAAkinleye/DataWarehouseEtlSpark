@@ -223,15 +223,7 @@ object WebLocation extends DimensionBase {
         |on a.prefecture_level_city=b.city
       """.stripMargin
 
-    val resultDf = sqlContext.sql(sqlStr)
-    resultDf.registerTempTable("result")
-    println("部分数据:")
-    sqlContext.sql("select * from result where prefecture_level_city='苏州'").show(100)
-    println("未去重主键数:")
-    sqlContext.sql("select count(web_location_key) unDistinctCount from result").show
-    println("去重主键数:")
-    sqlContext.sql("select count(distinct web_location_key) distinctCount from result").show
+    sqlContext.sql(sqlStr)
 
-    resultDf
   }
 }
