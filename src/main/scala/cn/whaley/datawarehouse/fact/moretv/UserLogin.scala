@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.fact.moretv
 
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.common.{DimensionColumn, UserDefinedColumn}
+import cn.whaley.datawarehouse.fact.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.util.DateFormatUtils
 import org.apache.commons.lang3.time.DateUtils
@@ -14,14 +14,17 @@ import org.apache.spark.sql.functions._
   */
 object UserLogin extends FactEtlBase {
 
-  topicName = "medusa_user_login"
+  topicName = "fact_medusa_user_login"
 
   parquetPath = LogPath.LOGIN_LOG_PATH
 
   addColumns = List(
     UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("ip")),
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("datetime")),
-    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime"))
+    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime")),
+    UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
+    UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version"))
+
   )
 
   columnsFromSource = List(
@@ -35,7 +38,7 @@ object UserLogin extends FactEtlBase {
     ("product_version", "productVersion"),
     ("promotion_channel", "promotionChannel"),
     ("sn", "sn"),
-    ("timestamp", "timestamp"),
+    ("log_timestamp", "timestamp"),
     ("user_id", "userId"),
     ("user_type", "userType"),
     ("version", "version"),
@@ -44,10 +47,16 @@ object UserLogin extends FactEtlBase {
   )
 
   dimensionColumns = List(
-    DimensionColumn("dim_web_location", List(Map("ipKey" -> "web_location_key")), "web_location_sk"),
-    DimensionColumn("dim_medusa_terminal_user", List(Map("userId" -> "user_id")), "user_sk"),
-    DimensionColumn("dim_medusa_product_model", List(Map("productModel" -> "product_model")), "product_model_sk"),
-    DimensionColumn("dim_medusa_promotion", List(Map("promotionChannel" -> "promotion_code")), "promotion_sk")
+    DimensionColumn("dim_web_location",
+      List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))), "web_location_sk"),
+    DimensionColumn("dim_medusa_terminal_user",
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))), "user_sk"),
+    DimensionColumn("dim_medusa_product_model",
+      List(DimensionJoinCondition(Map("productModel" -> "product_model"))), "product_model_sk"),
+    DimensionColumn("dim_medusa_promotion",
+      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
+    DimensionColumn("dim_app_version",
+      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))), "app_version_sk")
   )
 
   override def readSource(startDate: String): DataFrame = {
@@ -83,6 +92,28 @@ object UserLogin extends FactEtlBase {
       val dateTimeInfo = dateTime.split(" ")
       if (dateTimeInfo.length >= 2) {
         dateTimeInfo(1)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getAppSeries(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(0, index)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getAppVersion(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(index + 1, seriesAndVersion.length)
       } else ""
     } catch {
       case ex: Exception => ""
