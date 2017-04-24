@@ -3,11 +3,11 @@ package cn.whaley.datawarehouse.dimension.share
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
+import cn.whaley.datawarehouse.dimension.DimensionBase
+import cn.whaley.datawarehouse.global.SourceType.SourceType
 import org.apache.commons.lang3.time.DateUtils
-import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
 
 /**
   * Created by Tony on 16/12/23.
@@ -16,12 +16,25 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
   *
   * 无需自动触发，只需要修改后手动执行一次
   */
-object UserDate extends BaseClass {
+object UserDate extends DimensionBase {
 
-  override def execute(params: Params): Unit = {
+  columns.skName = "dim_date_sk"
+  columns.primaryKeys = List("date_key")
+  columns.trackingColumns = List()
+  columns.allColumns = List("date_key",
+    "year",
+    "month",
+    "day_of_month",
+    "day_of_year",
+    "day_of_week",
+    "day_type")
+  dimensionName = "dim_date"
 
+
+  override def readSource(readSourceType: SourceType): DataFrame = {
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
-    var date = dateFormat.parse("2010-01-01") //设置的开始时间
+    var date = dateFormat.parse("2010-01-01")
+    //设置的开始时间
     val endDate = dateFormat.parse("2030-01-01")
 
     val list = collection.mutable.Buffer[(String, Int, Int, Int, Int, Int, String)]()
@@ -57,28 +70,7 @@ object UserDate extends BaseClass {
 
     val df = sqlContext.createDataFrame(rdd, schema)
 
-    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_date")
-    df.write.parquet("/data_warehouse/dw_dimensions/dim_date")
-
+    df
   }
 
-  /**
-    * 源数据读取函数, ETL中的Extract
-    * 如需自定义，可以在子类中重载实现
-    *
-    * @return
-    */
-  override def extract(params: Params): DataFrame = ???
-
-  /**
-    * 数据转换函数，ETL中的Transform
-    *
-    * @return
-    */
-  override def transform(params: Params, df: DataFrame): DataFrame = ???
-
-  /**
-    * 数据存储函数，ETL中的Load
-    */
-  override def load(params: Params, df: DataFrame): Unit = ???
 }

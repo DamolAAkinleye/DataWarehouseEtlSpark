@@ -80,13 +80,15 @@ abstract class DimensionBase extends BaseClass {
     //过滤源数据
     val filteredSourceDf = filterSource(sourceDf)
 
+    filteredSourceDf.persist()
+
     //过滤后源数据主键唯一性判断和处理
     checkPrimaryKeys(filteredSourceDf, columns.primaryKeys)
 
     println("成功获取源数据")
     if (debug) filteredSourceDf.show
 
-    filteredSourceDf.persist()
+    filteredSourceDf
   }
 
   /**

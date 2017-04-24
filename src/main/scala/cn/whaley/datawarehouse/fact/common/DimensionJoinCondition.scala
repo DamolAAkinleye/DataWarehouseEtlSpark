@@ -5,7 +5,8 @@ package cn.whaley.datawarehouse.fact.common
   */
 case class DimensionJoinCondition(columnPairs: Map[String, String],
                                   whereClause: String = null,
-                                  orderBy: List[(String, Boolean)] = null  //元组中，第一个是排序字段名，第二个是排序方式，true表示倒序
+                                  orderBy: List[(String, Boolean)] = null, //元组中，第一个是排序字段名，第二个是排序方式，true表示倒序
+                                  sourceWhereClause: String = null
                                  ) {
 
   def this(columnPairs: Map[String, String]) = {

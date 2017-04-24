@@ -14,6 +14,10 @@ import cn.whaley.datawarehouse.dimension.moretv.Subject._
   * web地址维度生成ETL
   *
   * 无需自动触发，只需要修改后手动执行一次
+  *
+  * updated by wu.jiulin on 17/04/20
+  * 修改city_info的表结构和数据
+  * 维度表增加prefecture_level_city(地级市)字段
   */
 object WebLocation extends DimensionBase {
 
@@ -38,7 +42,8 @@ object WebLocation extends DimensionBase {
     "city_level",
     "longitude",
     "latitude",
-    "isp"
+    "isp",
+    "prefecture_level_city"
   )
 
 
@@ -145,19 +150,80 @@ object WebLocation extends DimensionBase {
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     val sq = sqlContext
+    sqlContext.udf.register("replaceStr",(_:String).replaceAll("市",""))
     import sq.implicits._
     import org.apache.spark.sql.functions._
 
-    val cityInfoDb = MysqlDB.dwDimensionDb("city_info")
+//    val cityInfoDb = MysqlDB.dwDimensionDb("city_info")
+//
+//    val cityInfoDf = sqlContext.read.format("jdbc").options(cityInfoDb).load()
+//      .select($"city", $"area", $"city_level")
+//
+//    cityInfoDf.join(sourceDf, "city" :: Nil, "rightouter")
+//      .select(
+//        columns.primaryKeys(0),
+//        columns.allColumns: _*
+//      )
 
+    val cityInfoDb = MysqlDB.dwDimensionDb("city_info_new")
     val cityInfoDf = sqlContext.read.format("jdbc").options(cityInfoDb).load()
-      .select($"city", $"area", $"cityLevel".as("city_level"))
 
-    cityInfoDf.join(sourceDf, "city" :: Nil, "rightouter")
-      .select(
-        columns.primaryKeys(0),
-        columns.allColumns: _*
-      )
+    cityInfoDf.registerTempTable("city_info")
+    sourceDf.registerTempTable("ip_info")
+
+    var sqlStr =
+      s"""
+        |select
+        |a.web_location_key as ${columns.primaryKeys(0)},
+        |a.ip_section_1 as ${columns.allColumns(1)},
+        |a.ip_section_2 as ${columns.allColumns(2)},
+        |a.ip_section_3 as ${columns.allColumns(3)},
+        |a.country as ${columns.allColumns(4)},
+        |b.area as ${columns.allColumns(5)},
+        |a.province as ${columns.allColumns(6)},
+        |b.city as ${columns.allColumns(7)},
+        |a.district as ${columns.allColumns(8)},
+        |b.city_level as ${columns.allColumns(9)},
+        |a.longitude as ${columns.allColumns(10)},
+        |a.latitude as ${columns.allColumns(11)},
+        |a.isp as ${columns.allColumns(12)},
+        |a.city as ${columns.allColumns(13)}
+        |from ip_info a
+        |left join
+        |(
+        |select t1.city,t1.area,t1.city_level,t1.executive_level,t1.prefecture_level_city from
+        |city_info t1 left join city_info t2 on t1.city=t2.prefecture_level_city
+        |where t2.prefecture_level_city is null
+        |) b
+        |on if(b.executive_level='县级市',replaceStr(a.district),a.city) = b.city
+      """.stripMargin
+    sqlContext.sql(sqlStr).registerTempTable("tmp_table")
+    /**
+      * city_info表的city字段没有 区 的值,如浦东新区,和ip库关联不上导致最终结果有 区 的记录 area,city,city_info三个字段为空
+      * 拿上面结果的prefecture_level_city关联city_info的city补上结果
+      */
+    sqlStr =
+      s"""
+        |select
+        |a.${columns.primaryKeys(0)},
+        |a.${columns.allColumns(1)},
+        |a.${columns.allColumns(2)},
+        |a.${columns.allColumns(3)},
+        |a.${columns.allColumns(4)},
+        |if(a.${columns.allColumns(5)} is null,b.area,a.${columns.allColumns(5)}) as ${columns.allColumns(5)},
+        |a.${columns.allColumns(6)},
+        |if(a.${columns.allColumns(7)} is null,b.city,a.${columns.allColumns(7)}) as ${columns.allColumns(7)},
+        |a.${columns.allColumns(8)},
+        |if(a.${columns.allColumns(9)} is null,b.city_level,a.${columns.allColumns(9)}) as ${columns.allColumns(9)},
+        |a.${columns.allColumns(10)},
+        |a.${columns.allColumns(11)},
+        |a.${columns.allColumns(12)},
+        |a.${columns.allColumns(13)}
+        |from tmp_table a left join city_info b
+        |on a.prefecture_level_city=b.city
+      """.stripMargin
+
+    sqlContext.sql(sqlStr)
 
   }
 }

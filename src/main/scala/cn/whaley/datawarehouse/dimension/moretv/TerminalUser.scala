@@ -12,20 +12,29 @@ object TerminalUser extends DimensionBase {
 
   columns.skName = "user_sk"
   columns.primaryKeys = List("user_id")
-  columns.trackingColumns = List()
+  columns.trackingColumns = List("apk_version", "ip")
   columns.allColumns = List(
     "user_id",
     "open_time",
+    "ip",
     "mac",
     "wifi_mac",
     "product_model",
     "product_serial",
     "promotion_channel",
-    "last_login_time")
+    "system_version",
+    "user_type",
+    "apk_version",
+    "current_ip",
+    "current_apk_version"
+  )
 
   sourceColumnMap = Map(
     "open_time" -> "openTime",
-    "last_login_time" -> "lastLoginTime"
+    "user_type" -> "userType",
+    "apk_current_version" -> "current_version",
+    "apk_version" -> "current_version",
+    "current_ip" -> "ip"
   )
 
   sourceFilterWhere = "user_id is not null and user_id <> ''"
