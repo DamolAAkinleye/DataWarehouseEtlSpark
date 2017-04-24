@@ -147,15 +147,21 @@ abstract class FactEtlBase extends BaseClass {
           }
           //维度表去重
           dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)
+          //实时表源数据过滤
+          val sourceFilterDf =
+            if (jc.sourceWhereClause != null && !jc.sourceWhereClause.isEmpty)
+              sourceDf.where(jc.sourceWhereClause)
+            else
+              sourceDf
           //源表与维度表join
           if (df == null) {
-            df = sourceDf.as("a").join(dimensionDf.as("b"),
-              jc.columnPairs.map(s => sourceDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _),
+            df = sourceFilterDf.as("a").join(dimensionDf.as("b"),
+              jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _),
               "inner").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName)
           } else {
-            df = sourceDf.as("a").join(df.as("dim"), sourceDf(INDEX_NAME) === df(INDEX_NAME), "leftouter").join(
+            df = sourceFilterDf.as("a").join(df.as("dim"), sourceFilterDf(INDEX_NAME) === df(INDEX_NAME), "leftouter").join(
               dimensionDf.as("b"),
-              jc.columnPairs.map(s => sourceDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
+              jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
                 && isnull(df(c.dimensionSkName)),
               "inner").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName).unionAll(df)
           }
