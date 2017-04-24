@@ -32,7 +32,11 @@ object MemberShipOrderDelivered extends DimensionBase {
 
     val sql =
       s"""
-         | select a.*,
+         | select a.id,a.sn,a.orderId,
+         | case when a.whaleyProduct='chlid' then 'child' else a.whaleyProduct end whaleyProduct,
+         | case when a.whaleyProductName='基础包' then '白金会员' else a.whaleyProductName end whaleyProductName,
+         | a.duration ,
+         | a.duration_day,a.create_time,a.start_time,a.end_time,a.invalid_time ,
          | case when b.orderId is null or  a.whaleyProduct='diamond' then 1 else 0 end is_buy
          | from
          |  tmp a
