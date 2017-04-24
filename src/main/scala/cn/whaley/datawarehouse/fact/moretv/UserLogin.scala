@@ -52,6 +52,8 @@ object UserLogin extends FactEtlBase {
       List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))), "web_location_sk"),
     new DimensionColumn("dim_medusa_terminal_user",
       List(DimensionJoinCondition(Map("userId" -> "user_id"))), "user_sk"),
+    new DimensionColumn("dim_medusa_terminal_user_login",
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))), "user_login_sk"),
     new DimensionColumn("dim_medusa_product_model",
       List(DimensionJoinCondition(Map("productModel" -> "product_model"))), "product_model_sk"),
     new DimensionColumn("dim_medusa_promotion",

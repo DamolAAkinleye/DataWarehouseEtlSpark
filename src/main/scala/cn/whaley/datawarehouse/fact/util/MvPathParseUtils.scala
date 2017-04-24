@@ -1,6 +1,7 @@
 package cn.whaley.datawarehouse.fact.util
 
-import cn.whaley.datawarehouse.fact.common.{DimensionColumn, DimensionJoinCondition}
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
+
 
 /**
   * Created by baozhiwang on 2017/4/24.

@@ -1,6 +1,6 @@
 package cn.whaley.datawarehouse.fact.util
 
-import cn.whaley.datawarehouse.fact.common.{DimensionColumn, DimensionJoinCondition}
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import org.apache.avro.TestAnnotation
 
 /**
