@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat
 import java.util.{Calendar, Date}
 
 import cn.whaley.datawarehouse.BaseClass
+import cn.whaley.datawarehouse.common.DimensionColumn
 import cn.whaley.datawarehouse.dimension.constant.Constants._
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
@@ -54,6 +55,11 @@ abstract class DimensionBase extends BaseClass {
     * key是维度表字段名，value是数据源中获取方式，支持spark sql表达
     */
   var sourceColumnMap: Map[String, String] = Map()
+
+  /**
+    * 关联的维度
+    */
+  var linkDimensionColumns: List[DimensionColumn] = _
 
   var debug = false
 
@@ -301,7 +307,17 @@ abstract class DimensionBase extends BaseClass {
     println("计算完成最终生成的新维度")
     if (debug) result.show
 
-    result
+    //关联其他维度，支持雪花模型
+    val linkDimension = parseDimension(result, linkDimensionColumns, columns.skName, columns.invalidTimeKey)
+
+    if(linkDimension == null) {
+      result
+    }else {
+      val r = result.join(linkDimension, List(columns.skName), "leftouter")
+      if (debug) r.show
+      r
+    }
+
   }
 
   override def load(params: Params, df: DataFrame): Unit = {

@@ -2,8 +2,8 @@ package cn.whaley.datawarehouse.fact.whaley
 
 import java.util.Calendar
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.util.{DateFormatUtils, MysqlDB}
 import org.apache.spark.sql.DataFrame
 /**

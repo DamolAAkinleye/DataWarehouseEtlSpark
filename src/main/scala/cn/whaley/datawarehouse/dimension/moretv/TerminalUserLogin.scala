@@ -1,5 +1,6 @@
 package cn.whaley.datawarehouse.dimension.moretv
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.util.MysqlDB
 
@@ -25,5 +26,15 @@ object TerminalUserLogin extends DimensionBase {
   sourceFilterWhere = "user_id is not null and user_id <> ''"
   sourceDb = MysqlDB.medusaTvServiceAccount
 
+  linkDimensionColumns = List(
+    new DimensionColumn(
+      "dim_medusa_terminal_user",
+      List(DimensionJoinCondition(Map("user_id" -> "user_id"))),
+      "user_sk"
+    )
+  )
+
   dimensionName = "dim_medusa_terminal_user_login"
+
+  debug = true
 }

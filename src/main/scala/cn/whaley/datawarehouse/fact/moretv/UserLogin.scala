@@ -1,7 +1,8 @@
 package cn.whaley.datawarehouse.fact.moretv
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
+import cn.whaley.datawarehouse.fact.common.UserDefinedColumn
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.util.DateFormatUtils
 import org.apache.commons.lang3.time.DateUtils

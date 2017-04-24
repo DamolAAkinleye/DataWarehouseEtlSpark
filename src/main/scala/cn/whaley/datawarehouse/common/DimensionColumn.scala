@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.common
+package cn.whaley.datawarehouse.common
 
 /**
   * Created by Tony on 17/4/6.
@@ -9,9 +9,9 @@ case class DimensionColumn(dimensionName: String,
                       dimensionColumnName: String
                      ) {
 
-  def this(dimensionNam: String,
-           joinColumnLis: List[DimensionJoinCondition],
-           dimensionSkNam: String) =
-    this(dimensionNam, joinColumnLis, dimensionSkNam, dimensionSkNam)
+  def this(dimensionName: String,
+           joinColumnList: List[DimensionJoinCondition],
+           dimensionSkName: String) =
+    this(dimensionName, joinColumnList, dimensionSkName, dimensionSkName)
 
 }
