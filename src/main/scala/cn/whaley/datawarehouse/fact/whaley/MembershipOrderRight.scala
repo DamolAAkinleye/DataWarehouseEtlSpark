@@ -17,17 +17,21 @@ object MembershipOrderRight extends FactEtlBase{
   topicName = "fact_whaley_membership_order_right"
 
   addColumns = List(
+
   )
 
   columnsFromSource = List(
     ("product_sn", "sn"),
     ("membership_account", "whaleyAccount"),
+    ("membership_id", "concat_ws('_',source.sn,source.whaleyAccount)"),
     ("order_id", "whaleyOrder"),
     ("product_id", "whaleyProduct"),
     ("prime_price", "case when dim_whaley_membership_order_delivered.is_buy = 0 then 0 else source.totalPrice end  "),
     ("payment_amount", "case when dim_whaley_membership_order_delivered.is_buy = 0 then 0 else source.paymentAmount end "),
     ("duration", "duration"),
-    ("duration_day", "duration_day")
+    ("duration_day", "duration_day"),
+    ("dim_date", " dim_date"),
+    ("dim_time", "dim_time")
   )
 
   dimensionColumns = List(
@@ -60,8 +64,10 @@ object MembershipOrderRight extends FactEtlBase{
       .filter("status = 1 and substr(sn,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("delivered_order")
     val sql1 =
       s"""
-         | select a.sn,a.whaleyAccount,a.whaleyOrder,a.goodsNo,
-         |    b.whaleyProduct,a.totalPrice,a.paymentAmount,
+         | select a.sn,a.whaleyAccount,
+         |    a.whaleyOrder,a.goodsNo,
+         |    case when b.whaleyProduct='chlid' then 'child' else b.whaleyProduct end whaleyProduct,
+         |    a.totalPrice,a.paymentAmount,
          |    b.duration,b.duration_day
          |  from
          |     account_order a
@@ -75,8 +81,12 @@ object MembershipOrderRight extends FactEtlBase{
     val sql =
       s"""
          | select a.sn,a.whaleyAccount,a.whaleyOrder,a.goodsNo,
-         |    b.whaleyProduct,a.totalPrice,a.paymentAmount,
-         |    b.duration,b.duration_day
+         |    case when b.whaleyProduct='chlid' then 'child' else b.whaleyProduct end whaleyProduct,
+         |    a.totalPrice,a.paymentAmount,
+         |    b.duration,
+         |    b.duration_day,
+         |    case when b.create_time is not null then substr(b.create_time,1,10) else substr(a.overTime,1,10) end  dim_date ,
+         |    case when b.create_time is not null then substr(b.create_time,12,8) else substr(a.overTime,12,8) end  dim_time
          |  from
          |     account_order a
          |  left join
