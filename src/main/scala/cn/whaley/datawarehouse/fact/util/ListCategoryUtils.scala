@@ -1,0 +1,272 @@
+package cn.whaley.datawarehouse.fact.util
+
+import cn.whaley.datawarehouse.fact.constant.UDFConstantDimension
+import cn.whaley.datawarehouse.global.LogConfig
+import cn.whaley.sdk.udf.UDFConstant
+
+/**
+  * Created by baozhiwang on 2017/4/24.
+  */
+object ListCategoryUtils extends LogConfig {
+  def getListMainCategory(pathMain: String, path: String, flag: String): String = {
+    var result: String = null
+    flag match {
+      case MEDUSA => {
+        result = getListCategoryMedusaETL(pathMain, 1)
+      }
+      case MORETV => {
+        result = getListCategoryMoretvETL(path, 1)
+      }
+    }
+    result
+  }
+
+  def getListSecondCategory(pathMain: String, path: String, flag: String): String = {
+    var result: String = null
+    flag match {
+      case MEDUSA => {
+        result = getListCategoryMedusaETL(pathMain, 2)
+      }
+      case MORETV => {
+        result = getListCategoryMoretvETL(path, 2)
+      }
+    }
+    result
+  }
+
+  def getListThirdCategory(pathMain: String, path: String, flag: String): String = {
+    var result: String = null
+    flag match {
+      case MEDUSA => {
+        result = getListCategoryMedusaETL(pathMain, 2)
+      }
+      case MORETV => {
+        result = getListCategoryMoretvETL(path, 2)
+      }
+    }
+    result
+  }
+
+
+  private val MEDUSA_LIST_PAGE_LEVEL_1_REGEX = UDFConstantDimension.MEDUSA_LIST_Page_LEVEL_1.mkString("|")
+  private val regex_medusa_list_category_other = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*([a-zA-Z0-9&\u4e00-\u9fa5]+)").r
+  private val regex_medusa_list_category_other_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*([a-zA-Z0-9&\u4e00-\u9fa5]+)").r
+  private val regex_medusa_list_retrieval = (s"home\\*(classification|my_tv|live\\*eagle)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.RETRIEVAL_DIMENSION}|${UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE}).*").r
+  private val regex_medusa_list_retrieval_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.RETRIEVAL_DIMENSION}|${UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE}).*").r
+  private val regex_medusa_list_search = (s"home\\*(classification|my_tv)\\*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.SEARCH_DIMENSION}|${UDFConstantDimension.SEARCH_DIMENSION_CHINESE}).*").r
+  private val regex_medusa_list_search_short = (s"($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.SEARCH_DIMENSION}|${UDFConstantDimension.SEARCH_DIMENSION_CHINESE}).*").r
+  private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(all|qita|[0-9]+[-0-9]*)").r
+  //private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(.*)").r
+  //private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+?)\\*([\\S]+?)\\*(all|qita|[0-9]+[\\*0-9]*)").r
+
+  //用于频道分类入口统计，解析出资讯的一级入口、二级入口
+  private val regex_medusa_recommendation = (s"home\\*recommendation\\*[\\d]{1}-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*(.*)").r
+
+  /*获取列表页入口信息
+   第一步，过滤掉包含search字段的pathMain
+   第二步，判别是来自classification还是来自my_tv
+   第三步，分音乐、体育、少儿以及其他类型【电视剧，电影等】获得列表入口信息,根据具体的分类做正则表达*/
+  def getListCategoryMedusaETL(pathMain: String, index_input: Int): String = {
+    var result: String = null
+    if (null == pathMain) {
+      result = null
+    } else if (pathMain.contains(UDFConstantDimension.HORIZONTAL) || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) ||
+      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)
+
+    /** 为了统计频道分类入口的 搜索 和 筛选 维度，注释掉 */
+    //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
+    ) {
+      result = null
+    } else if (pathMain.contains(UDFConstantDimension.HOME_CLASSIFICATION)
+      || pathMain.contains(UDFConstantDimension.HOME_MY_TV)
+      || pathMain.contains(UDFConstantDimension.HOME_LIVE_EAGLE)
+      || pathMain.contains(UDFConstantDimension.KIDS_HOME)
+      || pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)
+
+      /** 为了统计频道分类入口的 搜索 和 筛选 维度，添加 */
+      || pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
+      || pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE)
+      || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION)
+      || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)
+      || pathMain.contains(UDFConstantDimension.HOME_RECOMMENDATION)
+    ) {
+      if (pathMain.contains("kids")) {
+        result = KidsPathParserUtils.pathMainParse(pathMain, index_input)
+      }
+      else if (pathMain.contains("mv-mv")) {
+      }
+      else if (pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) {
+        result = SportsPathParserUtils.pathMainParse(pathMain, index_input)
+      }
+
+      /**
+        * 拆分出筛选维度,为了统计频道分类入口
+        * home*classification*movie-movie-retrieval*hot*xiju*gangtai*all
+        * home*my_tv*tv-tv-retrieval*hot*xiju*neidi*2000*2009
+        * movie-retrieval*hot*xiju*gangtai*all
+        * home*live*eagle-movie-retrieval*hot*kehuan*meiguo*all
+        * home*classification*movie-movie*筛选
+        * home*my_tv*movie-movie*筛选
+        **/
+      else if (pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION) || pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE)) {
+        regex_medusa_list_retrieval findFirstMatchIn pathMain match {
+          case Some(p) => {
+            if (index_input == 1) {
+              result = p.group(3)
+            } else if (index_input == 2) {
+              result = UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE
+            }
+          }
+          case None =>
+        }
+
+        /** home-movie-retrieval*hot*dongzuo*gangtai*qita
+          * movie-retrieval*hot*dongzuo*gangtai*qita
+          * */
+        regex_medusa_list_retrieval_short findFirstMatchIn pathMain match {
+          case Some(p) => {
+            if (index_input == 1) {
+              result = p.group(1)
+            } else if (index_input == 2) {
+              result = UDFConstantDimension.RETRIEVAL_DIMENSION_CHINESE
+            }
+          }
+          case None =>
+        }
+      }
+
+      /**
+        * 拆分出搜索维度，为了统计频道分类入口
+        * home*classification*tv-tv-search*SHALA
+        * home*my_tv*tv-tv-search*DQD
+        * tv-search*SHALA
+        * home*my_tv*movie-movie*搜索
+        * home*classification*movie-movie*搜索
+        **/
+      else if (pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION) || pathMain.contains(UDFConstantDimension.SEARCH_DIMENSION_CHINESE)) {
+        regex_medusa_list_search findFirstMatchIn pathMain match {
+          case Some(p) => {
+            if (index_input == 1) {
+              result = p.group(3)
+            } else if (index_input == 2) {
+              result = UDFConstantDimension.SEARCH_DIMENSION_CHINESE
+            }
+          }
+          case None =>
+        }
+
+        /**
+          * home-movie-search*SHENDENG
+          * movie-search*SHENDENG
+          **/
+        regex_medusa_list_search_short findFirstMatchIn pathMain match {
+          case Some(p) => {
+            if (index_input == 1) {
+              result = p.group(1)
+            } else if (index_input == 2) {
+              result = UDFConstantDimension.SEARCH_DIMENSION_CHINESE
+            }
+          }
+          case None =>
+        }
+      }
+
+      /**
+        *
+        * home*recommendation*1-hot*今日焦点 解析出 hot,今日焦点
+        **/
+      else if (pathMain.contains(UDFConstantDimension.HOME_RECOMMENDATION)) {
+        regex_medusa_recommendation findFirstMatchIn pathMain match {
+          case Some(p) => {
+            if (index_input == 1) {
+              result = p.group(1)
+            } else if (index_input == 2) {
+              result = p.group(2)
+            }
+          }
+          case None =>
+        }
+      }
+
+      /** 其他频道，例如 电影，电视剧
+        * home*classification*jilu-jilu*前沿科技
+        * home*classification*movie-movie*动画电影
+        * home*classification*tv-tv*电视剧专题
+        * home*my_tv*account-accountcenter_home*节目预约
+
+        */
+      else {
+        regex_medusa_list_category_other findFirstMatchIn pathMain match {
+          case Some(p) => {
+            if (index_input == 1) {
+              result = p.group(3)
+            } else if (index_input == 2) {
+              result = p.group(4)
+            }
+          }
+          case None => {
+            /**
+              * pathMain='movie*院线大片' 在线上统计逻辑忽略，在数仓正则里也忽略
+              **/
+            regex_medusa_list_category_other_short findFirstMatchIn pathMain match {
+              case Some(p) => {
+                if (index_input == 1) {
+                  result = p.group(1)
+                } else if (index_input == 2) {
+                  result = p.group(2)
+                }
+              }
+              case None =>
+            }
+          }
+        }
+      }
+    }
+    result
+  }
+
+  /**
+    * 2.x，原有统计分析没有做少儿；体育最新的逻辑解析没有上线
+    * SportsPathParserUtils现在没有解析2.x path路径
+    *
+    **/
+  def getListCategoryMoretvETL(path: String, index_input: Int): String = {
+    var result: String = null
+    if (null != path) {
+      //少儿使用最新逻辑
+      if (path.contains("kids")) {
+        result = KidsPathParserUtils.pathParse(path, index_input)
+      } else {
+        //其他类型仍然使用原有逻辑
+        if (index_input == 1) {
+          result = PathParserUtils.getSplitInfo(path, 2)
+          if (result != null) {
+            // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
+            if (!UDFConstant.MoretvLauncherAccessLocation.contains(result)) {
+              // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
+              if (UDFConstant.MoretvLauncherUPPART.contains(result)) {
+                result = "MoretvLauncherUPPART"
+              } else {
+                result = null
+              }
+            }
+          }
+        } else if (index_input == 2) {
+          result = PathParserUtils.getSplitInfo(path, 3)
+          if (result != null) {
+            if (PathParserUtils.getSplitInfo(path, 2) == "search") {
+              result = ""
+            }
+            if (PathParserUtils.getSplitInfo(path, 2) == "kids_home" || PathParserUtils.getSplitInfo(path, 2) == "sports") {
+              result = PathParserUtils.getSplitInfo(path, 3) + "-" + PathParserUtils.getSplitInfo(path, 4)
+            }
+            if (!UDFConstant.MoretvPageInfo.contains(PathParserUtils.getSplitInfo(path, 2))) {
+              result = null
+            }
+          }
+        }
+      }
+    }
+    result
+  }
+}
