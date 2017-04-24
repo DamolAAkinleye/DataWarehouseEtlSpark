@@ -308,7 +308,7 @@ abstract class DimensionBase extends BaseClass {
     if (debug) result.show
 
     //关联其他维度，支持雪花模型
-    val linkDimension = parseDimension(result, linkDimensionColumns, columns.skName)
+    val linkDimension = parseDimension(result, linkDimensionColumns, columns.skName, columns.invalidTimeKey)
 
     if(linkDimension == null) {
       result
