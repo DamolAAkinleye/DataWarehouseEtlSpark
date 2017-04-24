@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.common
+package cn.whaley.datawarehouse.common
 
 /**
   * Created by Tony on 17/4/18.

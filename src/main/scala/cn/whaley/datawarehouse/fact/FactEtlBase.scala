@@ -1,7 +1,8 @@
 package cn.whaley.datawarehouse.fact
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.fact.common.{DimensionColumn, UserDefinedColumn}
+import cn.whaley.datawarehouse.common.DimensionColumn
+import cn.whaley.datawarehouse.fact.common.UserDefinedColumn
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
