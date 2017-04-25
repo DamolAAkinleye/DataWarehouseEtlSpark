@@ -15,4 +15,17 @@ trait LogConfig {
   val EAGLE = "eagle"
   val MTVKIDSLOGIN = "mtvkidsloginlog"
   val ACTIVITY = "activity"
+
+  /**
+    * 频道类型 */
+  val CHANNEL_MOVIE="movie"
+  val CHANNEL_KIDS = "kids"
+  val CHANNEL_SPORTS = "sports"
+  val CHANNEL_TV="tv"
+  val CHANNEL_HOT="hot"
+  val CHANNEL_VARIETY_PROGRAM="zongyi"
+  val CHANNEL_OPERA="xiqu"
+  val CHANNEL_COMIC="comic"
+  val CHANNEL_RECORD="jilu"
+  val CHANNEL_MV="mv"
 }

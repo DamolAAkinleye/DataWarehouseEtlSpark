@@ -44,7 +44,7 @@ object Play extends FactEtlBase with  LogConfig{
     * step 2, generate new columns
     * */
   addColumns = List(
-    UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
     UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
     UserDefinedColumn("entryType", udf(EntranceTypeUtils.getEntranceTypeByPathETL: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -57,12 +57,13 @@ object Play extends FactEtlBase with  LogConfig{
     * */
   dimensionColumns = List(
     /** list category join*/
-    KidsPathParserUtils.kidsListCategoryDimension,
+/*    KidsPathParserUtils.kidsListCategoryDimension,
     SportsPathParserUtils.sportListCategoryDimension,
     MvPathParseUtils.mvListCategoryDimension,
-    CommonPathParseUtils.commonListCategoryDimension,
+    CommonPathParseUtils.commonListCategoryDimension
+    ListCategoryUtils.getSourceSiteSK,,*/
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSKBySubjectCodeOrSubjectName
+    SubjectUtils.getSubjectSK
 
 
   /**  频道首页入口 maybe left join or udf*/
@@ -97,7 +98,8 @@ object Play extends FactEtlBase with  LogConfig{
     ("account_id", "accountId"),
     ("user_id", "userId"),
     ("path_main", "pathMain"),
-    ("path", "path")
+    ("path", "path"),
+    ("pathSpecial", "pathSpecial")
   )
 
 

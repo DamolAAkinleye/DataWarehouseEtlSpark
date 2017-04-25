@@ -1,7 +1,8 @@
 package cn.whaley.datawarehouse.fact.util
 
+import cn.whaley.datawarehouse.common.{DimensionJoinCondition, DimensionColumn}
 import cn.whaley.datawarehouse.fact.constant.UDFConstantDimension
-import cn.whaley.datawarehouse.global.LogConfig
+import cn.whaley.datawarehouse.global.{DimensionTypes, LogConfig}
 import cn.whaley.sdk.udf.UDFConstant
 
 /**
@@ -268,5 +269,53 @@ object ListCategoryUtils extends LogConfig {
       }
     }
     result
+  }
+
+
+  def getSourceSiteSK() :DimensionColumn = {
+    //获得非少儿，体育的列表页二级入口中文名称
+    new DimensionColumn("dim_medusa_source_site",
+      List(DimensionJoinCondition(
+        Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category"),
+        "where site_content_type is not null and main_category_code in " +
+          "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
+        null,s" flag='$MEDUSA' main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or main_category is null"
+      ),
+        DimensionJoinCondition(
+          Map("main_category" -> "site_content_type","second_category" -> "second_category_code"),
+          "where site_content_type is not null and main_category_code in " +
+            "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
+          null,s" flag='$MORETV' main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or main_category is null"
+        )
+      ),
+      "source_site_sk")
+  }
+
+
+
+
+  def getSportsSecondCategory() :DimensionColumn = {
+    //获得体育的列表页二级入口中文名称
+    new DimensionColumn("dim_medusa_page_entrance",
+      List(DimensionJoinCondition(
+        Map("mainCategory" -> "page_code","secondCategory" -> "area_code"),
+        s"where page_code='$CHANNEL_SPORTS' ",
+        null,s"where main_category='$CHANNEL_SPORTS'"
+      )),
+      "secondCategory")
+  }
+
+  def c() :DimensionColumn = {
+    new DimensionColumn(s"${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}",
+      List(DimensionJoinCondition(
+        Map("subjectCode" -> "subject_code"),
+        null,null,null
+      ),
+        DimensionJoinCondition(
+          Map("subjectName" -> "subject_name"),
+          null,null,null
+        )
+      ),
+      "subject_sk")
   }
 }
