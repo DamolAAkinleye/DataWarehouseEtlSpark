@@ -56,17 +56,13 @@ object Play extends FactEtlBase with  LogConfig{
     * step 3, left join dimension table,get new column
     * */
   dimensionColumns = List(
-    /** list category join*/
-/*    KidsPathParserUtils.kidsListCategoryDimension,
-    SportsPathParserUtils.sportListCategoryDimension,
-    MvPathParseUtils.mvListCategoryDimension,
-    CommonPathParseUtils.commonListCategoryDimension
-    ListCategoryUtils.getSourceSiteSK,,*/
+    /** 获得列表页sk source_site_sk*/
+    ListCategoryUtils.getSourceSiteSK,
     /** 获得专题 subject_sk */
     SubjectUtils.getSubjectSK
 
 
-  /**  频道首页入口 maybe left join or udf*/
+    /**  频道首页入口 maybe left join or udf*/
 
     /**  首页入口 maybe left join or udf*/
 

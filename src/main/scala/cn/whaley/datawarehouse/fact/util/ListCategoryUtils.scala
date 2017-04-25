@@ -93,11 +93,27 @@ object ListCategoryUtils extends LogConfig {
     ) {
       if (pathMain.contains("kids")) {
         result = KidsPathParserUtils.pathMainParse(pathMain, index_input)
+        if(2==index_input && null!=result){
+          result match {
+            case "tingerge" => result="show_kidsSongSite"
+            case "kids_rhymes" => result="show_kidsSongSite"
+            case "kids_songhome" => result="show_kidsSongSite"
+            case "kids_cathouse" => result="show_kidsSongSite"
+            case "kids_seecartoon" => result="show_kidsSite"
+            case "kandonghua" => result="show_kidsSite"
+            case "kids_anim" => result="show_kidsSite"
+            case "xuezhishi" => result="kids_knowledge"
+            case _ =>
+          }
+        }
       }
       else if (pathMain.contains("mv-mv")) {
       }
       else if (pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) {
         result = SportsPathParserUtils.pathMainParse(pathMain, index_input)
+        if(2==index_input && "League".equalsIgnoreCase(result)){
+          result="leagueEntry"
+        }
       }
 
       /**
@@ -237,6 +253,19 @@ object ListCategoryUtils extends LogConfig {
       //少儿使用最新逻辑
       if (path.contains("kids")) {
         result = KidsPathParserUtils.pathParse(path, index_input)
+        if(2==index_input && null!=result){
+          result match {
+            case "tingerge" => result="show_kidsSongSite"
+            case "kids_rhymes" => result="show_kidsSongSite"
+            case "kids_songhome" => result="show_kidsSongSite"
+            case "kids_cathouse" => result="show_kidsSongSite"
+            case "kids_seecartoon" => result="show_kidsSite"
+            case "kandonghua" => result="show_kidsSite"
+            case "kids_anim" => result="show_kidsSite"
+            case "xuezhishi" => result="kids_knowledge"
+            case _ =>
+          }
+        }
       } else {
         //其他类型仍然使用原有逻辑
         if (index_input == 1) {
@@ -273,20 +302,38 @@ object ListCategoryUtils extends LogConfig {
 
 
   def getSourceSiteSK() :DimensionColumn = {
-    //获得非少儿，体育的列表页二级入口中文名称
     new DimensionColumn("dim_medusa_source_site",
-      List(DimensionJoinCondition(
+      List(
+        //获得MEDUSA中除了少儿，体育和音乐的列表维度sk，[只有一级，二级维度]
+        DimensionJoinCondition(
         Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category"),
         "where site_content_type is not null and main_category_code in " +
           "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
-        null,s" flag='$MEDUSA' main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or main_category is null"
-      ),
+        null,s" flag='$MEDUSA' main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
+        ),
+        //获得MORETV中除了少儿，体育和音乐的列表维度sk ，[只有一级，二级维度]
         DimensionJoinCondition(
           Map("main_category" -> "site_content_type","second_category" -> "second_category_code"),
           "where site_content_type is not null and main_category_code in " +
             "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
-          null,s" flag='$MORETV' main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS') or main_category is null"
-        )
+          null,s" flag='$MORETV' main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
+        ),
+          //获得少儿和音乐的列表维度sk ，[有一级，二级,三级维度]
+          DimensionJoinCondition(
+          Map("main_category" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category"),
+          s"where site_content_type in ('$CHANNEL_KIDS','$CHANNEL_MV') and main_category_code in " +
+            "('kids_site','mv_site','sportRoot')",
+          null,s" main_category in ('$CHANNEL_KIDS','$CHANNEL_MV')"
+          ),
+        //获得体育列表维度sk ，[有一级，二级,三级维度]
+          DimensionJoinCondition(
+          Map("main_category" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category_code"),
+          s"where site_content_type in ('$CHANNEL_SPORTS') and main_category_code in " +
+          "('kids_site','mv_site','sportRoot')",
+        null,s" main_category in ('$CHANNEL_SPORTS')"
+      )
+
+        //其他没有解析出列表维度的记录会仍然存在吧？
       ),
       "source_site_sk")
   }
