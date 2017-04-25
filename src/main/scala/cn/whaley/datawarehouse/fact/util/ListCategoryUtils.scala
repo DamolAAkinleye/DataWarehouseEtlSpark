@@ -39,10 +39,10 @@ object ListCategoryUtils extends LogConfig {
     var result: String = null
     flag match {
       case MEDUSA => {
-        result = getListCategoryMedusaETL(pathMain, 2)
+        result = getListCategoryMedusaETL(pathMain, 3)
       }
       case MORETV => {
-        result = getListCategoryMoretvETL(path, 2)
+        result = getListCategoryMoretvETL(path, 3)
       }
     }
     result
@@ -302,7 +302,7 @@ object ListCategoryUtils extends LogConfig {
         s"where page_code='$CHANNEL_SPORTS' ",
         null,s"where main_category='$CHANNEL_SPORTS'"
       )),
-      "secondCategory")
+      "page_entrance_sk")
   }
 
   def c() :DimensionColumn = {
