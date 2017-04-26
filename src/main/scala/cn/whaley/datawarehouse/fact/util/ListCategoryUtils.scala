@@ -253,7 +253,7 @@ object ListCategoryUtils extends LogConfig {
     **/
   def getListCategoryMoretvETL(path: String, index_input: Int): String = {
     var result: String = null
-    if (null != path) {
+    if (null != path && !path.contains("search")) {
       //少儿使用最新逻辑
       if (path.contains("kids")) {
         result = KidsPathParserUtils.pathParse(path, index_input)
@@ -288,10 +288,7 @@ object ListCategoryUtils extends LogConfig {
         } else if (index_input == 2) {
           result = PathParserUtils.getSplitInfo(path, 3)
           if (result != null) {
-            if (PathParserUtils.getSplitInfo(path, 2) == "search") {
-              result = ""
-            }
-            if (PathParserUtils.getSplitInfo(path, 2) == "kids_home" || PathParserUtils.getSplitInfo(path, 2) == "sports") {
+            if (PathParserUtils.getSplitInfo(path, 2) == "sports") {
               result = PathParserUtils.getSplitInfo(path, 3) + "-" + PathParserUtils.getSplitInfo(path, 4)
             }
             if (!UDFConstant.MoretvPageInfo.contains(PathParserUtils.getSplitInfo(path, 2))) {
