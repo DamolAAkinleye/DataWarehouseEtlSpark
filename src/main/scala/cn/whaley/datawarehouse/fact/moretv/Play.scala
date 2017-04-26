@@ -61,23 +61,9 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得专题 subject_sk */
     SubjectUtils.getSubjectSK
 
-
     /**  频道首页入口 maybe left join or udf*/
 
     /**  首页入口 maybe left join or udf*/
-
-    /* example
-    new DimensionColumn("dim_medusa_promotion",
-      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
-    new DimensionColumn("dim_app_version",
-      List(
-        DimensionJoinCondition(
-          Map("app_series" -> "app_series", "app_version" -> "version"),
-          null,
-          null," main_category is null "
-        )
-      ),
-      "app_version_sk")*/
   )
 
 
