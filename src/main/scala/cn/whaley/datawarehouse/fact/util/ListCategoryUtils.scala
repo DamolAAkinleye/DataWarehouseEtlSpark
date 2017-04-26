@@ -71,8 +71,12 @@ object ListCategoryUtils extends LogConfig {
     var result: String = null
     if (null == pathMain) {
       result = null
-    } else if (pathMain.contains(UDFConstantDimension.HORIZONTAL) || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) ||
-      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)
+    } else if ( pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE)|| pathMain.contains(UDFConstantDimension.HOME_SEARCH)
+    /**
+      * 为了音乐能够解析出 二级维度排行榜【排行榜在站点树里存在】
+      * pathMain.contains(UDFConstantDimension.HORIZONTAL) ||
+      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE)
+      */
 
     /** 为了统计频道分类入口的 搜索 和 筛选 维度，注释掉 */
     //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
@@ -106,8 +110,8 @@ object ListCategoryUtils extends LogConfig {
             case _ =>
           }
         }
-      }
-      else if (pathMain.contains("mv-mv")) {
+      }else if (pathMain.contains("mv_category") || pathMain.contains("mv_poster")) {
+          result = MvPathParseUtils.pathMainParse(pathMain,index_input)
       }
       else if (pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) {
         result = SportsPathParserUtils.pathMainParse(pathMain, index_input)
@@ -313,27 +317,31 @@ object ListCategoryUtils extends LogConfig {
         ),
         //获得MORETV中除了少儿，体育和音乐的列表维度sk ，[只有一级，二级维度]
         DimensionJoinCondition(
-          Map("mainCategory" -> "site_content_type","second_category" -> "second_category_code"),
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code"),
           "site_content_type is not null and main_category_code in " +
             "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
           null,s" flag='$MORETV' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
           //获得少儿和音乐的列表维度sk ，[有一级，二级,三级维度]
           DimensionJoinCondition(
-          Map("mainCategory" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category"),
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
           s"site_content_type in ('$CHANNEL_KIDS','$CHANNEL_MV') and main_category_code in " +
-            "('kids_site','mv_site','sportRoot')",
+            "('kids_site','mv_site')",
           null,s" mainCategory in ('$CHANNEL_KIDS','$CHANNEL_MV')"
           ),
+
+        //获得音乐的列表维度sk ，热门歌手，精选集，电台，排行榜只到二级维度 [只有有一级，二级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code"),
+          s"site_content_type in ('$CHANNEL_MV') and main_category_code in ('mv_site') and second_category_code in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject')" ,
+          null,s" mainCategory in ('$CHANNEL_MV') and secondCategory in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject') "
+        ),
         //获得体育列表维度sk ，[有一级，二级,三级维度]
           DimensionJoinCondition(
-          Map("mainCategory" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category_code"),
-          s"site_content_type in ('$CHANNEL_SPORTS') and main_category_code in " +
-          "('kids_site','mv_site','sportRoot')",
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
+          s"site_content_type in ('$CHANNEL_SPORTS') and main_category_code in ('sportRoot')",
         null,s" mainCategory in ('$CHANNEL_SPORTS')"
       )
-
-        //其他没有解析出列表维度的记录会仍然存在吧？
       ),
       "source_site_sk")
   }

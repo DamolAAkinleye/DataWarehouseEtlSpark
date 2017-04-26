@@ -49,7 +49,8 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("entryType", udf(EntranceTypeUtils.getEntranceTypeByPathETL: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag"))
+    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("ip"))
   )
 
   /**
@@ -84,7 +85,16 @@ object Play extends FactEtlBase with  LogConfig{
     ("pathSpecial", "pathSpecial")
   )
 
-
-
+ //will use common util function class instead
+  def getIpKey(ip: String): Long = {
+    try {
+      val ipInfo = ip.split("\\.")
+      if (ipInfo.length >= 3) {
+        (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+      } else 0
+    } catch {
+      case ex: Exception => 0
+    }
+  }
 
 }
