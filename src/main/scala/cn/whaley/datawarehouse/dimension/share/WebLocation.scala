@@ -206,7 +206,7 @@ object WebLocation extends DimensionBase {
          |a.ip_section_2,
          |a.ip_section_3,
          |a.country,
-         |if(a.area is null,b.area,a.area) as area},
+         |if(a.area is null,b.area,a.area) as area,
          |a.province,
          |if(a.city is null,b.city,a.city) as city,
          |a.district,
