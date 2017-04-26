@@ -1,7 +1,8 @@
 package cn.whaley.datawarehouse.fact.util
 
+import cn.whaley.datawarehouse.common.{DimensionJoinCondition, DimensionColumn}
 import cn.whaley.datawarehouse.fact.constant.UDFConstantDimension
-import cn.whaley.datawarehouse.global.LogConfig
+import cn.whaley.datawarehouse.global.{DimensionTypes, LogConfig}
 import cn.whaley.sdk.udf.UDFConstant
 
 /**
@@ -38,10 +39,10 @@ object ListCategoryUtils extends LogConfig {
     var result: String = null
     flag match {
       case MEDUSA => {
-        result = getListCategoryMedusaETL(pathMain, 2)
+        result = getListCategoryMedusaETL(pathMain, 3)
       }
       case MORETV => {
-        result = getListCategoryMoretvETL(path, 2)
+        result = getListCategoryMoretvETL(path, 3)
       }
     }
     result
@@ -70,8 +71,12 @@ object ListCategoryUtils extends LogConfig {
     var result: String = null
     if (null == pathMain) {
       result = null
-    } else if (pathMain.contains(UDFConstantDimension.HORIZONTAL) || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) ||
-      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)
+    } else if ( pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE)|| pathMain.contains(UDFConstantDimension.HOME_SEARCH)
+    /**
+      * 为了音乐能够解析出 二级维度排行榜【排行榜在站点树里存在】
+      * pathMain.contains(UDFConstantDimension.HORIZONTAL) ||
+      pathMain.contains(UDFConstantDimension.MV_TOP_HOME_PAGE)
+      */
 
     /** 为了统计频道分类入口的 搜索 和 筛选 维度，注释掉 */
     //||pathMain.contains(UDFConstantDimension.RETRIEVAL_DIMENSION)
@@ -92,11 +97,27 @@ object ListCategoryUtils extends LogConfig {
     ) {
       if (pathMain.contains("kids")) {
         result = KidsPathParserUtils.pathMainParse(pathMain, index_input)
-      }
-      else if (pathMain.contains("mv-mv")) {
+        if(2==index_input && null!=result){
+          result match {
+            case "tingerge" => result="show_kidsSongSite"
+            case "kids_rhymes" => result="show_kidsSongSite"
+            case "kids_songhome" => result="show_kidsSongSite"
+            case "kids_cathouse" => result="show_kidsSongSite"
+            case "kids_seecartoon" => result="show_kidsSite"
+            case "kandonghua" => result="show_kidsSite"
+            case "kids_anim" => result="show_kidsSite"
+            case "xuezhishi" => result="kids_knowledge"
+            case _ =>
+          }
+        }
+      }else if (pathMain.contains("mv_category") || pathMain.contains("mv_poster")) {
+          result = MvPathParseUtils.pathMainParse(pathMain,index_input)
       }
       else if (pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) {
         result = SportsPathParserUtils.pathMainParse(pathMain, index_input)
+        if(2==index_input && "League".equalsIgnoreCase(result)){
+          result="leagueEntry"
+        }
       }
 
       /**
@@ -232,10 +253,23 @@ object ListCategoryUtils extends LogConfig {
     **/
   def getListCategoryMoretvETL(path: String, index_input: Int): String = {
     var result: String = null
-    if (null != path) {
+    if (null != path && !path.contains("search")) {
       //少儿使用最新逻辑
       if (path.contains("kids")) {
         result = KidsPathParserUtils.pathParse(path, index_input)
+        if(2==index_input && null!=result){
+          result match {
+            case "tingerge" => result="show_kidsSongSite"
+            case "kids_rhymes" => result="show_kidsSongSite"
+            case "kids_songhome" => result="show_kidsSongSite"
+            case "kids_cathouse" => result="show_kidsSongSite"
+            case "kids_seecartoon" => result="show_kidsSite"
+            case "kandonghua" => result="show_kidsSite"
+            case "kids_anim" => result="show_kidsSite"
+            case "xuezhishi" => result="kids_knowledge"
+            case _ =>
+          }
+        }
       } else {
         //其他类型仍然使用原有逻辑
         if (index_input == 1) {
@@ -254,10 +288,7 @@ object ListCategoryUtils extends LogConfig {
         } else if (index_input == 2) {
           result = PathParserUtils.getSplitInfo(path, 3)
           if (result != null) {
-            if (PathParserUtils.getSplitInfo(path, 2) == "search") {
-              result = ""
-            }
-            if (PathParserUtils.getSplitInfo(path, 2) == "kids_home" || PathParserUtils.getSplitInfo(path, 2) == "sports") {
+            if (PathParserUtils.getSplitInfo(path, 2) == "sports") {
               result = PathParserUtils.getSplitInfo(path, 3) + "-" + PathParserUtils.getSplitInfo(path, 4)
             }
             if (!UDFConstant.MoretvPageInfo.contains(PathParserUtils.getSplitInfo(path, 2))) {
@@ -268,5 +299,75 @@ object ListCategoryUtils extends LogConfig {
       }
     }
     result
+  }
+
+
+  def getSourceSiteSK() :DimensionColumn = {
+    new DimensionColumn("dim_medusa_source_site",
+      List(
+        //获得MEDUSA中除了少儿，体育和音乐的列表维度sk，[只有一级，二级维度]
+        DimensionJoinCondition(
+        Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category"),
+        "site_content_type is not null and main_category_code in " +
+          "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
+        null,s" flag='$MEDUSA' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
+        ),
+        //获得MORETV中除了少儿，体育和音乐的列表维度sk ，[只有一级，二级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code"),
+          "site_content_type is not null and main_category_code in " +
+            "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
+          null,s" flag='$MORETV' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
+        ),
+          //获得少儿和音乐的列表维度sk ，[有一级，二级,三级维度]
+          DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
+          s"site_content_type in ('$CHANNEL_KIDS','$CHANNEL_MV') and main_category_code in " +
+            "('kids_site','mv_site')",
+          null,s" mainCategory in ('$CHANNEL_KIDS','$CHANNEL_MV')"
+          ),
+
+        //获得音乐的列表维度sk ，热门歌手，精选集，电台，排行榜只到二级维度 [只有有一级，二级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code"),
+          s"site_content_type in ('$CHANNEL_MV') and main_category_code in ('mv_site') and second_category_code in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject')" ,
+          null,s" mainCategory in ('$CHANNEL_MV') and secondCategory in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject') "
+        ),
+        //获得体育列表维度sk ，[有一级，二级,三级维度]
+          DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
+          s"site_content_type in ('$CHANNEL_SPORTS') and main_category_code in ('sportRoot')",
+        null,s" mainCategory in ('$CHANNEL_SPORTS')"
+      )
+      ),
+      "source_site_sk")
+  }
+
+
+
+
+  def getSportsSecondCategory() :DimensionColumn = {
+    //获得体育的列表页二级入口中文名称
+    new DimensionColumn("dim_medusa_page_entrance",
+      List(DimensionJoinCondition(
+        Map("mainCategory" -> "page_code","secondCategory" -> "area_code"),
+        s"page_code='$CHANNEL_SPORTS' ",
+        null,s"mainCategory='$CHANNEL_SPORTS'"
+      )),
+      "page_entrance_sk")
+  }
+
+  def c() :DimensionColumn = {
+    new DimensionColumn(s"${DimensionTypes.DIM_MEDUSA_SOURCE_SITE}",
+      List(DimensionJoinCondition(
+        Map("subjectCode" -> "subject_code"),
+        null,null,null
+      ),
+        DimensionJoinCondition(
+          Map("subjectName" -> "subject_name"),
+          null,null,null
+        )
+      ),
+      "subject_sk")
   }
 }

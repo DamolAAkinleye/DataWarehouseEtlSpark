@@ -16,7 +16,7 @@ object ProductSN extends DimensionBase {
   columns.skName = "product_sn_sk"
   columns.primaryKeys = List("product_sn")
   columns.trackingColumns = List()
-  columns.allColumns = List("product_sn","product_line", "product_model", "user_id", "rom_version", "mac", "open_time", "wifi_mac", "ip", "vip_type", "country", "area", "province", "city","district", "isp", "city_level")
+  columns.allColumns = List("product_sn","product_line", "product_model", "user_id", "rom_version", "mac", "open_time", "wifi_mac", "ip", "vip_type", "country", "area", "province", "city","district", "isp", "city_level","prefecture_level_city")
 
 
   sourceDb = MysqlDB.whaleyTerminalMember
@@ -69,7 +69,7 @@ object ProductSN extends DimensionBase {
     sqlContext.udf.register("getThirdIpInfo", getThirdIpInfo _)
 
     sqlContext.read.parquet("/data_warehouse/dw_dimensions/dim_web_location").registerTempTable("log_data")
-    sqlContext.sql("select ip_section_1,ip_section_2,ip_section_3,country,area,province,city,district,isp,city_level,dim_invalid_time from log_data").registerTempTable("countryInfo")
+    sqlContext.sql("select ip_section_1,ip_section_2,ip_section_3,country,area,province,city,district,isp,city_level,prefecture_level_city,dim_invalid_time from log_data").registerTempTable("countryInfo")
 
     sqlContext.sql("select a.product_sn as product_sn, a.product_line as product_line ,a.product_model as product_model," +
       " a.user_id as user_id, a.rom_version as rom_version,a.mac as mac,a.open_time as open_time, a.wifi_mac as wifi_mac, a.ip as ip," +
@@ -79,7 +79,8 @@ object ProductSN extends DimensionBase {
       "case when b.city = '' then '未知' when b.city is null then '未知' else b.city end as city," +
       "case when b.district = '' then '未知' when b.district is null then '未知' else b.district end as district," +
       "case when b.isp = '' then '未知' when b.isp is null then '未知' else b.isp end as isp," +
-      "case when b.city_level = '' then '未知' when b.city_level is null then '未知' else b.city_level end as city_level" +
+      "case when b.city_level = '' then '未知' when b.city_level is null then '未知' else b.city_level end as city_level ," +
+      "case when b.prefecture_level_city = '' then '未知' when b.prefecture_level_city is null then '未知' else b.prefecture_level_city end as prefecture_level_city" +
       " from userVipInfo a left join countryInfo b on getFirstIpInfo(a.ip) = b.ip_section_1" +
       " and getSecondIpInfo(a.ip) = b.ip_section_2 and getThirdIpInfo(a.ip) = b.ip_section_3 and b.dim_invalid_time is null")
 

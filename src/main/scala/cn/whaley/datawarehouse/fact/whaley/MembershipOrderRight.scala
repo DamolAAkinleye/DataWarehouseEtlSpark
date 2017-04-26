@@ -64,18 +64,20 @@ object MembershipOrderRight extends FactEtlBase{
       .filter("status = 1 and substr(sn,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("delivered_order")
     val sql1 =
       s"""
-         | select a.sn,a.whaleyAccount,
-         |    a.whaleyOrder,a.goodsNo,
+         | select a.sn,a.whaleyAccount,a.whaleyOrder,a.goodsNo,
          |    case when b.whaleyProduct='chlid' then 'child' else b.whaleyProduct end whaleyProduct,
          |    a.totalPrice,a.paymentAmount,
-         |    b.duration,b.duration_day
+         |    b.duration,
+         |    b.duration_day,
+         |    case when b.create_time is not null then substr(b.create_time,1,10) else substr(a.overTime,1,10) end  dim_date ,
+         |    case when b.create_time is not null then substr(b.create_time,12,8) else substr(a.overTime,12,8) end  dim_time
          |  from
          |     account_order a
          |  left join
          |  delivered_order  b
          |  on a.sn = b.sn and a.whaleyOrder = b.orderId
-         |  where (a.orderStatus = 4 and substr(b.create_time,1,10) = '${day}')
-         |    or (a.orderStatus != 4 and substr(a.overTime,1,10) = '${day}')
+         |    where (a.orderStatus = 4 and substr(b.create_time,1,10) <= '${day} 23:59:59')
+         |    or (a.orderStatus != 4 and substr(a.overTime,1,10) <= '${day} 23:59:59')
        """.stripMargin
 
     val sql =
@@ -92,7 +94,10 @@ object MembershipOrderRight extends FactEtlBase{
          |  left join
          |  delivered_order  b
          |  on a.sn = b.sn and a.whaleyOrder = b.orderId
+         |  where (a.orderStatus = 4 and substr(b.create_time,1,10) = '${day}')
+         |    or (a.orderStatus != 4 and substr(a.overTime,1,10) = '${day}')
        """.stripMargin
+
     sqlContext.sql(sql)
   }
 

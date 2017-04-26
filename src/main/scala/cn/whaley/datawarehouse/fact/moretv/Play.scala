@@ -44,43 +44,27 @@ object Play extends FactEtlBase with  LogConfig{
     * step 2, generate new columns
     * */
   addColumns = List(
-    UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
     UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
     UserDefinedColumn("entryType", udf(EntranceTypeUtils.getEntranceTypeByPathETL: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag"))
+    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP"))
   )
 
   /**
     * step 3, left join dimension table,get new column
     * */
   dimensionColumns = List(
-    /** list category join*/
-    KidsPathParserUtils.kidsListCategoryDimension,
-    SportsPathParserUtils.sportListCategoryDimension,
-    MvPathParseUtils.mvListCategoryDimension,
-    CommonPathParseUtils.commonListCategoryDimension,
+    /** 获得列表页sk source_site_sk*/
+    ListCategoryUtils.getSourceSiteSK,
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSKBySubjectCodeOrSubjectName
+    SubjectUtils.getSubjectSK
 
-
-  /**  频道首页入口 maybe left join or udf*/
+    /**  频道首页入口 maybe left join or udf*/
 
     /**  首页入口 maybe left join or udf*/
-
-    /* example
-    new DimensionColumn("dim_medusa_promotion",
-      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
-    new DimensionColumn("dim_app_version",
-      List(
-        DimensionJoinCondition(
-          Map("app_series" -> "app_series", "app_version" -> "version"),
-          null,
-          null," main_category is null "
-        )
-      ),
-      "app_version_sk")*/
   )
 
 
@@ -97,10 +81,20 @@ object Play extends FactEtlBase with  LogConfig{
     ("account_id", "accountId"),
     ("user_id", "userId"),
     ("path_main", "pathMain"),
-    ("path", "path")
+    ("path", "path"),
+    ("pathSpecial", "pathSpecial")
   )
 
-
-
+ //will use common util function class instead
+  def getIpKey(ip: String): Long = {
+    try {
+      val ipInfo = ip.split("\\.")
+      if (ipInfo.length >= 3) {
+        (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+      } else 0
+    } catch {
+      case ex: Exception => 0
+    }
+  }
 
 }

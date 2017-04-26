@@ -13,13 +13,13 @@ object SubjectUtils {
   /**
     * 从路径中获取专题code
     */
-  def getSubjectCodeByPathETL(pathMain:String,path: String, flag: String) = {
+  def getSubjectCodeByPathETL(pathSpecial:String, path: String, flag: String)= {
     var result: String = null
-    if (flag != null && pathMain != null) {
+    if (flag != null && pathSpecial != null) {
       flag match {
         case "medusa" => {
-          if ("subject".equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathMain, 1, 1))) {
-            val subjectCode = getSubjectCode(pathMain)
+          if ("subject".equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
+            val subjectCode = getSubjectCode(pathSpecial)
             if (!" ".equalsIgnoreCase(subjectCode)) {
               result = subjectCode
             }
@@ -120,7 +120,7 @@ object SubjectUtils {
 
 /**-------------------------------------- block 4 --------------------------------------*/
 /** 通过专题subject_code and subject_name获得subject_sk  */
-def getSubjectSKBySubjectCodeOrSubjectName() :DimensionColumn = {
+def getSubjectSK() :DimensionColumn = {
   new DimensionColumn("dim_medusa_subject",
     List(DimensionJoinCondition(
       Map("subjectCode" -> "subject_code"),
