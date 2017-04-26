@@ -1,12 +1,10 @@
 package cn.whaley.datawarehouse.dimension.share
 
-import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.dimension.DimensionBase
-import cn.whaley.datawarehouse.util.{HdfsUtil, MysqlDB}
-import org.apache.spark.sql.{DataFrame, Row}
-import org.apache.spark.sql.types._
 import cn.whaley.datawarehouse.global.SourceType._
-import cn.whaley.datawarehouse.dimension.moretv.Subject._
+import cn.whaley.datawarehouse.util.MysqlDB
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row}
 
 /**
   * Created by Tony on 16/12/23.
@@ -38,12 +36,12 @@ object WebLocation extends DimensionBase {
     "area",
     "province",
     "city",
-    "district",
     "city_level",
+    "prefecture_level_city",
+    "district",
     "longitude",
     "latitude",
-    "isp",
-    "prefecture_level_city"
+    "isp"
   )
 
 
@@ -150,20 +148,18 @@ object WebLocation extends DimensionBase {
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     val sq = sqlContext
-    sqlContext.udf.register("replaceStr",(_:String).replaceAll("市",""))
-    import sq.implicits._
-    import org.apache.spark.sql.functions._
+    sqlContext.udf.register("replaceStr", (_: String).replaceAll("市", ""))
 
-//    val cityInfoDb = MysqlDB.dwDimensionDb("city_info")
-//
-//    val cityInfoDf = sqlContext.read.format("jdbc").options(cityInfoDb).load()
-//      .select($"city", $"area", $"city_level")
-//
-//    cityInfoDf.join(sourceDf, "city" :: Nil, "rightouter")
-//      .select(
-//        columns.primaryKeys(0),
-//        columns.allColumns: _*
-//      )
+    //    val cityInfoDb = MysqlDB.dwDimensionDb("city_info")
+    //
+    //    val cityInfoDf = sqlContext.read.format("jdbc").options(cityInfoDb).load()
+    //      .select($"city", $"area", $"city_level")
+    //
+    //    cityInfoDf.join(sourceDf, "city" :: Nil, "rightouter")
+    //      .select(
+    //        columns.primaryKeys(0),
+    //        columns.allColumns: _*
+    //      )
 
     val cityInfoDb = MysqlDB.dwDimensionDb("city_info_new")
     val cityInfoDf = sqlContext.read.format("jdbc").options(cityInfoDb).load()
@@ -173,29 +169,29 @@ object WebLocation extends DimensionBase {
 
     var sqlStr =
       s"""
-        |select
-        |a.web_location_key as ${columns.primaryKeys(0)},
-        |a.ip_section_1 as ${columns.allColumns(1)},
-        |a.ip_section_2 as ${columns.allColumns(2)},
-        |a.ip_section_3 as ${columns.allColumns(3)},
-        |a.country as ${columns.allColumns(4)},
-        |b.area as ${columns.allColumns(5)},
-        |a.province as ${columns.allColumns(6)},
-        |if(b.city is null or b.city='',a.city,b.city) as ${columns.allColumns(7)},
-        |a.district as ${columns.allColumns(8)},
-        |b.city_level as ${columns.allColumns(9)},
-        |a.longitude as ${columns.allColumns(10)},
-        |a.latitude as ${columns.allColumns(11)},
-        |a.isp as ${columns.allColumns(12)},
-        |a.city as ${columns.allColumns(13)}
-        |from ip_info a
-        |left join
-        |(
-        |select t1.city,t1.area,t1.city_level,t1.executive_level,t1.prefecture_level_city from
-        |city_info t1 left join city_info t2 on t1.city=t2.prefecture_level_city
-        |where t2.prefecture_level_city is null
-        |) b
-        |on if(b.executive_level='县级市',replaceStr(a.district),a.city) = b.city
+         |select
+         |a.web_location_key as web_location_key,
+         |a.ip_section_1 as ip_section_1,
+         |a.ip_section_2 as ip_section_2,
+         |a.ip_section_3 as ip_section_3,
+         |a.country as country,
+         |b.area as area,
+         |a.province as province,
+         |if(b.city is null or b.city='',a.city,b.city) as city,
+         |a.district as district,
+         |b.city_level as city_level,
+         |a.longitude as longitude,
+         |a.latitude as latitude,
+         |a.isp as isp,
+         |a.city as prefecture_level_city
+         |from ip_info a
+         |left join
+         |(
+         |select t1.city,t1.area,t1.city_level,t1.executive_level,t1.prefecture_level_city from
+         |city_info t1 left join city_info t2 on t1.city=t2.prefecture_level_city
+         |where t2.prefecture_level_city is null
+         |) b
+         |on if(b.executive_level='县级市',replaceStr(a.district),a.city) = b.city
       """.stripMargin
     sqlContext.sql(sqlStr).registerTempTable("tmp_table")
     /**
@@ -204,23 +200,23 @@ object WebLocation extends DimensionBase {
       */
     sqlStr =
       s"""
-        |select
-        |a.${columns.primaryKeys(0)},
-        |a.${columns.allColumns(1)},
-        |a.${columns.allColumns(2)},
-        |a.${columns.allColumns(3)},
-        |a.${columns.allColumns(4)},
-        |if(a.${columns.allColumns(5)} is null,b.area,a.${columns.allColumns(5)}) as ${columns.allColumns(5)},
-        |a.${columns.allColumns(6)},
-        |if(a.${columns.allColumns(7)} is null,b.city,a.${columns.allColumns(7)}) as ${columns.allColumns(7)},
-        |a.${columns.allColumns(8)},
-        |if(a.city_level is null,b.city_level,a.city_level) as city_level,
-        |a.${columns.allColumns(10)},
-        |a.${columns.allColumns(11)},
-        |a.${columns.allColumns(12)},
-        |a.${columns.allColumns(13)}
-        |from tmp_table a left join city_info b
-        |on a.prefecture_level_city=b.city
+         |select
+         |a.web_location_key,
+         |a.ip_section_1,
+         |a.ip_section_2,
+         |a.ip_section_3,
+         |a.country,
+         |if(a.area is null,b.area,a.area) as area},
+         |a.province,
+         |if(a.city is null,b.city,a.city) as city,
+         |a.district,
+         |if(a.city_level is null,b.city_level,a.city_level) as city_level,
+         |a.longitude,
+         |a.latitude,
+         |a.isp,
+         |a.prefecture_level_city
+         |from tmp_table a left join city_info b
+         |on a.prefecture_level_city=b.city
       """.stripMargin
 
     sqlContext.sql(sqlStr)
