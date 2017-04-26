@@ -309,28 +309,28 @@ object ListCategoryUtils extends LogConfig {
         Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category"),
         "site_content_type is not null and main_category_code in " +
           "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
-        null,s" flag='$MEDUSA' and main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
+        null,s" flag='$MEDUSA' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
         //获得MORETV中除了少儿，体育和音乐的列表维度sk ，[只有一级，二级维度]
         DimensionJoinCondition(
-          Map("main_category" -> "site_content_type","second_category" -> "second_category_code"),
+          Map("mainCategory" -> "site_content_type","second_category" -> "second_category_code"),
           "site_content_type is not null and main_category_code in " +
             "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
-          null,s" flag='$MORETV' and main_category not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
+          null,s" flag='$MORETV' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
           //获得少儿和音乐的列表维度sk ，[有一级，二级,三级维度]
           DimensionJoinCondition(
-          Map("main_category" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category"),
+          Map("mainCategory" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category"),
           s"site_content_type in ('$CHANNEL_KIDS','$CHANNEL_MV') and main_category_code in " +
             "('kids_site','mv_site','sportRoot')",
-          null,s" main_category in ('$CHANNEL_KIDS','$CHANNEL_MV')"
+          null,s" mainCategory in ('$CHANNEL_KIDS','$CHANNEL_MV')"
           ),
         //获得体育列表维度sk ，[有一级，二级,三级维度]
           DimensionJoinCondition(
-          Map("main_category" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category_code"),
+          Map("mainCategory" -> "site_content_type","second_category" -> "second_category_code","thirdCategory"->"third_category_code"),
           s"site_content_type in ('$CHANNEL_SPORTS') and main_category_code in " +
           "('kids_site','mv_site','sportRoot')",
-        null,s" main_category in ('$CHANNEL_SPORTS')"
+        null,s" mainCategory in ('$CHANNEL_SPORTS')"
       )
 
         //其他没有解析出列表维度的记录会仍然存在吧？
@@ -347,7 +347,7 @@ object ListCategoryUtils extends LogConfig {
       List(DimensionJoinCondition(
         Map("mainCategory" -> "page_code","secondCategory" -> "area_code"),
         s"page_code='$CHANNEL_SPORTS' ",
-        null,s"main_category='$CHANNEL_SPORTS'"
+        null,s"mainCategory='$CHANNEL_SPORTS'"
       )),
       "page_entrance_sk")
   }
