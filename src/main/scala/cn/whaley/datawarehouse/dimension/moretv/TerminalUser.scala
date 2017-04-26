@@ -1,7 +1,12 @@
 package cn.whaley.datawarehouse.dimension.moretv
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.dimension.DimensionBase
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.{udf, _}
+
 
 /**
   * Created by Tony on 17/3/10.
@@ -12,7 +17,7 @@ object TerminalUser extends DimensionBase {
 
   columns.skName = "user_sk"
   columns.primaryKeys = List("user_id")
-  columns.trackingColumns = List("apk_version", "ip")
+  columns.trackingColumns = List("app_version", "app_series", "ip")
   columns.allColumns = List(
     "user_id",
     "open_time",
@@ -24,21 +29,77 @@ object TerminalUser extends DimensionBase {
     "promotion_channel",
     "system_version",
     "user_type",
-    "apk_version",
-    "current_ip",
-    "current_apk_version"
+    "app_series",
+    "app_version",
+    "current_version"
   )
 
   sourceColumnMap = Map(
     "open_time" -> "openTime",
-    "user_type" -> "userType",
-    "apk_current_version" -> "current_version",
-    "apk_version" -> "current_version",
-    "current_ip" -> "ip"
+    "user_type" -> "userType"
   )
 
   sourceFilterWhere = "user_id is not null and user_id <> ''"
   sourceDb = MysqlDB.medusaTvServiceAccount
 
+  columns.addColumns = List(
+    UserDefinedColumn("ip_key", udf(getIpKey: String => Long), List("ip")))
+
+  columns.linkDimensionColumns = List(
+    new DimensionColumn(
+      "dim_web_location",
+      List(DimensionJoinCondition(Map("ip_key" -> "web_location_key"))),
+      "web_location_sk"
+    ),
+    new DimensionColumn("dim_app_version",
+      List(DimensionJoinCondition(
+        Map("app_series" -> "app_series", "app_version" -> "version"),
+        null,
+        List(("build_time", false)))),
+      "app_version_sk")
+  )
+
   dimensionName = "dim_medusa_terminal_user"
+
+  override def readSource(readSourceType: Value): DataFrame = {
+    val df = super.readSource(readSourceType)
+    val udFunctionSeries = udf(getAppSeries: String => String)
+    val udFunctionVersion = udf(getAppVersion: String => String)
+
+    df.withColumn("app_version", udFunctionVersion(col("current_version")))
+      .withColumn("app_series", udFunctionSeries(col("current_version")))
+  }
+
+  def getAppSeries(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(0, index)
+      } else null
+    } catch {
+      case ex: Exception => null
+    }
+  }
+
+  def getAppVersion(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(index + 1, seriesAndVersion.length)
+      } else null
+    } catch {
+      case ex: Exception => null
+    }
+  }
+
+  def getIpKey(ip: String): Long = {
+    try {
+      val ipInfo = ip.split("\\.")
+      if (ipInfo.length >= 3) {
+        (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+      } else 0
+    } catch {
+      case ex: Exception => 0
+    }
+  }
 }

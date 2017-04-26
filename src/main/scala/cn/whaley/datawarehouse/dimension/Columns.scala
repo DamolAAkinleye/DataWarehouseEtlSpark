@@ -1,5 +1,7 @@
 package cn.whaley.datawarehouse.dimension
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, UserDefinedColumn}
+
 /**
   * Created by Tony on 17/3/8.
   *
@@ -39,6 +41,15 @@ class Columns {
     */
   var invalidTimeKey: String = "dim_invalid_time"
 
+  /**
+    * 通过解析增加的字段
+    */
+  var addColumns: List[UserDefinedColumn] = _
+
+  /**
+    * 关联的维度
+    */
+  var linkDimensionColumns: List[DimensionColumn] = _
 
   /**
     * 获取需要从源数据中获取信息的列
