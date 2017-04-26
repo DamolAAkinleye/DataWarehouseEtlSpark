@@ -76,6 +76,8 @@ object MembershipOrderRight extends FactEtlBase{
          |  left join
          |  delivered_order  b
          |  on a.sn = b.sn and a.whaleyOrder = b.orderId
+         |    where (a.orderStatus = 4 and substr(b.create_time,1,10) <= '${day} 23:59:59')
+         |    or (a.orderStatus != 4 and substr(a.overTime,1,10) <= '${day} 23:59:59')
        """.stripMargin
 
     val sql =
@@ -95,6 +97,7 @@ object MembershipOrderRight extends FactEtlBase{
          |  where (a.orderStatus = 4 and substr(b.create_time,1,10) = '${day}')
          |    or (a.orderStatus != 4 and substr(a.overTime,1,10) = '${day}')
        """.stripMargin
+
     sqlContext.sql(sql)
   }
 
