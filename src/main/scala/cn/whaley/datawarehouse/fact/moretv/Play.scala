@@ -50,7 +50,7 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("ip"))
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP"))
   )
 
   /**
