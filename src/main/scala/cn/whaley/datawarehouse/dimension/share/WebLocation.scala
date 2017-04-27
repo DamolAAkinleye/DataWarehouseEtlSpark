@@ -3,6 +3,7 @@ package cn.whaley.datawarehouse.dimension.share
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 
@@ -37,6 +38,7 @@ object WebLocation extends DimensionBase {
     "province",
     "city",
     "city_level",
+    "executive_level",
     "prefecture_level_city",
     "district",
     "longitude",
@@ -136,11 +138,12 @@ object WebLocation extends DimensionBase {
       "if(a.district is null or a.district = '', b.district, a.district) as district, " +
       " a.longitude, a.latitude, b.isp " +
       " from a full join b on a.web_location_key = b.web_location_key " +
-      " order by web_location_key")
-      .select(
-        "web_location_key", "ip_section_1", "ip_section_2", "ip_section_3",
-        "country", "province", "city", "district", "longitude", "latitude", "isp"
-      )
+      " order by web_location_key"
+    ).select(
+      "web_location_key", "ip_section_1", "ip_section_2", "ip_section_3",
+      "country", "province", "city", "district", "longitude", "latitude", "isp"
+    ).withColumn("city", expr("if(trim(city) = '' , null, city)")
+    ).withColumn("district", expr("if(trim(district) = '' , null, district)"))
 
 
   }
@@ -148,7 +151,9 @@ object WebLocation extends DimensionBase {
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     val sq = sqlContext
-    sqlContext.udf.register("replaceStr", (_: String).replaceAll("市", ""))
+    sqlContext.udf.register("replaceStr", (s: String) => {
+      if (s != null) s.replaceAll("市", "") else s
+    })
 
     //    val cityInfoDb = MysqlDB.dwDimensionDb("city_info")
     //
@@ -183,7 +188,8 @@ object WebLocation extends DimensionBase {
          |a.longitude as longitude,
          |a.latitude as latitude,
          |a.isp as isp,
-         |a.city as prefecture_level_city
+         |a.city as prefecture_level_city,
+         |b.executive_level
          |from ip_info a
          |left join
          |(
@@ -209,6 +215,7 @@ object WebLocation extends DimensionBase {
          |if(a.area is null,b.area,a.area) as area,
          |a.province,
          |if(a.city is null,b.city,a.city) as city,
+         |if(a.executive_level is null,b.executive_level,a.executive_level) as executive_level,
          |a.district,
          |if(a.city_level is null,b.city_level,a.city_level) as city_level,
          |a.longitude,
