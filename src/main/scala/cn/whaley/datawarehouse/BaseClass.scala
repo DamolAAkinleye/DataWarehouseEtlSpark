@@ -148,13 +148,13 @@ trait BaseClass {
             dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
           }
           //维度表去重
-          dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)
+          //          dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)
           //实时表源数据过滤
           var sourceFilterDf =
-            if (jc.sourceWhereClause != null && !jc.sourceWhereClause.isEmpty)
-              sourceDf.where(jc.sourceWhereClause)
-            else
-              sourceDf
+          if (jc.sourceWhereClause != null && !jc.sourceWhereClause.isEmpty)
+            sourceDf.where(jc.sourceWhereClause)
+          else
+            sourceDf
           sourceFilterDf =
             if (sourceTimeColumn == null || sourceTimeColumn.isEmpty) {
               sourceFilterDf.withColumn(COLUMN_NAME_FOR_SOURCE_TIME, expr("null"))
@@ -163,21 +163,29 @@ trait BaseClass {
             }
           //源表与维度表join
           if (df == null) {
-            df = sourceFilterDf.as("a").join(dimensionDf.as("b"),
+            df = sourceFilterDf.as("a").join(
+              dimensionDf.as("b"),
               jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
                 && (isnull(sourceFilterDf(COLUMN_NAME_FOR_SOURCE_TIME)) ||
                 expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
                   s"(a.$COLUMN_NAME_FOR_SOURCE_TIME <= b.dim_invalid_time or b.dim_invalid_time is null)")),
-              "inner").selectExpr("a." + uniqueKeyName, "b." + c.dimensionSkName)
+              "inner"
+            ).selectExpr("a." + uniqueKeyName, "b." + c.dimensionSkName).dropDuplicates(List(uniqueKeyName))
           } else {
-            df = sourceFilterDf.as("a").join(df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter").join(
+            df = sourceFilterDf.as("a").join(
+              df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
+            ).join(
               dimensionDf.as("b"),
               jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
                 && isnull(df(c.dimensionSkName))
                 && (isnull(sourceFilterDf(COLUMN_NAME_FOR_SOURCE_TIME)) ||
                 expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
                   s"(a.$COLUMN_NAME_FOR_SOURCE_TIME <= b.dim_invalid_time or b.dim_invalid_time is null)")),
-              "inner").selectExpr("a." + uniqueKeyName, "b." + c.dimensionSkName).unionAll(df)
+              "inner"
+            ).selectExpr(
+              "a." + uniqueKeyName, "b." + c.dimensionSkName
+            ).dropDuplicates(List(uniqueKeyName)
+            ).unionAll(df)
           }
         })
         df = sourceDf.as("a").join(df.as("b"), sourceDf(uniqueKeyName) === df(uniqueKeyName), "leftouter").selectExpr(
