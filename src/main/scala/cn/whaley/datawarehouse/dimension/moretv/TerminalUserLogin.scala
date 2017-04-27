@@ -16,6 +16,7 @@ object TerminalUserLogin extends DimensionBase {
   columns.trackingColumns = List("last_login_time")
   columns.allColumns = List(
     "user_id",
+    "mac",
     "last_login_time"
   )
 
@@ -36,5 +37,4 @@ object TerminalUserLogin extends DimensionBase {
 
   dimensionName = "dim_medusa_terminal_user_login"
 
-  debug = true
 }
