@@ -95,10 +95,11 @@ abstract class FactEtlBase extends BaseClass {
 
     var df = completeSourceDf.join(dimensionDf, List(INDEX_NAME), "leftouter").as("source")
     if (dimensionColumns != null) {
+      //关联所有的维度  TODO 判断只关联用到的维度
       dimensionColumns.foreach(c => {
         val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
         df = df.join(dimensionDf.as(c.dimensionName),
-          df(c.dimensionSkName) === dimensionDf(c.dimensionSkName),
+          expr("source." + c.dimensionColumnName + " = " + c.dimensionName + "." + c.dimensionSkName),
           "leftouter")
       })
     }

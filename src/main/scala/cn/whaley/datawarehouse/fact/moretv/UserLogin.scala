@@ -64,7 +64,7 @@ object UserLogin extends FactEtlBase {
   override def readSource(startDate: String): DataFrame = {
     //电视猫的读取目录需要加一天
     val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
-    super.readSource(DateFormatUtils.readFormat.format(date))
+    super.readSource(DateFormatUtils.readFormat.format(date)).repartition(180)
   }
 
   def getIpKey(ip: String): Long = {
