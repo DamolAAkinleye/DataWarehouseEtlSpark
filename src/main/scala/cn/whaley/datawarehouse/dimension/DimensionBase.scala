@@ -174,7 +174,7 @@ abstract class DimensionBase extends BaseClass {
       return result
     }
 
-    val today = DateUtils.truncate(new Date(), Calendar.DATE)
+    val today = new Date()
 
     //读取现有维度
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
@@ -206,9 +206,9 @@ abstract class DimensionBase extends BaseClass {
         originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
       ).where(
         if (columns.trackingColumns == null || !columns.trackingColumns.exists(!newColumns.contains(_))) {
-          "1=1"
+          "1!=1"
         } else {
-          //若trackingColumn原本为null，不增加新行
+          //若trackingColumn原本为null，不增加新行 TODO 当前逻辑又非null变成null也不增加新行
           columns.trackingColumns.filter(!newColumns.contains(_)).map(s => s"a.$s != b.$s").mkString(" or ")
         }
       )
