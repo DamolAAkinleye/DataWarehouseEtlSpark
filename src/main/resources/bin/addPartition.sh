@@ -1,4 +1,5 @@
 #!/bin/bash
+source /etc/profile
 cd `dirname $0`
 pwd=`pwd`
 echo $pwd
