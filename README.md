@@ -16,7 +16,7 @@ md5 /Users/baozhiwang/Documents/upload_dir/DataWarehouseEtlSpark-1.0.0-michael.j
 运行：
 spark@bigdata-appsvr-130-5
 hadoop fs -rm -r /data_warehouse/dw_facts/fact_medusa_play/20170411
-cd /opt/dw/etl/bin;sh play.sh 20170411
+cd /opt/dw/etl/bin;sh play.sh 20170413
 
 hadoop fs -ls /data_warehouse/dw_facts/fact_medusa_play/20170411/00
 

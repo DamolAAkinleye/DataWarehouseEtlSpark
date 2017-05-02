@@ -46,11 +46,16 @@ object Play extends FactEtlBase with  LogConfig{
   addColumns = List(
     UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
     UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
-    UserDefinedColumn("entryType", udf(EntranceTypeUtils.getEntranceTypeByPathETL: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP"))
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
+    UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("filterCategorySecond", udf(FilterCategoryUtils.getFilterCategorySecond: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("filterCategoryThird", udf(FilterCategoryUtils.getFilterCategoryThird: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag"))
   )
 
   /**
@@ -60,11 +65,16 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得列表页sk source_site_sk*/
     ListCategoryUtils.getSourceSiteSK,
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSK
+    SubjectUtils.getSubjectSK,
 
-    /**  频道首页入口 maybe left join or udf*/
+    /**  获得首页入口sk*/
 
-    /**  首页入口 maybe left join or udf*/
+    /** 获得筛选sk */
+
+    /** 获得推荐来源sk */
+
+    /** 获得首页入口 launcher_entrance_sk */
+    EntranceTypeUtils.getLauncherEntranceSK
   )
 
 
@@ -77,13 +87,18 @@ object Play extends FactEtlBase with  LogConfig{
     ("main_category", "mainCategory"),
     ("second_category", "secondCategory"),
     ("third_category", "thirdCategory"),
+    ("launcher_area_code", "launcherAreaCode"),
+    ("launcher_location_code", "launcherLocationCode"),
     ("entry_type", "entryType"),
     ("account_id", "accountId"),
     ("user_id", "userId"),
     ("path_main", "pathMain"),
     ("path", "path"),
-    ("pathSpecial", "pathSpecial")
+    ("pathSpecial", "pathSpecial"),
+    ("flag", "flag")
   )
+
+  factTime = null
 
  //will use common util function class instead
   def getIpKey(ip: String): Long = {
