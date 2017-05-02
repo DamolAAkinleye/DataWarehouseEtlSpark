@@ -44,7 +44,9 @@ object MembershipOrderRight extends FactEtlBase{
     new DimensionColumn("dim_whaley_membership_right",
       List(DimensionJoinCondition(Map("sn" -> "product_sn","whaleyAccount" -> "membership_account","whaleyProduct" -> "product_id"))), "membership_right_sk"),
     new DimensionColumn("dim_whaley_product_sn",
-      List(DimensionJoinCondition(Map("sn" -> "product_sn"))), "product_sn_sk")
+      List(DimensionJoinCondition(Map("sn" -> "product_sn"))), "product_sn_sk"),
+    new DimensionColumn("dim_whaley_account",
+    List(DimensionJoinCondition(Map("whaleyAccount" -> "account_id"))), "account_sk")
   )
 
   override def readSource(startDate: String): DataFrame = {
