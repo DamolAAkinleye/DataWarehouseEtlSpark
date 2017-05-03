@@ -124,7 +124,6 @@ object Play extends FactEtlBase with  LogConfig{
     ("third_category", "thirdCategory"),
     ("launcher_area_code", "launcherAreaCode"),
     ("launcher_location_code", "launcherLocationCode"),
-    ("entry_type", "entryType"),
     ("account_id", "accountId"),
     ("user_id", "userId"),
     ("path_main", "pathMain"),

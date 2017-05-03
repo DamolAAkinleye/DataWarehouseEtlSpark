@@ -134,6 +134,7 @@ object KidsPathParserUtils {
           res2 = p4Arr(0)
         }
       }
+      case None =>
     }
 
     /** Step 3: 判断是否是搜索的站点树 */
