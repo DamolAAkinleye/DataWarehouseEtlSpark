@@ -4,7 +4,7 @@ import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
 import org.apache.spark.sql.DataFrame
-
+import org.apache.spark.sql.functions._
 /**
   * Created by Tony on 17/3/23.
   */
@@ -31,7 +31,10 @@ object SourceSite extends DimensionBase {
   dimensionName = "dim_medusa_source_site"
 
   override def filterSource(sourceDf: DataFrame): DataFrame = {
-    sourceDf.filter("status = 1").filter("id <> 1").registerTempTable("mtv_program_site")
+    sourceDf.filter("status = 1").filter("id <> 1").withColumn(
+      //补充源数据中纪录片code缺失
+      "code", expr("case when contentType = 'jilu' and name = '纪录片' then 'site_jilu' else code end")
+    ).registerTempTable("mtv_program_site")
 
     //最大包含四级目录，从包含4几目录的站点树开始
     val df4 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType site_content_type, " +
@@ -42,7 +45,7 @@ object SourceSite extends DimensionBase {
       " FROM mtv_program_site AS a " +
       " INNER JOIN mtv_program_site AS b ON ( a.parentId = b.id)" +
       " INNER JOIN mtv_program_site AS c ON ( b.parentId = c.id)" +
-      " INNER JOIN mtv_program_site AS d ON ( c.parentId = d.id)" +
+      " INNER JOIN mtv_program_site AS d ON ( c.parentId = d.id and d.status = 1) " +
       " WHERE d.parentId IN (0, 1)")
 
     val df3 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType site_content_type," +
@@ -52,7 +55,7 @@ object SourceSite extends DimensionBase {
       "null AS fourth_category, null AS fourth_category_code " +
       " FROM mtv_program_site AS a " +
       " INNER JOIN mtv_program_site AS b ON ( a.parentId = b.id )" +
-      " INNER JOIN mtv_program_site AS c ON ( b.parentId = c.id )" +
+      " INNER JOIN mtv_program_site AS c ON ( b.parentId = c.id and c.status = 1)" +
       " WHERE c.parentId IN (0,1)")
 
     val df2 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType AS site_content_type, " +
@@ -61,7 +64,7 @@ object SourceSite extends DimensionBase {
       "null AS third_category, null AS third_category_code, " +
       "null AS fourth_category, null AS fourth_category_code " +
       " FROM mtv_program_site AS a " +
-      " INNER JOIN mtv_program_site AS b ON ( a.parentId = b.id)" +
+      " INNER JOIN mtv_program_site AS b ON ( a.parentId = b.id and b.status = 1)" +
       " WHERE b.parentId IN (0,1)")
 
     df4.unionAll(df3).unionAll(df2).orderBy("source_site_id")

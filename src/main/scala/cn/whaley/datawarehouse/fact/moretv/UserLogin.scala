@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.fact.moretv
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.util.DateFormatUtils
 import org.apache.commons.lang3.time.DateUtils
@@ -38,7 +38,7 @@ object UserLogin extends FactEtlBase {
     ("product_version", "productVersion"),
     ("promotion_channel", "promotionChannel"),
     ("sn", "sn"),
-    ("timestamp", "timestamp"),
+    ("log_timestamp", "timestamp"),
     ("user_id", "userId"),
     ("user_type", "userType"),
     ("version", "version"),
@@ -47,22 +47,32 @@ object UserLogin extends FactEtlBase {
   )
 
   dimensionColumns = List(
-    DimensionColumn("dim_web_location",
+    new DimensionColumn("dim_web_location",
       List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))), "web_location_sk"),
-    DimensionColumn("dim_medusa_terminal_user",
-      List(DimensionJoinCondition(Map("userId" -> "user_id"))), "user_sk"),
-    DimensionColumn("dim_medusa_product_model",
+    new DimensionColumn("dim_medusa_terminal_user",
+      List(
+        DimensionJoinCondition(Map("userId" -> "user_id")),
+        DimensionJoinCondition(Map("mac" -> "mac"), "mac is not null and trim(mac) != ''")
+      ),
+      "user_sk"),
+    new DimensionColumn("dim_medusa_terminal_user_login",
+      List(
+        DimensionJoinCondition(Map("userId" -> "user_id")),
+        DimensionJoinCondition(Map("mac" -> "mac"), "mac is not null and trim(mac) != ''")
+      ),
+      "user_login_sk"),
+    new DimensionColumn("dim_medusa_product_model",
       List(DimensionJoinCondition(Map("productModel" -> "product_model"))), "product_model_sk"),
-    DimensionColumn("dim_medusa_promotion",
+    new DimensionColumn("dim_medusa_promotion",
       List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
-    DimensionColumn("dim_app_version",
+    new DimensionColumn("dim_app_version",
       List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))), "app_version_sk")
   )
 
   override def readSource(startDate: String): DataFrame = {
     //电视猫的读取目录需要加一天
     val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
-    super.readSource(DateFormatUtils.readFormat.format(date))
+    super.readSource(DateFormatUtils.readFormat.format(date)).repartition(180)
   }
 
   def getIpKey(ip: String): Long = {

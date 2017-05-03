@@ -2,6 +2,8 @@ package cn.whaley.datawarehouse.global
 
 /**
   * Created by Tony on 17/3/8.
+  *
+  * 读取源数据的来源
   */
 object SourceType extends Enumeration{
   type SourceType = Value

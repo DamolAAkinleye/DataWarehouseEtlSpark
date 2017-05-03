@@ -170,6 +170,18 @@
                             </descriptors>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>make-fact-etl-zip</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/fact-etl-zip.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

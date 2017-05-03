@@ -1,0 +1,3 @@
+type=command
+dependencies=fact_whaley_MembershipProcess
+command=echo "fact whaley parquet is end ..."

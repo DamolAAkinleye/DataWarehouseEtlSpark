@@ -13,6 +13,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.storage.StorageLevel
 
+import scala.collection.mutable.ListBuffer
 import scala.reflect.io.File
 
 /**
@@ -54,8 +55,6 @@ abstract class DimensionBase extends BaseClass {
     */
   var sourceColumnMap: Map[String, String] = Map()
 
-  var debug = false
-
   //  override def execute(params: Params): Unit = {
   //
   //    val result = doExecute()
@@ -79,13 +78,15 @@ abstract class DimensionBase extends BaseClass {
     //过滤源数据
     val filteredSourceDf = filterSource(sourceDf)
 
+    filteredSourceDf.persist()
+
     //过滤后源数据主键唯一性判断和处理
     checkPrimaryKeys(filteredSourceDf, columns.primaryKeys)
 
     println("成功获取源数据")
     if (debug) filteredSourceDf.show
 
-    filteredSourceDf.persist()
+    filteredSourceDf
   }
 
   /**
@@ -171,7 +172,7 @@ abstract class DimensionBase extends BaseClass {
       return result
     }
 
-    val today = DateUtils.truncate(new Date(), Calendar.DATE)
+    val today = new Date()
 
     //读取现有维度
     val originalDf = sqlContext.read.parquet(onlineDimensionDir)
@@ -179,14 +180,11 @@ abstract class DimensionBase extends BaseClass {
     println("成功获取现有维度")
     if (debug) originalDf.show
 
-    val newColumns =
-      if (columns.getSourceColumns.size == originalDf.schema.fields.length) {
-        List()
-      } else {
-        var temp = columns.getSourceColumns
-        originalDf.schema.fields.map(_.name).foreach(s => temp = temp.drop(columns.getSourceColumns.indexOf(s)))
-        temp
-      }
+    val newColumns = {
+      val index = new ListBuffer[Int]
+      originalDf.schema.fields.map(_.name).foreach(s => index += columns.getSourceColumns.indexOf(s))
+      columns.getSourceColumns.filter(s => !index.contains(columns.getSourceColumns.indexOf(s)))
+    }
 
     if (debug) println("新增加列：" + newColumns)
 
@@ -200,15 +198,15 @@ abstract class DimensionBase extends BaseClass {
         columns.getSourceColumns.map(s => "b." + s): _*
       )
 
-    //找到追踪列变化的信息包含的dataframe, 用于增加追踪列变化的行以及将变化前的行标注为失效
+    //找到追踪列变化的信息包含的dataframe。用于增加追踪列变化的行以及将变化前的行标注为失效
     val changedTrackingColumnDf =
       filteredSourceDf.as("b").join(
         originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
       ).where(
         if (columns.trackingColumns == null || !columns.trackingColumns.exists(!newColumns.contains(_))) {
-          "1=1"
+          "1!=1"
         } else {
-          //若trackingColumn原本为null，不增加新行
+          //若trackingColumn原本为null，不增加新行 TODO 当前逻辑又非null变成null也不增加新行
           columns.trackingColumns.filter(!newColumns.contains(_)).map(s => s"a.$s != b.$s").mkString(" or ")
         }
       )
@@ -216,11 +214,13 @@ abstract class DimensionBase extends BaseClass {
     //更新后维度表中需要添加的行，包括新增的和追踪列变化的
     val extendDf =
       if (columns.trackingColumns == null || columns.trackingColumns.isEmpty) {
-        addDf
+        DataFrameUtil.addDimTime(addDf, DimensionBase.defaultValidTime, null)
       } else {
-        addDf.unionAll(
+        DataFrameUtil.addDimTime(addDf, DimensionBase.defaultValidTime, null).unionAll(
           //因为追踪列变化而新增的行
-          changedTrackingColumnDf.selectExpr(columns.getSourceColumns.map(s => s"b.$s"): _*)
+          DataFrameUtil.addDimTime(
+            changedTrackingColumnDf.selectExpr(columns.getSourceColumns.map(s => s"b.$s"): _*),
+            today, null)
         )
       }
 
@@ -249,7 +249,8 @@ abstract class DimensionBase extends BaseClass {
       ++ List(columns.invalidTimeKey).map(s =>
       //"a." + s   //如果源数据确保主键不会变，则可以使用这个逻辑。在这个逻辑下，可以允许filteredSourceDf只包含源数据中变动的行，
       //同时要注意，在需要增加列时，filteredSourceDf必须要包含完整源数据
-      "CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null THEN '$todayStr' ELSE a.$s END as $s")
+      "cast(CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null " +
+        s"THEN '$todayStr' ELSE a.$s END as timestamp) as $s")
       : _*
     )
 
@@ -261,7 +262,7 @@ abstract class DimensionBase extends BaseClass {
         //变更后需要标注失效时间的行，包含代理键和失效时间两列
         val invalidColumnsDf =
           changedTrackingColumnDf.selectExpr(List("a." + columns.skName)
-            ++ List("'" + todayStr + "' as " + columns.invalidTimeKey): _*)
+            ++ List("cast('" + todayStr + "' as timestamp) as " + columns.invalidTimeKey): _*)
 
         println("计算完成需要变更失效时间的行")
         if (debug) invalidColumnsDf.show
@@ -270,8 +271,8 @@ abstract class DimensionBase extends BaseClass {
         originalExistDf.as("origin").join(invalidColumnsDf.as("invalid"), List(columns.skName), "leftouter"
         ).selectExpr(
           List(columns.skName) ++ columns.getSourceColumns ++ List(columns.validTimeKey)
-            ++ List("CASE WHEN invalid." + columns.invalidTimeKey + " is not null THEN invalid." + columns.invalidTimeKey
-            + " ELSE origin." + columns.invalidTimeKey + " END as " + columns.invalidTimeKey): _*
+            ++ List("cast(CASE WHEN invalid." + columns.invalidTimeKey + " is not null THEN invalid." + columns.invalidTimeKey
+            + " ELSE origin." + columns.invalidTimeKey + " END as timestamp) as " + columns.invalidTimeKey): _*
         )
       }
 
@@ -287,17 +288,40 @@ abstract class DimensionBase extends BaseClass {
         0
       }
 
-    val result = df.unionAll(
+    var unionAllResult = df.unionAll(
       DataFrameUtil.dfZipWithIndex(
-        DataFrameUtil.addDimTime(extendDf, today, null)
+        extendDf
         , columns.skName
         , offset
       )
     )
 
     println("计算完成最终生成的新维度")
-    if (debug) result.show
+    if (debug) unionAllResult.show
 
+    if (columns.addColumns != null) {
+      columns.addColumns.foreach(column =>
+        unionAllResult = unionAllResult.withColumn(column.name, column.udf(column.inputColumns.map(col): _*))
+      )
+    }
+    //关联其他维度，支持雪花模型
+    val linkDimension = parseDimension(unionAllResult, columns.linkDimensionColumns, columns.skName, columns.invalidTimeKey)
+
+    var result =
+      if (linkDimension == null) {
+        unionAllResult
+      } else {
+        val r = unionAllResult.join(linkDimension, List(columns.skName), "leftouter")
+        if (debug) r.show
+        r
+      }
+
+    if (columns.addColumns != null) {
+      columns.addColumns.foreach(column =>
+        if (!column.remainInFinal)
+          result = result.drop(column.name)
+      )
+    }
     result
   }
 

@@ -1,6 +1,8 @@
 package cn.whaley.datawarehouse.dimension.share
 
 import cn.whaley.datawarehouse.BaseClass
+import cn.whaley.datawarehouse.dimension.DimensionBase
+import cn.whaley.datawarehouse.global.SourceType.SourceType
 import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
@@ -12,9 +14,19 @@ import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructT
   *
   * 无需自动触发，只需要修改后手动执行一次
   */
-object UserTime extends BaseClass {
+object UserTime extends DimensionBase {
 
-  override def execute(params: Params): Unit = {
+  columns.skName = "dim_time_sk"
+  columns.primaryKeys = List("time_key")
+  columns.trackingColumns = List()
+  columns.allColumns = List("time_key",
+    "hour",
+    "minute",
+    "second",
+    "period")
+  dimensionName = "dim_time"
+
+  override def readSource(readSourceType: SourceType): DataFrame = {
 
     val rdd = sc.makeRDD(getTimeSeq.map(s => Row.fromTuple(s)))
 
@@ -27,9 +39,7 @@ object UserTime extends BaseClass {
     ))
 
     val df = sqlContext.createDataFrame(rdd, schema)
-    HdfsUtil.deleteHDFSFileOrPath("/data_warehouse/dw_dimensions/dim_time")
-    df.write.parquet("/data_warehouse/dw_dimensions/dim_time")
-
+    df
   }
 
   private def getTimeSeq: List[(String, Int, Int, Int, String)] = {
@@ -52,23 +62,4 @@ object UserTime extends BaseClass {
     result.toList
   }
 
-  /**
-    * 源数据读取函数, ETL中的Extract
-    * 如需自定义，可以在子类中重载实现
-    *
-    * @return
-    */
-  override def extract(params: Params): DataFrame = ???
-
-  /**
-    * 数据转换函数，ETL中的Transform
-    *
-    * @return
-    */
-  override def transform(params: Params, df: DataFrame): DataFrame = ???
-
-  /**
-    * 数据存储函数，ETL中的Load
-    */
-  override def load(params: Params, df: DataFrame): Unit = ???
 }

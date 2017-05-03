@@ -44,8 +44,8 @@ object DataFrameUtil {
       ,
       StructType(
         df.schema.fields
-          ++ Array(StructField("dim_valid_time", TimestampType, false)
-          , StructField("dim_invalid_time", TimestampType, false)))
+          ++ Array(StructField("dim_valid_time", TimestampType)
+          , StructField("dim_invalid_time", TimestampType)))
     )
   }
 }

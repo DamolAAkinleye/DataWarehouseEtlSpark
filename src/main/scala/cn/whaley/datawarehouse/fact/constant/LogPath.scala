@@ -7,5 +7,6 @@ object LogPath {
 
   val DATE_ESCAPE = "#{startDate}"
   val LOGIN_LOG_PATH = s"/log/moretvloginlog/parquet/$DATE_ESCAPE/loginlog"
+  val HELIOS_WHALEYVIP_GETBUYVIPPROCESS = s"/log/whaley/parquet/$DATE_ESCAPE/helios-whaleyvip-getBuyVipProcess"
 
 }
