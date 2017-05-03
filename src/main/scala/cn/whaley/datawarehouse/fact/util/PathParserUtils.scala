@@ -1,7 +1,6 @@
 package cn.whaley.datawarehouse.fact.util
 
-import cn.whaley.sdk.udf.UDFConstant
-
+import cn.whaley.datawarehouse.fact.constant.UDFConstantDimension
 
 /**
   * Created by michael.wang on 2017/4/24.
@@ -30,13 +29,13 @@ object PathParserUtils {
       /**
         * logType: interview
         */
-      case UDFConstant.INTERVIEW => {
+      case UDFConstantDimension.INTERVIEW => {
         pathType match {
           // moretv的interview的日志只有path这一个路径信息
-          case UDFConstant.PATH => {
+          case UDFConstantDimension.PATH => {
             outputType match {
               // 获取moretv的contentType信息
-              case UDFConstant.CONTENTTYPE => {
+              case UDFConstantDimension.CONTENTTYPE => {
                 if (path != null) {
                   if (path.contains("-")) {
                     if (path.split("-").length >= 2) {
@@ -59,16 +58,16 @@ object PathParserUtils {
       /**
         * logType: detail/play/playview
         */
-      case UDFConstant.DETAIL | UDFConstant.PLAY | UDFConstant.PLAYVIEW => {
+      case UDFConstantDimension.DETAIL | UDFConstantDimension.PLAY | UDFConstantDimension.PLAYVIEW => {
         pathType match {
           // medusa的detail日志中的pathMain字段
-          case UDFConstant.PATHMAIN => {
+          case UDFConstantDimension.PATHMAIN => {
             outputType match {
               // medusa的pathMain路径中的launcherArea信息
-              case UDFConstant.LAUNCHERAREA => {
+              case UDFConstantDimension.LAUNCHERAREA => {
                 result = getPathMainInfo(path, 1, 2)
                 if (result != null) {
-                  if (!UDFConstant.MedusaLauncherArea.contains(result)) {
+                  if (!UDFConstantDimension.MedusaLauncherArea.contains(result)) {
                     result = null
                   }
                 } else {
@@ -78,10 +77,10 @@ object PathParserUtils {
                 }
               }
               // medusa的pathMain路径中的launcherAccessLocation信息
-              case UDFConstant.LAUNCHERACCESSLOCATION => {
+              case UDFConstantDimension.LAUNCHERACCESSLOCATION => {
                 result = getPathMainInfo(path, 1, 3)
                 if (result != null) {
-                  if (getPathMainInfo(path, 1, 2) == UDFConstant.MedusaLive || !UDFConstant.MedusaLauncherAccessLocation
+                  if (getPathMainInfo(path, 1, 2) == UDFConstantDimension.MedusaLive || !UDFConstantDimension.MedusaLauncherAccessLocation
                     .contains(result)) {
                     result = null
                   }
@@ -95,26 +94,26 @@ object PathParserUtils {
                 }
               }
               // medusa的pathMain路径中的pageType信息
-              case UDFConstant.PAGETYPE => {
+              case UDFConstantDimension.PAGETYPE => {
                 result = getPathMainInfo(path, 2, 1)
                 if (result != null) {
-                  if (!UDFConstant.MedusaPageInfo.contains(result)) {
+                  if (!UDFConstantDimension.MedusaPageInfo.contains(result)) {
                     result = null
                   }
                 }
               }
               // medusa的pathMain路径中的pageDetailInfo信息
-              case UDFConstant.PAGEDETAILINFO => {
+              case UDFConstantDimension.PAGEDETAILINFO => {
                 result = getPathMainInfo(path, 2, 2)
                 if (result != null) {
-                  if (!UDFConstant.MedusaPageDetailInfo.contains(result)) {
+                  if (!UDFConstantDimension.MedusaPageDetailInfo.contains(result)) {
                     result = null
                   }
                 } else {
                   // 处理少儿频道
                   if (getPathMainInfo(path, 2, 1) == "kids_home") {
                     result = getSplitInfo(path, 3)
-                    if (result != null && !UDFConstant.MedusaPageDetailInfo.contains(result)) {
+                    if (result != null && !UDFConstantDimension.MedusaPageDetailInfo.contains(result)) {
                       result = null
                     }
                     if (getPathMainInfo(path, 3, 2) == null) {
@@ -135,42 +134,42 @@ object PathParserUtils {
             }
           }
           // medusa的detail/play日志中的pathSub字段
-          case UDFConstant.PATHSUB => {
+          case UDFConstantDimension.PATHSUB => {
             outputType match {
               // medusa的pathSub字段中的访问路径信息
-              case UDFConstant.ACCESSPATH => {
+              case UDFConstantDimension.ACCESSPATH => {
                 result = getPathMainInfo(path, 1, 1)
-                if (!UDFConstant.MedusaPathSubAccessPath.contains(result)) {
+                if (!UDFConstantDimension.MedusaPathSubAccessPath.contains(result)) {
                   result = null
                 }
               }
               // medusa的pathSub字段中的前一个节目的sid
-              case UDFConstant.PREVIOUSSID => {
-                if (UDFConstant.MedusaPathSubAccessPath.contains(getPathMainInfo(path, 1, 1))) {
+              case UDFConstantDimension.PREVIOUSSID => {
+                if (UDFConstantDimension.MedusaPathSubAccessPath.contains(getPathMainInfo(path, 1, 1))) {
                   result = getPathMainInfo(path, 3, 1)
                 }
               }
               // medusa的pathSub字段中的前一个节目的contentType
-              case UDFConstant.PREVIOUSCONTENTTYPE => {
-                if (UDFConstant.MedusaPathSubAccessPath.contains(getPathMainInfo(path, 1, 1))) {
+              case UDFConstantDimension.PREVIOUSCONTENTTYPE => {
+                if (UDFConstantDimension.MedusaPathSubAccessPath.contains(getPathMainInfo(path, 1, 1))) {
                   result = getPathMainInfo(path, 3, 2)
                 }
               }
             }
           }
           // medusa的detail/play日志中的pathSpecial字段
-          case UDFConstant.PATHSPECIAL => {
+          case UDFConstantDimension.PATHSPECIAL => {
             outputType match {
               // 获取medusa的pathSpecial中的“路径性质”信息
-              case UDFConstant.PATHPROPERTY => {
+              case UDFConstantDimension.PATHPROPERTY => {
                 result = getPathMainInfo(path, 1, 1)
-                if (!UDFConstant.MedusaPathProperty.contains(result)) {
+                if (!UDFConstantDimension.MedusaPathProperty.contains(result)) {
                   result = null
                 }
               }
               // 获取medusa的pathSpecial中的“路径标识”信息
-              case UDFConstant.PATHIDENTIFICATION => {
-                if (UDFConstant.MedusaPathProperty.contains(getPathMainInfo(path, 1, 1))) {
+              case UDFConstantDimension.PATHIDENTIFICATION => {
+                if (UDFConstantDimension.MedusaPathProperty.contains(getPathMainInfo(path, 1, 1))) {
                   val pathLen = path.split("-").length
                   if (pathLen == 2) {
                     result = getPathMainInfo(path, 2, 1)
@@ -187,31 +186,31 @@ object PathParserUtils {
             }
           }
           // moretv的detail日志中的path字段
-          case UDFConstant.PATH => {
+          case UDFConstantDimension.PATH => {
             if (path.contains("-")) {
               outputType match {
                 // moretv的launcherArea信息
-                case UDFConstant.LAUNCHERAREA => {
+                case UDFConstantDimension.LAUNCHERAREA => {
                   result = getSplitInfo(path, 2)
                   if (result != null) {
                     // 如果是属于“热门推荐”、“大家在看”，“卫视直播”，“观看历史”，则area信息就为其本身
-                    if (!UDFConstant.MoretvLauncherUPPART.contains(result)) {
-                      if (UDFConstant.MoretvLauncherAreaNAVI.contains(result)) {
+                    if (!UDFConstantDimension.MoretvLauncherUPPART.contains(result)) {
+                      if (UDFConstantDimension.MoretvLauncherAreaNAVI.contains(result)) {
                         result = "navi" // 包含了"搜索"和“设置”
-                      } else if (UDFConstant.MoretvLauncherCLASSIFICATION.contains(result)) {
+                      } else if (UDFConstantDimension.MoretvLauncherCLASSIFICATION.contains(result)) {
                         result = "classification" // 包含了launcher页面的下面部分，除了"搜索"和“设置”之外
                       }
                     }
                   }
                 }
                 // moretv的accessLocation信息
-                case UDFConstant.LAUNCHERACCESSLOCATION => {
+                case UDFConstantDimension.LAUNCHERACCESSLOCATION => {
                   result = getSplitInfo(path, 2)
                   if (result != null) {
                     // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
-                    if (!UDFConstant.MoretvLauncherAccessLocation.contains(result)) {
+                    if (!UDFConstantDimension.MoretvLauncherAccessLocation.contains(result)) {
                       // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
-                      if (UDFConstant.MoretvLauncherUPPART.contains(result)) {
+                      if (UDFConstantDimension.MoretvLauncherUPPART.contains(result)) {
                         result match {
                           case "watchhistory" => result = null
                           case "otherwatch" => result = getSplitInfo(path, 3)
@@ -226,13 +225,13 @@ object PathParserUtils {
                   }
                 }
                 // moretv的pageType信息
-                case UDFConstant.PAGETYPE => {
-                  if (UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
+                case UDFConstantDimension.PAGETYPE => {
+                  if (UDFConstantDimension.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
                     result = getSplitInfo(path, 2)
                   }
                 }
                 // moretv的pageDetailInfo
-                case UDFConstant.PAGEDETAILINFO => {
+                case UDFConstantDimension.PAGEDETAILINFO => {
                   result = getSplitInfo(path, 3)
                   if (result != null) {
                     if (getSplitInfo(path, 2) == "search") {
@@ -243,16 +242,16 @@ object PathParserUtils {
                     }
                   }
                   // 将English转为Chinese
-                  if (UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
+                  if (UDFConstantDimension.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
                     val page = getSplitInfo(path, 2)
-                    if (UDFConstant.MoretvPageDetailInfo.contains(result)) {
+                    if (UDFConstantDimension.MoretvPageDetailInfo.contains(result)) {
                       //result = transformEng2Chinese(page, result)
                     }
                   }
                 }
 
                 // 处理moretv的“访问路径”信息
-                case UDFConstant.ACCESSPATH => {
+                case UDFConstantDimension.ACCESSPATH => {
                   var len = 0
                   if (path.contains("-")) {
                     len = path.split("-").length
@@ -260,18 +259,18 @@ object PathParserUtils {
                     len = 1
                   }
                   result = getSplitInfo(path, len)
-                  if (!UDFConstant.MORETVPATHSUBCATEGORY.contains(result)) {
+                  if (!UDFConstantDimension.MORETVPATHSUBCATEGORY.contains(result)) {
                     result = null
                   }
                 }
                 //目前moretv的path字段中没有上一个节目的sid和contentType的信息
-                case UDFConstant.PREVIOUSSID => {
+                case UDFConstantDimension.PREVIOUSSID => {
                   result = null
                 }
-                case UDFConstant.PREVIOUSCONTENTTYPE => {
+                case UDFConstantDimension.PREVIOUSCONTENTTYPE => {
                   result = null
                 }
-                case UDFConstant.PATHPROPERTY => {
+                case UDFConstantDimension.PATHPROPERTY => {
                   if (path.contains("-tag-")) {
                     result = "tag"
                   } else if (path.contains("-subject-")) {
@@ -280,7 +279,7 @@ object PathParserUtils {
                     result = "star"
                   }
                 }
-                case UDFConstant.PATHIDENTIFICATION => {
+                case UDFConstantDimension.PATHIDENTIFICATION => {
                   // 在moretv中没有给pathproperty添加具体的信息，即没有给出actor所对应的具体内容，因此设为null；
                   // tag/subject/的信息可以给出
                   //                  if(path.contains("-subject-")){
@@ -494,33 +493,33 @@ object PathParserUtils {
   /**
     * 从路径中获取专题名称,对于medusa日志，可以从pathSpecial解析出subjectName；对于moretv日志，日志里面不存在subjectName打点
     *
-     will delete and get it from SubjectUtils
-   def getSubjectNameByPathETL(pathSpecial: String): String = {
-    var result: String = null
-    if (pathSpecial != null) {
-      if ("subject".equalsIgnoreCase(getPathMainInfo(pathSpecial, 1, 1))) {
-        val subjectCode = SubjectUtils.getSubjectCode(pathSpecial)
-        val pathLen = pathSpecial.split("-").length
-        if (pathLen == 2) {
-          result = getPathMainInfo(pathSpecial, 2, 1)
-        } else if (pathLen > 2) {
-          var tempResult = getPathMainInfo(pathSpecial, 2, 1)
-          if (subjectCode != " ") {
-            for (i <- 2 until pathLen - 1) {
-              tempResult = tempResult.concat("-").concat(getPathMainInfo(pathSpecial, i + 1, 1))
-            }
-            result = tempResult
-          } else {
-            for (i <- 2 until pathLen) {
-              tempResult = tempResult.concat("-").concat(getPathMainInfo(pathSpecial, i + 1, 1))
-            }
-            result = tempResult
-          }
-        }
-      }
-    }
-    result
-  }*/
+     *will delete and get it from SubjectUtils
+   *def getSubjectNameByPathETL(pathSpecial: String): String = {
+    *var result: String = null
+    *if (pathSpecial != null) {
+      *if ("subject".equalsIgnoreCase(getPathMainInfo(pathSpecial, 1, 1))) {
+        *val subjectCode = SubjectUtils.getSubjectCode(pathSpecial)
+        *val pathLen = pathSpecial.split("-").length
+        *if (pathLen == 2) {
+          *result = getPathMainInfo(pathSpecial, 2, 1)
+        *} else if (pathLen > 2) {
+          *var tempResult = getPathMainInfo(pathSpecial, 2, 1)
+          *if (subjectCode != " ") {
+            *for (i <- 2 until pathLen - 1) {
+              *tempResult = tempResult.concat("-").concat(getPathMainInfo(pathSpecial, i + 1, 1))
+            *}
+            *result = tempResult
+          *} else {
+            *for (i <- 2 until pathLen) {
+              *tempResult = tempResult.concat("-").concat(getPathMainInfo(pathSpecial, i + 1, 1))
+            *}
+            *result = tempResult
+          *}
+        *}
+      *}
+    *}
+    *result
+  *}*/
 
   def getSubjectTypeByPathETL(path: String, flag: String): String = {
     var result: String = null
@@ -812,9 +811,9 @@ object PathParserUtils {
           result = getSplitInfo(path, 2)
           if (result != null) {
             // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
-            if (!UDFConstant.MoretvLauncherAccessLocation.contains(result)) {
+            if (!UDFConstantDimension.MoretvLauncherAccessLocation.contains(result)) {
               // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
-              if (UDFConstant.MoretvLauncherUPPART.contains(result)) {
+              if (UDFConstantDimension.MoretvLauncherUPPART.contains(result)) {
                 result = "MoretvLauncherUPPART"
               } else {
                 result = null
@@ -830,7 +829,7 @@ object PathParserUtils {
             if (getSplitInfo(path, 2) == "kids_home" || getSplitInfo(path, 2) == "sports") {
               result = getSplitInfo(path, 3) + "-" + getSplitInfo(path, 4)
             }
-            if (!UDFConstant.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
+            if (!UDFConstantDimension.MoretvPageInfo.contains(getSplitInfo(path, 2))) {
               result = null
             }
           }
