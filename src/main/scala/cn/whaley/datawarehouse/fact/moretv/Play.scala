@@ -55,23 +55,28 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategorySecond", udf(FilterCategoryUtils.getFilterCategorySecond: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategoryThird", udf(FilterCategoryUtils.getFilterCategoryThird: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag"))
+    UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
+    UserDefinedColumn("previousSid", udf(RecommendUtils.getPreviousSid: (String) => String), List("pathSub")),
+    UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub"))
   )
 
   /**
-    * step 3, left join dimension table,get new column
+    * step 3, left join dimension table,get sk
     * */
   dimensionColumns = List(
-    /** 获得列表页sk source_site_sk*/
+    /** 获得列表页sk source_site_sk */
     ListCategoryUtils.getSourceSiteSK,
+
     /** 获得专题 subject_sk */
     SubjectUtils.getSubjectSK,
-
-    /**  获得首页入口sk*/
 
     /** 获得筛选sk */
 
     /** 获得推荐来源sk */
+
+    /** 获得频道主页来源维度sk（只有少儿，音乐，体育有频道主页来源维度）*/
+
 
     /** 获得首页入口 launcher_entrance_sk */
     EntranceTypeUtils.getLauncherEntranceSK

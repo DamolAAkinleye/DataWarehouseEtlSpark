@@ -5,67 +5,61 @@ import cn.whaley.datawarehouse.global.LogConfig
 /**
   * Created by michael on 2017/5/2.
   */
-object RecommendUtils extends LogConfig{
+object RecommendUtils extends LogConfig {
   private val medusaReg = ("(similar|peoplealsolike|guessyoulike)-[\\S]+-([\\S]+)\\*([\\S]+)").r
-  private val moretvReg =("home.*-(similar|peoplealsolike|guessyoulike)").r
-
+  private val moretvReg = ("home.*-(similar|peoplealsolike|guessyoulike)").r
 
   def getRecommendSourceType(pathSub: String, path: String, flag: String): String = {
     var result: String = null
     flag match {
       case MEDUSA => {
-        medusaReg findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(1)
+        if (null != pathSub) {
+          medusaReg findFirstMatchIn pathSub match {
+            case Some(p) => {
+              result = p.group(1)
+            }
+            case None =>
           }
-          case None =>
         }
       }
       case MORETV => {
-        moretvReg findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(1)
+        if (null != path) {
+          moretvReg findFirstMatchIn path match {
+            case Some(p) => {
+              result = p.group(1)
+            }
+            case None =>
           }
-          case None =>
         }
       }
     }
     result
   }
 
-  def getPreviousSid(pathSub: String, path: String, flag: String): String = {
+  def getPreviousSid(pathSub: String): String = {
     var result: String = null
-    flag match {
-      case MEDUSA => {
-        medusaReg findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(2)
-          }
-          case None =>
+    if (null != pathSub) {
+      medusaReg findFirstMatchIn pathSub match {
+        case Some(p) => {
+          result = p.group(2)
         }
-      }
-      case MORETV => {
-        result=null
+        case None =>
       }
     }
     result
   }
 
-  def getPreviousContentType(pathSub: String, path: String, flag: String): String = {
+  def getPreviousContentType(pathSub: String): String = {
     var result: String = null
-    flag match {
-      case MEDUSA => {
-        medusaReg findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(3)
-          }
-          case None =>
+    if (null != pathSub) {
+      medusaReg findFirstMatchIn pathSub match {
+        case Some(p) => {
+          result = p.group(3)
         }
-      }
-      case MORETV => {
-        result=null
+        case None =>
       }
     }
     result
   }
+
 }
