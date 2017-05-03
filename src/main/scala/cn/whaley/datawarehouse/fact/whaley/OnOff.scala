@@ -12,7 +12,7 @@ import org.apache.spark.sql.functions._
   * 创建时间：2017/5/03
   * 程序作用：开关机日子
   * 数据输入：on/off日志
-  * 数据输出：
+  * 数据输出：开关机事实表
   */
 object OnOff extends FactEtlBase{
   topicName = "fact_whaley_on_off"
