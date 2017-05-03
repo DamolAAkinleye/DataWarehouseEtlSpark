@@ -1,14 +1,18 @@
 #!/bin/bash
 
 startDate=$3
+endDate=$5
 echo "startDate is $startDate"
+echo "endDate is $endDate"
 startDate=`date -d "-1 days "$startDate +%Y%m%d`
+endDate=`date -d "-1 days "$endDate +%Y%m%d`
 echo "startDate is $startDate"
+echo "endDate is $endDate"
 
 Params=($@)
 MainClass=${Params[0]}
 Length=${#Params[@]}
-Args=${Params[@]:3:Length-3}
+Args=${Params[@]:5:Length-5}
 
 cd `dirname $0`
 pwd=`pwd`
@@ -95,4 +99,4 @@ $spark_home/bin/spark-submit -v \
 --conf spark.dynamicAllocation.initialExecutors=${spark_dynamicAllocation_initialExecutors} \
 --conf spark.default.parallelism=${spark_default_parallelism} \
 --conf spark.yarn.queue=${spark_yarn_queue} \
---class "$MainClass" $spark_mainJar --startDate $startDate $Args
+--class "$MainClass" $spark_mainJar --startDate $startDate --endDate $endDate $Args

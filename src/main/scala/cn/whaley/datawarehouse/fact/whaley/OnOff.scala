@@ -42,8 +42,6 @@ object OnOff extends FactEtlBase{
   override def readSource(startDate: String): DataFrame = {
 
     //ota19 off 新增startTime,endTime
-    DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
-      .schema.fieldNames.foreach(println(_))
     val flag = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
       .schema.fieldNames.contains("startTime")
     var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
