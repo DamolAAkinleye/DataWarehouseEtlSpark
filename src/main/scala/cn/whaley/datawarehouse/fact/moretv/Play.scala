@@ -41,7 +41,35 @@ object Play extends FactEtlBase with  LogConfig{
   }
 
   /**
-    * step 2, generate new columns
+    * step 2, filter data source record
+    * */
+  override def filterRows(sourceDf: DataFrame): DataFrame = {
+    /** 用于过滤单个用户播放单个视频量过大的情况 */
+    val playNumLimit=5000
+    sourceDf.registerTempTable("source_log")
+    var sqlStr =
+      s"""
+         |select concat(userId,videoSid) as filterColumn
+         |from source_log
+         |group by concat(userId,videoSid)
+         |having count(1)>=$playNumLimit
+                     """.stripMargin
+    sqlContext.sql(sqlStr).registerTempTable("table_filter")
+    sqlStr =
+      s"""
+         |select a.*
+         |from source_log         a
+         |     left join
+         |     table_filter       b
+         |     on concat(a.userId,a.videoSid)=b.filterColumn
+         |where b.filterColumn is null
+                     """.stripMargin
+    val resultDF = sqlContext.sql(sqlStr)
+    resultDF
+  }
+
+  /**
+    * step 3, generate new columns
     * */
   addColumns = List(
     UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
@@ -58,11 +86,13 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
     UserDefinedColumn("previousSid", udf(RecommendUtils.getPreviousSid: (String) => String), List("pathSub")),
-    UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub"))
+    UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
+    UserDefinedColumn("searchFrom", udf(SearchUtils.getSearchFrom: (String,String,String) => String),List("pathMain", "path", "flag")),
+    UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag"))
   )
 
   /**
-    * step 3, left join dimension table,get sk
+    * step 4, left join dimension table,get sk
     * */
   dimensionColumns = List(
     /** 获得列表页sk source_site_sk */
@@ -84,7 +114,7 @@ object Play extends FactEtlBase with  LogConfig{
 
 
   /**
-    * step 4,保留哪些列，以及别名声明
+    * step 5,保留哪些列，以及别名声明
     * */
   columnsFromSource = List(
     ("subject_name", "subjectName"),
@@ -100,7 +130,16 @@ object Play extends FactEtlBase with  LogConfig{
     ("path_main", "pathMain"),
     ("path", "path"),
     ("pathSpecial", "pathSpecial"),
-    ("flag", "flag")
+    ("filterCategoryFirst", "filterCategoryFirst"),
+    ("filterCategorySecond", "filterCategorySecond"),
+    ("filterCategoryThird", "filterCategoryThird"),
+    ("filterCategoryFourth", "filterCategoryFourth"),
+    ("recommendSourceType", "recommendSourceType"),
+    ("previousSid", "previousSid"),
+    ("previousContentType", "previousContentType"),
+    ("ipKey", "ipKey"),
+    ("searchFrom", "searchFrom"),
+    ("searchKeyword", "searchKeyword")
   )
 
   factTime = null

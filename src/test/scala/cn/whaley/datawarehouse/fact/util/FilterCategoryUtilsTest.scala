@@ -23,7 +23,7 @@ class FilterCategoryUtilsTest {
       ("xxx","home-movie-multi_search-new-all-all-all",MORETV,"new"))
       testCaseList.foreach(w => {
         val firstFilterCategory=FilterCategoryUtils.getFilterCategoryFirst(w._1,w._2,w._3)
-        assertEquals(firstFilterCategory,w._4)
+        assertEquals(w._4,firstFilterCategory)
     })
   }
 
