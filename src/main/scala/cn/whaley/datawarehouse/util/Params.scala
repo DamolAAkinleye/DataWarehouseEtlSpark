@@ -11,6 +11,7 @@ case class Params(
                    isBackup: Boolean = true, //参数决定是否备份线上数据，第一次备份数据才可以作为回滚数据。当涉及到多次执行,设置isBackup=false
                    startDate: String = null,
                    endDate: String = null,
+                   debug: Boolean = false, //打印调试信息
                    paramMap: mutable.Map[String, Any] = mutable.Map[String,Any]() //其他非命令行参数
                  )
 

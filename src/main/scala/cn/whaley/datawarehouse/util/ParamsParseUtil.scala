@@ -16,6 +16,7 @@ object ParamsParseUtil {
       val parser = new OptionParser[Params]("ParamsParse") {
         head("ParamsParse", "1.2")
         opt[Boolean]("isOnline").action((x, c) => c.copy(isOnline = x))
+        opt[Boolean]("debug").action((x, c) => c.copy(debug = x))
         opt[Boolean]("isBackup").action((x, c) => c.copy(isBackup = x))
         opt[String]("startDate").action((x, c) => c.copy(startDate = x)).
           validate(e => try {

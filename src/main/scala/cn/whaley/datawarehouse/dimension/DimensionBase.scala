@@ -55,8 +55,6 @@ abstract class DimensionBase extends BaseClass {
     */
   var sourceColumnMap: Map[String, String] = Map()
 
-  var debug = false
-
   //  override def execute(params: Params): Unit = {
   //
   //    val result = doExecute()

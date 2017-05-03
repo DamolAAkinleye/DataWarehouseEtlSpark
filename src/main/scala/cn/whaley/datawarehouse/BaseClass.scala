@@ -27,6 +27,8 @@ trait BaseClass {
 
   var readSourceType: Value = _
 
+  var debug = false
+
   /**
     * 程序入口
     *
@@ -78,6 +80,8 @@ trait BaseClass {
     * ETL过程执行程序
     */
   def execute(params: Params): Unit = {
+
+    if(params.debug) debug = true
 
     val df = extract(params)
 
@@ -180,7 +184,7 @@ trait BaseClass {
                 && isnull(df(c.dimensionSkName))
                 && (isnull(sourceFilterDf(COLUMN_NAME_FOR_SOURCE_TIME)) ||
                 expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
-                  s"(a.$COLUMN_NAME_FOR_SOURCE_TIME <= b.dim_invalid_time or b.dim_invalid_time is null)")),
+                  s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
               "inner"
             ).selectExpr(
               "a." + uniqueKeyName, "b." + c.dimensionSkName

@@ -82,21 +82,25 @@ abstract class FactEtlBase extends BaseClass {
   override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
 
     val filteredSourceDf = filterRows(sourceDf)
-    filteredSourceDf.dropDuplicates()
+//    filteredSourceDf.dropDuplicates()
 
     val completeSourceDf = addNewColumns(filteredSourceDf)
     completeSourceDf.persist()
 
-    //    println("完整事实表行数：" + completeSourceDf.count())
-    //    completeSourceDf.show()
+    if(debug) {
+      println("完整事实表行数：" + completeSourceDf.count())
+      completeSourceDf.show()
+    }
 
 
-    val dimensionDf = parseDimension(completeSourceDf, dimensionColumns, INDEX_NAME, factTime)
+    val dimensionJoinDf = parseDimension(completeSourceDf, dimensionColumns, INDEX_NAME, factTime)
+    if(debug) {
+      dimensionJoinDf.persist()
+      println("维度关联表行数：" + dimensionJoinDf.count())
+      dimensionJoinDf.show()
+    }
 
-    //    println("维度关联表行数：" + dimensionDf.count())
-    //    dimensionDf.show()
-
-    var df = completeSourceDf.join(dimensionDf, List(INDEX_NAME), "leftouter").as("source")
+    var df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")
     if (dimensionColumns != null) {
       //关联所有的维度  TODO 判断只关联用到的维度
       dimensionColumns.foreach(c => {
@@ -106,15 +110,21 @@ abstract class FactEtlBase extends BaseClass {
           "leftouter")
       })
     }
-    df.selectExpr(
+    val result = df.selectExpr(
       columnsFromSource.map(
         c => if (c._2.contains(" ") || c._2.contains("."))
           c._2 + " as " + c._1
         else
           "source." + c._2 + " as " + c._1)
-        ++ dimensionDf.schema.fields.filter(_.name != INDEX_NAME).map("source." + _.name)
+        ++ dimensionJoinDf.schema.fields.filter(_.name != INDEX_NAME).map("source." + _.name)
         : _*
     )
+
+    if(debug) {
+      println("最终结果行数：" + result.count())
+    }
+
+    result
   }
 
   def filterRows(sourceDf: DataFrame): DataFrame = {
