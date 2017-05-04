@@ -40,33 +40,35 @@ object SearchUtils extends LogConfig {
 
   private def getSearchDimension(path: String, index: Int, flag: String): String = {
     var result: String = null
-    flag match {
-      case MEDUSA => {
-        regex_search_medusa findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(index)
+    if (null != path) {
+      flag match {
+        case MEDUSA => {
+          regex_search_medusa findFirstMatchIn path match {
+            case Some(p) => {
+              result = p.group(index)
+            }
+            case None =>
           }
-          case None =>
+          regex_search_medusa_home findFirstMatchIn path match {
+            case Some(p) => {
+              result = p.group(index)
+            }
+            case None =>
+          }
         }
-        regex_search_medusa_home findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(index)
+        case MORETV => {
+          regex_search_moretv findFirstMatchIn path match {
+            case Some(p) => {
+              result = p.group(index)
+            }
+            case None =>
           }
-          case None =>
-        }
-      }
-      case MORETV => {
-        regex_search_moretv findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(index)
+          regex_search_moretv_home findFirstMatchIn path match {
+            case Some(p) => {
+              result = p.group(index)
+            }
+            case None =>
           }
-          case None =>
-        }
-        regex_search_moretv_home findFirstMatchIn path match {
-          case Some(p) => {
-            result = p.group(index)
-          }
-          case None =>
         }
       }
     }

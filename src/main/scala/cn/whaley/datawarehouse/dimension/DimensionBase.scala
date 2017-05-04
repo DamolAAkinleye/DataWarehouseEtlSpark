@@ -375,7 +375,7 @@ abstract class DimensionBase extends BaseClass {
       HdfsUtil.deleteHDFSFileOrPath(onLineDimensionDirTmp)
     }
     println("生成线上维度数据到临时目录:" + onLineDimensionDirTmp)
-    df.repartition(partition).orderBy(columns.skName).write.parquet(onLineDimensionDirTmp)
+    df.orderBy(columns.skName).repartition(partition).write.parquet(onLineDimensionDirTmp)
 
     println("数据是否上线:" + p.isOnline)
     if (p.isOnline) {
