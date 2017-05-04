@@ -5,8 +5,9 @@ import cn.whaley.datawarehouse.global.LogConfig
   * Created by michael on 2017/5/2.
   */
 object FilterCategoryUtils extends LogConfig{
-  private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\S]+?)-([\\S]+?)-(all|qita|[0-9]+[-0-9]*)").r
-  private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\S]+?)\\*([\\S]+?)\\*(all|qita|[0-9]+[\\*0-9]*)").r
+  private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\w]+)-([\\w]+)-([\\w]+)[-]?.*").r
+  private val regex_moretv_filter_number = (".*multi_search-(hot|new|score)-([\\w]+)-([\\w]+)-([\\d]+-[\\d]+)[-]?.*").r
+  private val regex_medusa_filter = (".*retrieval\\*(hot|new|score)\\*([\\w]+)\\*([\\w]+)\\*(all|qita|[\\d]+[\\*\\d]*)").r
 
   //获取筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
   def getFilterCategory(path: String, index: Int, flag: String): String = {
@@ -27,6 +28,12 @@ object FilterCategoryUtils extends LogConfig{
         }
         case MORETV => {
           regex_moretv_filter findFirstMatchIn path match {
+            case Some(p) => {
+              result = p.group(index)
+            }
+            case None =>
+          }
+          regex_moretv_filter_number findFirstMatchIn path match {
             case Some(p) => {
               result = p.group(index)
             }
