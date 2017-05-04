@@ -1,0 +1,81 @@
+package cn.whaley.datawarehouse.fact.util
+
+import org.junit.Assert._
+import org.junit.{Before, Test}
+
+/**
+  * Created by wujiulin on 2017/5/4.
+  */
+class PageEntranceUtilsTest {
+
+  var MORETV: String = _
+  var MEDUSA: String = _
+
+  @Before def initialize() {
+    MORETV = "moretv"
+    MEDUSA = "medusa"
+  }
+
+  @Test
+  def getPageEntranceCode: Unit = {
+    /** kids have moretv log and medusa log,mv and sports only have medusa log */
+    val moretvTestCaseList = List(//pathMain, path, flag, page_code, area_code, location_code
+      ("", "home-kids_home-kids_seecartoon-kid_zhuanti-kids120", MORETV, "kids", "show_kidsSite", null),
+      ("", "home-kids_home-kids_songhome-search-CTZ", MORETV, "kids", "show_kidsSongSite", null),
+      ("", "thirdparty_0-kids_home-kids_seecartoon-search-KAIL", MORETV, "kids", "show_kidsSite", null),
+      ("", "home-kids_home-kids_recommend-kids192", MORETV, "kids", "kids_recommend", null),
+      ("", "home-kids_home-kids_cathouse-%E7%AB%A5%E5%B9%B4", MORETV, "kids", "kids_collect", null)
+    )
+
+    val medusaTestCaseList = List(//pathMain, path, flag, page_code, area_code, location_code
+      //kids
+      ("home*classification*kids-kids_home-kandonghua-search*PPH", "", MEDUSA, "kids", "show_kidsSite", null),
+      ("home*classification*kids-kids_home-tingerge-search*HLW", "", MEDUSA, "kids", "show_kidsSongSite", null),
+      ("home*classification*kids-kids_home-xuezhishi-search*LBY", "", MEDUSA, "kids", "kids_knowledge", null),
+      ("kids_home-kids_anim*国产精选", "", MEDUSA, "kids", "show_kidsSite", null),
+      ("home-kids_home-kids_rhymes*单曲精选", "", MEDUSA, "kids", "show_kidsSongSite", null),
+      ("home*my_tv*kids-kids_home-kids_collect*观看历史", "", MEDUSA, "kids", "kids_collect", null),
+      //mv
+      ("home*classification*mv-mv*mvRecommendHomePage*8qc3op34qr23-mv_station", "", MEDUSA, "mv", "mvRecommendHomePage", "mv_station"),
+      ("home*classification*mv-mv*mvRecommendHomePage*2dpr34nowy5g", "", MEDUSA, "mv", "mvRecommendHomePage", null),
+      ("home*my_tv*mv-mv*mvRecommendHomePage*personal_recommend", "", MEDUSA, "mv", "mvRecommendHomePage", "personal_recommend"),
+
+      ("mv*function*site_dance-mv_category*宅舞", "", MEDUSA, "mv", "function", "site_dance"),
+      ("home*classification*mv-mv*function*site_concert-mv_category*华语", "", MEDUSA, "mv", "function", "site_concert"),
+      ("mv*function*site_hotsinger-mv_poster", "", MEDUSA, "mv", "function", "site_hotsinger"),
+      ("home*my_tv*mv-mv*function*site_mvsubject-mv_poster", "", MEDUSA, "mv", "function", "site_mvsubject"),
+
+      ("home*classification*mv-mv*mvTopHomePage*xinge_2017_92", "", MEDUSA, "mv", "mvTopHomePage", "xinge"),
+      ("home*classification*mv-mv*mvTopHomePage*biaoshen_2017_71", "", MEDUSA, "mv", "mvTopHomePage", "biaoshen"),
+      ("home*classification*mv-mv*mvTopHomePage*rege_2017_76", "", MEDUSA, "mv", "mvTopHomePage", "rege"),
+      ("home*classification*mv-mv*mvTopHomePage*o83est3f5gkm", "", MEDUSA, "mv", "mvTopHomePage", null),
+
+      ("home*classification*mv-mv*mvCategoryHomePage*site_mvarea-mv_category*内地", "", MEDUSA, "mv", "mvCategoryHomePage", "site_mvarea"),
+      ("home*my_tv*mv-mv*mvCategoryHomePage*site_mvyear-mv_category*其他", "", MEDUSA, "mv", "mvCategoryHomePage", "site_mvyear"),
+      ("home*my_tv*mv-mv*mvCategoryHomePage*site_mvstyle-mv_category*电子", "", MEDUSA, "mv", "mvCategoryHomePage", "site_mvstyle"),
+
+      ("home*my_tv*mv-mv*mineHomePage*site_collect-mv_collection", "", MEDUSA, "mv", "mineHomePage", "site_collect"),
+      //sports
+      ("sports*newsHomePage*tvn8xz1b8qab", "", MEDUSA, "sports", "newsHomePage", null),
+      ("home*classification*3-sports*newsHomePage*tvn8iklni6vw", "", MEDUSA, "sports", "newsHomePage", null),
+      ("home*classification*3-sports*welfareHomePage*tuqsd3n8rtv0", "", MEDUSA, "sports", "welfareHomePage", null),
+      ("sports*welfareHomePage*tuqsd3n8rtv0", "", MEDUSA, "sports", "welfareHomePage", null),
+      ("home*my_tv*4-sports*recommend*x0d3demnln5h", "", MEDUSA, "sports", "recommend", null),
+      ("sports*recommend*x0d3demnln5h-zongyi*recommend*x0d3demnln5h-zong", "", MEDUSA, "sports", "recommend", null),
+      ("home*my_tv*7-sports*collect*collect-sportcollection*比赛", "", MEDUSA, "sports", "collect", null),
+      ("home*classification*3-sports*collect*collect-sportcollection*视频", "", MEDUSA, "sports", "collect", null),
+      ("sports*League*dzjj-league*王者荣耀", "", MEDUSA, "sports", "League", null),
+      ("home*my_tv*5-sports*League*dzjj-league", "", MEDUSA, "sports", "League", null)
+    )
+    val testCaseList = moretvTestCaseList ++ medusaTestCaseList
+    testCaseList.foreach(w => {
+      val page_code = PageEntrancePathParseUtils.getPageEntrancePageCode(w._1,w._2,w._3)
+      val area_code = PageEntrancePathParseUtils.getPageEntranceAreaCode(w._1,w._2,w._3)
+      val location_code = PageEntrancePathParseUtils.getPageEntranceLocationCode(w._1,w._2,w._3)
+      assertEquals(w._4, page_code)
+      assertEquals(w._5,area_code)
+      assertEquals(w._6,location_code)
+    })
+  }
+
+}
