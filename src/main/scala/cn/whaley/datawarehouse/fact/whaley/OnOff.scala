@@ -12,7 +12,7 @@ import org.apache.spark.sql.functions._
   * 创建时间：2017/5/03
   * 程序作用：开关机日子
   * 数据输入：on/off日志
-  * 数据输出：
+  * 数据输出：开关机事实表
   */
 object OnOff extends FactEtlBase{
   topicName = "fact_whaley_on_off"
@@ -42,8 +42,6 @@ object OnOff extends FactEtlBase{
   override def readSource(startDate: String): DataFrame = {
 
     //ota19 off 新增startTime,endTime
-    DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
-      .schema.fieldNames.foreach(println(_))
     val flag = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
       .schema.fieldNames.contains("startTime")
     var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
