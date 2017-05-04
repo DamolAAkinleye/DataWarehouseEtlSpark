@@ -170,19 +170,24 @@ trait BaseClass {
             df = sourceFilterDf.as("a").join(
               dimensionDf.as("b"),
               jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
-                && (isnull(sourceFilterDf(COLUMN_NAME_FOR_SOURCE_TIME)) ||
+                && (expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME is null") ||
                 expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
-                  s"(a.$COLUMN_NAME_FOR_SOURCE_TIME <= b.dim_invalid_time or b.dim_invalid_time is null)")),
+                  s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
               "inner"
             ).selectExpr("a." + uniqueKeyName, "b." + c.dimensionSkName).dropDuplicates(List(uniqueKeyName))
           } else {
-            df = sourceFilterDf.as("a").join(
+            //源数据中未关联上的行
+            val notJoinDf = sourceFilterDf.as("a").join(
               df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
-            ).join(
+            ).where("dim."+c.dimensionSkName + " is null").selectExpr("a.*")
+            println("sourceFilterDf " + sourceFilterDf.count())
+            println("df " + df.count())
+            println("notJoinDf " + notJoinDf.count())
+
+            df = notJoinDf.as("a").join(
               dimensionDf.as("b"),
               jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
-                && isnull(df(c.dimensionSkName))
-                && (isnull(sourceFilterDf(COLUMN_NAME_FOR_SOURCE_TIME)) ||
+                && (expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME is null") ||
                 expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
                   s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
               "inner"

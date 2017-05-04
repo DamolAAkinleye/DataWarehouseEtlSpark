@@ -89,7 +89,7 @@ abstract class FactEtlBase extends BaseClass {
 
     if(debug) {
       println("完整事实表行数：" + completeSourceDf.count())
-      completeSourceDf.show()
+//      completeSourceDf.show()
     }
 
 
@@ -97,7 +97,7 @@ abstract class FactEtlBase extends BaseClass {
     if(debug) {
       dimensionJoinDf.persist()
       println("维度关联表行数：" + dimensionJoinDf.count())
-      dimensionJoinDf.show()
+//      dimensionJoinDf.show()
     }
 
     var df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")

@@ -14,6 +14,8 @@ import org.apache.spark.sql.functions._
   */
 object UserLogin extends FactEtlBase {
 
+  debug = true
+
   topicName = "fact_medusa_user_login"
 
   parquetPath = LogPath.LOGIN_LOG_PATH
