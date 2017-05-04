@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.fact.util
 
 import org.junit.Assert._
-import org.junit.{Before, Test}
+import org.junit.{Before, ComparisonFailure, Test}
 
 /**
   * Created by wujiulin on 2017/5/4.
@@ -18,6 +18,7 @@ class PageEntranceUtilsTest {
 
   @Test
   def getPageEntranceCode: Unit = {
+    var path_message: String = null
     /** kids have moretv log and medusa log,mv and sports only have medusa log */
     val moretvTestCaseList = List(//pathMain, path, flag, page_code, area_code, location_code
       ("", "home-kids_home-kids_seecartoon-kid_zhuanti-kids120", MORETV, "kids", "show_kidsSite", null),
@@ -68,13 +69,21 @@ class PageEntranceUtilsTest {
       ("home*my_tv*5-sports*League*dzjj-league", "", MEDUSA, "sports", "League", null)
     )
     val testCaseList = moretvTestCaseList ++ medusaTestCaseList
-    testCaseList.foreach(w => {
-      val page_code = PageEntrancePathParseUtils.getPageEntrancePageCode(w._1,w._2,w._3)
-      val area_code = PageEntrancePathParseUtils.getPageEntranceAreaCode(w._1,w._2,w._3)
-      val location_code = PageEntrancePathParseUtils.getPageEntranceLocationCode(w._1,w._2,w._3)
-      assertEquals(w._4, page_code)
-      assertEquals(w._5,area_code)
-      assertEquals(w._6,location_code)
+    testCaseList.foreach(f = w => {
+      if (w._1 == "") path_message = w._2 else path_message = w._1
+      val page_code = PageEntrancePathParseUtils.getPageEntrancePageCode(w._1, w._2, w._3)
+      val area_code = PageEntrancePathParseUtils.getPageEntranceAreaCode(w._1, w._2, w._3)
+      val location_code = PageEntrancePathParseUtils.getPageEntranceLocationCode(w._1, w._2, w._3)
+      try {
+        assertEquals(w._4, page_code)
+        assertEquals(w._5, area_code)
+        assertEquals(w._6, location_code)
+      } catch {
+        case e: AssertionError =>
+          println("fail test case: " + path_message)
+          throw e
+      }
+
     })
   }
 
