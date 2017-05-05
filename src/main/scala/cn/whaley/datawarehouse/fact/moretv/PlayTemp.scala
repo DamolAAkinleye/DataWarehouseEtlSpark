@@ -47,6 +47,9 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
     UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -62,7 +65,9 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     /** 获得专题 subject_sk */
     SubjectUtils.getSubjectSK,
     /** 获得首页入口 launcher_entrance_sk */
-    EntranceTypeUtils.getLauncherEntranceSK
+    EntranceTypeUtils.getLauncherEntranceSK,
+    /** 获得频道主页来源 page_entrance_sk */
+    PageEntrancePathParseUtils.getPageEntranceSK
   )
 
 
@@ -81,7 +86,10 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     ("user_id", "userId"),
     ("path_main", "pathMain"),
     ("path", "path"),
-    ("pathSpecial", "pathSpecial")
+    ("pathSpecial", "pathSpecial"),
+    ("area_code", "pageEntranceAreaCode"),
+    ("location_code", "pageEntranceLocationCode"),
+    ("page_code", "pageEntrancePageCode")
   )
 
   factTime = null

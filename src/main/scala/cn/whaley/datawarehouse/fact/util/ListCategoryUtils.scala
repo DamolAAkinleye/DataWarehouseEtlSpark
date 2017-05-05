@@ -102,7 +102,6 @@ object ListCategoryUtils extends LogConfig {
             case "tingerge" => result="show_kidsSongSite"
             case "kids_rhymes" => result="show_kidsSongSite"
             case "kids_songhome" => result="show_kidsSongSite"
-            case "kids_cathouse" => result="show_kidsSongSite"
             case "kids_seecartoon" => result="show_kidsSite"
             case "kandonghua" => result="show_kidsSite"
             case "kids_anim" => result="show_kidsSite"

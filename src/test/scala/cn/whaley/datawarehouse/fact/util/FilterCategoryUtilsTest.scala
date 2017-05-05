@@ -18,12 +18,26 @@ class FilterCategoryUtilsTest {
   @Test
   def getFilterCategoryFirst: Unit ={
     val testCaseList = List(
-      ("home*classification*movie-movie-retrieval*hot*kongbu*qita*all","xxx",MEDUSA,"hot"),
-      ("home*classification*movie-movie-retrieval*hot*xiju*all*all","xxx",MEDUSA,"hot"),
-      ("xxx","home-movie-multi_search-new-all-all-all",MORETV,"new"))
+      ("home*classification*movie-movie-retrieval*hot*kongbu*qita*all","xxx",MEDUSA,"hot","kongbu","qita","all"),
+      ("home*classification*movie-movie-retrieval*hot*xiju*all*all","xxx",MEDUSA,"hot","xiju","all","all"),
+      ("home*my_tv*movie-movie-retrieval*hot*juqing*gangtai*1990*1999","xxx",MEDUSA,"hot","juqing","gangtai","1990*1999"),
+      ("home*my_tv*tv-tv-retrieval*hot*mohuan*neidi*2017","xxx",MEDUSA,"hot","mohuan","neidi","2017"),
+      ("home*classification*movie-movie-retrieval*hot*dongzuo*meiguo*qita","xxx",MEDUSA,"hot","dongzuo","meiguo","qita"),
+      ("xxx","home-movie-multi_search-new-all-all-all",MORETV,"new","all","all","all"),
+      ("xxx","home-comic-multi_search-hot-qita-riben-2014-similar",MORETV,"hot","qita","riben","2014"),
+      ("xxx","home-movie-multi_search-score-zhanzheng-all-2014-peoplealsolike",MORETV,"score","zhanzheng","all","2014"),
+      ("xxx","home-tv-multi_search-hot-all-neidi-1990-1999",MORETV,"hot","all","neidi","1990-1999")
+    )
       testCaseList.foreach(w => {
+        println(w._1+","+w._2+","+w._3+","+w._4+","+w._5+","+w._6+","+w._7)
         val firstFilterCategory=FilterCategoryUtils.getFilterCategoryFirst(w._1,w._2,w._3)
+        val secondFilterCategory=FilterCategoryUtils.getFilterCategorySecond(w._1,w._2,w._3)
+        val thirdFilterCategory=FilterCategoryUtils.getFilterCategoryThird(w._1,w._2,w._3)
+        val fourthFilterCategory=FilterCategoryUtils.getFilterCategoryFourth(w._1,w._2,w._3)
         assertEquals(w._4,firstFilterCategory)
+        assertEquals(w._5,secondFilterCategory)
+        assertEquals(w._6,thirdFilterCategory)
+        assertEquals(w._7,fourthFilterCategory)
     })
   }
 
