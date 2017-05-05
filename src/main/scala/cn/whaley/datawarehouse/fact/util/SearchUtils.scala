@@ -74,4 +74,10 @@ object SearchUtils extends LogConfig {
     }
     result
   }
+
+ /* 搜索维度表，获得sk
+  searchFrom
+  resultIndex
+  tabName
+  extraPath*/
 }

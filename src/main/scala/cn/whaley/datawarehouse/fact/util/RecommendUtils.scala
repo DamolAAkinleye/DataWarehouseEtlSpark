@@ -62,4 +62,16 @@ object RecommendUtils extends LogConfig {
     result
   }
 
+  /* 推荐维度表，获得sk
+ recommendSourceType
+ previousContentType
+ recommendType
+
+ home*recommendation*14
+
+ 再看一下path的recommendation
+
+ Container killed by YARN for exceeding memory limits. 11.5 GB of 11 GB physical memory used. Consider boosting spark.yarn.executor.memoryOverhead
+ */
+
 }

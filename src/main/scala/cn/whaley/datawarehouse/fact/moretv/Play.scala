@@ -65,6 +65,7 @@ object Play extends FactEtlBase with  LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
+    println("--------input record count"+resultDF.count())
     resultDF
   }
 
@@ -88,7 +89,10 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("previousSid", udf(RecommendUtils.getPreviousSid: (String) => String), List("pathSub")),
     UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
     UserDefinedColumn("searchFrom", udf(SearchUtils.getSearchFrom: (String,String,String) => String),List("pathMain", "path", "flag")),
-    UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag"))
+    UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag"))
   )
 
   /**
@@ -105,8 +109,10 @@ object Play extends FactEtlBase with  LogConfig{
 
     /** 获得推荐来源sk */
 
-    /** 获得频道主页来源维度sk（只有少儿，音乐，体育有频道主页来源维度）*/
+    /** 获得搜索来源sk */
 
+    /** 获得频道主页来源维度sk（只有少儿，音乐，体育有频道主页来源维度）*/
+    PageEntrancePathParseUtils.getPageEntranceSK,
 
     /** 获得首页入口 launcher_entrance_sk */
     EntranceTypeUtils.getLauncherEntranceSK
@@ -129,6 +135,7 @@ object Play extends FactEtlBase with  LogConfig{
     ("path_main", "pathMain"),
     ("path", "path"),
     ("pathSpecial", "pathSpecial"),
+    ("pathSub", "pathSub"),
     ("filterCategoryFirst", "filterCategoryFirst"),
     ("filterCategorySecond", "filterCategorySecond"),
     ("filterCategoryThird", "filterCategoryThird"),
@@ -138,7 +145,10 @@ object Play extends FactEtlBase with  LogConfig{
     ("previousContentType", "previousContentType"),
     ("ipKey", "ipKey"),
     ("searchFrom", "searchFrom"),
-    ("searchKeyword", "searchKeyword")
+    ("searchKeyword", "searchKeyword"),
+    ("pageEntranceAreaCode", "pageEntranceAreaCode"),
+    ("pageEntranceLocationCode", "pageEntranceLocationCode"),
+    ("pageEntrancePageCode", "pageEntrancePageCode")
   )
 
   factTime = null

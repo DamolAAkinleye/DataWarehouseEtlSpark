@@ -1,13 +1,17 @@
 package cn.whaley.datawarehouse.fact
 
+import java.util.Calendar
+
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.common.{DimensionColumn, UserDefinedColumn}
+import cn.whaley.datawarehouse.fact.constant.Constants._
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
-import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
+import cn.whaley.datawarehouse.util.{DateFormatUtils, DataFrameUtil, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.io.File
 
@@ -141,69 +145,77 @@ abstract class FactEtlBase extends BaseClass {
     result
   }
 
-  /* private def parseDimension(sourceDf: DataFrame): DataFrame = {
-     var dimensionColumnDf: DataFrame = null
-     if (dimensionColumns != null) {
-       //对每个维度表
-       dimensionColumns.foreach(c => {
-         val dimensionDfBase = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
-         var df: DataFrame = null
-         //对每组关联条件
-         c.joinColumnList.foreach(jc => {
-           var dimensionDf = dimensionDfBase
-           //维度表过滤
-           if (jc.whereClause != null && !jc.whereClause.isEmpty) {
-             dimensionDf = dimensionDf.where(jc.whereClause)
-           }
-           //维度表排序
-           if (jc.orderBy != null && jc.orderBy.nonEmpty) {
-             dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
-           }
-           //维度表去重
-           dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)
-           //实时表源数据过滤
-           val sourceFilterDf =
-             if (jc.sourceWhereClause != null && !jc.sourceWhereClause.isEmpty)
-               sourceDf.where(jc.sourceWhereClause)
-             else
-               sourceDf
-           //源表与维度表join
-           if (df == null) {
-             df = sourceFilterDf.as("a").join(dimensionDf.as("b"),
-               jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _),
-               "inner").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName)
-           } else {
-             df = sourceFilterDf.as("a").join(df.as("dim"), sourceFilterDf(INDEX_NAME) === df(INDEX_NAME), "leftouter").join(
-               dimensionDf.as("b"),
-               jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
-                 && isnull(df(c.dimensionSkName)),
-               "inner").selectExpr("a." + INDEX_NAME, "b." + c.dimensionSkName).unionAll(df)
-           }
-         })
-         df = sourceDf.as("a").join(df.as("b"), sourceDf(INDEX_NAME) === df(INDEX_NAME), "leftouter").selectExpr(
-           "a." + INDEX_NAME, "b." + c.dimensionSkName + " as " + c.dimensionColumnName)
-         //        println(df.count())
-         //多个维度合成一个dataframe
-         if (dimensionColumnDf == null) {
-           dimensionColumnDf = df
-         } else {
-           dimensionColumnDf = dimensionColumnDf.join(df, INDEX_NAME)
-         }
-       }
-       )
-     }
-
-     if (dimensionColumnDf != null) {
-       dimensionColumnDf
-     } else {
-       sqlContext.createDataFrame(List[Row](), StructType(Array[StructField]()))
-     }
-   }*/
-
   override def load(params: Params, df: DataFrame): Unit = {
-    HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
-    df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+    println("---------output count:"+df.count())
+    backup(params, df, topicName)
   }
 
+  /**
+    * 用来备份维度数据，然后将维度数据生成在临时目录，当isOnline参数为true的时候，将临时目录的数据替换线上维度
+    *
+    * @param p  the main args
+    * @param df the DataFrame from execute function
+    * @return a Unit.
+    */
+  private def backup(p: Params, df: DataFrame, topicName: String): Unit = {
+    val cal = Calendar.getInstance
+    val date = DateFormatUtils.readFormat.format(cal.getTime)
+    val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + "00"
+    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + date + File.separator + topicName
+    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName
+    val onLineFactDirDelete = FACT_HDFS_BASE_PATH_DELETE + File.separator + topicName
+    println("线上数据目录:" + onLineFactDir)
+    println("线上数据备份目录:" + onLineFactBackupDir)
+    println("线上数据临时目录:" + onLineFactDirTmp)
+    println("线上数据等待删除目录:" + onLineFactDirDelete)
+
+    df.persist(StorageLevel.MEMORY_AND_DISK)
+    val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
+    if (isOnlineFileExist) {
+      val isBackupExist = HdfsUtil.IsDirExist(onLineFactBackupDir)
+      if (isBackupExist) {
+        println("数据已经备份,跳过备份过程")
+      } else {
+        println("生成线上维度备份数据:" + onLineFactBackupDir)
+        val isSuccessBackup = HdfsUtil.copyFilesInDir(onLineFactDir, onLineFactBackupDir)
+        println("备份数据状态:" + isSuccessBackup)
+      }
+    } else {
+      println("无可用备份数据")
+    }
+
+    //防止文件碎片
+    val total_count = BigDecimal(df.count())
+    val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
+    println("repartition:" + partition)
+
+    val isTmpExist = HdfsUtil.IsDirExist(onLineFactDirTmp)
+    if (isTmpExist) {
+      println("删除线上维度临时数据:" + onLineFactDirTmp)
+      HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
+    }
+    println("生成线上维度数据到临时目录:" + onLineFactDirTmp)
+    df.repartition(partition).write.parquet(onLineFactDirTmp)
+
+    println("数据是否上线:" + p.isOnline)
+    if (p.isOnline) {
+      println("数据上线:" + onLineFactDir)
+      if (isOnlineFileExist) {
+        println("移动线上数据:from " + onLineFactDir + " to " + onLineFactDirDelete)
+        val isRenameSuccess = HdfsUtil.rename(onLineFactDir, onLineFactDirDelete)
+        println("isRenameSuccess:" + isRenameSuccess)
+      }
+
+      val isOnlineFileExistAfterRename = HdfsUtil.IsDirExist(onLineFactDir)
+      if (isOnlineFileExistAfterRename) {
+        throw new RuntimeException("rename failed")
+      } else {
+        val isSuccess = HdfsUtil.rename(onLineFactDirTmp, onLineFactDir)
+        println("数据上线状态:" + isSuccess)
+      }
+      println("删除过期数据:" + onLineFactDirDelete)
+      HdfsUtil.deleteHDFSFileOrPath(onLineFactDirDelete)
+    }
+  }
 
 }
