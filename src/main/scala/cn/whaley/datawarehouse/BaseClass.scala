@@ -180,9 +180,12 @@ trait BaseClass {
             val notJoinDf = sourceFilterDf.as("a").join(
               df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
             ).where("dim."+c.dimensionSkName + " is null").selectExpr("a.*")
-            println("sourceFilterDf " + sourceFilterDf.count())
-            println("df " + df.count())
-            println("notJoinDf " + notJoinDf.count())
+            if(debug) {
+              println("dimensionName " + c.dimensionName)
+              println("sourceFilterDf " + sourceFilterDf.count())
+              println("df " + df.count())
+              println("notJoinDf " + notJoinDf.count())
+            }
 
             df = notJoinDf.as("a").join(
               dimensionDf.as("b"),
