@@ -1,11 +1,9 @@
 package cn.whaley.datawarehouse.dimension.share
 
-import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType.SourceType
-import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
-import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
 
 /**
   * Created by Tony on 16/12/21.
@@ -54,12 +52,24 @@ object UserTime extends DimensionBase {
       }
       (0 to 59).foreach(minute =>
         (0 to 59).foreach(sec => {
-          val row = (s"$hour:$minute:$sec", hour, minute, sec, period)
+          val row = (numberToString(hour) + ":" + numberToString(minute) + ":" + numberToString(sec),
+            hour, minute, sec, period)
           result += row
         })
       )
     })
     result.toList
+  }
+
+  private def numberToString(n: Int): String = {
+    if (n < 0 || n > 59) {
+      throw new RuntimeException("不合法的时分秒值")
+    }
+    if (n < 10) {
+      s"0$n"
+    } else {
+      n.toString
+    }
   }
 
 }
