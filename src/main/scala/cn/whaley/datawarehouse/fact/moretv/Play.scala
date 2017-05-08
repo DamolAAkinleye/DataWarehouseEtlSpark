@@ -1,6 +1,6 @@
 package cn.whaley.datawarehouse.fact.moretv
 
-import cn.whaley.datawarehouse.common.UserDefinedColumn
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.util._
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
@@ -90,9 +90,9 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
     UserDefinedColumn("searchFrom", udf(SearchUtils.getSearchFrom: (String,String,String) => String),List("pathMain", "path", "flag")),
     UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag"))
+    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag"))
   )
 
   /**
@@ -115,7 +115,15 @@ object Play extends FactEtlBase with  LogConfig{
     PageEntrancePathParseUtils.getPageEntranceSK,
 
     /** 获得首页入口 launcher_entrance_sk */
-    EntranceTypeUtils.getLauncherEntranceSK
+    EntranceTypeUtils.getLauncherEntranceSK,
+
+    /** 获得user_sk */
+    new DimensionColumn("dim_medusa_terminal_user",
+      List(
+        DimensionJoinCondition(Map("userId" -> "user_id"))
+      ),
+      "user_sk")
+
   )
 
 
