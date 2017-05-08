@@ -146,7 +146,6 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
-    println("---------output count:"+df.count())
     backup(params, df, topicName)
   }
 
@@ -170,6 +169,8 @@ abstract class FactEtlBase extends BaseClass {
     println("线上数据等待删除目录:" + onLineFactDirDelete)
 
     df.persist(StorageLevel.MEMORY_AND_DISK)
+    println("---------output count:"+df.count())
+
     val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
     if (isOnlineFileExist) {
       val isBackupExist = HdfsUtil.IsDirExist(onLineFactBackupDir)
