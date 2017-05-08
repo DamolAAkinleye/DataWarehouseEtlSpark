@@ -34,6 +34,7 @@ class RecommendUtilsTest {
       ("guessyoulike-tvn8fhacfgx0*mv-tvn8fhac7nvw*mv", "", MEDUSA, "guessyoulike", "tvn8fhac7nvw", "mv", null),
       //recommendSlotIndex
       ("home*recommendation*10", "", MEDUSA, null, null, null, "10"),
+      ("home*recommendation*13", "", MEDUSA, null, null, null, "13"),
       ("home*recommendation*1-hot*五花八门", "", MEDUSA, null, null, null, null),
       ("home*recommendation*1-hot-search*PN", "", MEDUSA, null, null, null, null),
       ("home*recommendation*1*电台", "", MEDUSA, null, null, null, null),

@@ -1,5 +1,6 @@
 package cn.whaley.datawarehouse.fact.util
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.global.LogConfig
 
 /**
@@ -79,6 +80,19 @@ object RecommendUtils extends LogConfig {
       case None =>
     }
     result
+  }
+
+  /** get recommend_position_sk through recommendSourceType, recommendType, previousContentType and recommendSlotIndex */
+  def getRecommendPositionSK(): DimensionColumn = {
+    new DimensionColumn("dim_medusa_recommend_position",
+      List(
+        DimensionJoinCondition(
+          Map("recommendSourceType" -> "recommend_position", "previousContentType" -> "recommend_position_type",
+          "recommendSlotIndex" -> "recommend_slot_index", "recommendType" -> "recommend_method"),
+          null, null, null
+        )
+      ),
+      "recommend_position_sk")
   }
 
   /* 推荐维度表，获得sk
