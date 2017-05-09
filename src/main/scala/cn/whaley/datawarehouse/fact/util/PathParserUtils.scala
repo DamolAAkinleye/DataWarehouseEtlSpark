@@ -437,7 +437,7 @@ object PathParserUtils {
           if (path != null) {
             if (path.contains("subject")) {
               val subjectCode = SubjectUtils.getSubjectCode(path)
-              if (subjectCode != " ") {
+              if (subjectCode != null) {
                 result = subjectCode
               }
             }

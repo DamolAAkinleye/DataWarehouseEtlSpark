@@ -1,19 +1,20 @@
 package cn.whaley.datawarehouse.fact.util
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
+import cn.whaley.datawarehouse.global.LogConfig
 
 
 /**
   * Created by michael on 2017/4/24.
   * 收集所有关于专题的工具类到此类中
   */
-object SubjectUtils {
+object SubjectUtils extends LogConfig{
 
 /**-------------------------------------- block 1--------------------------------------*/
   /**
     * 从路径中获取专题code
     */
-  def getSubjectCodeByPathETL(pathSpecial:String, path: String, flag: String)= {
+  def getSubjectCodeByPathETLOld(pathSpecial:String, path: String, flag: String)= {
     var result: String = null
     if (flag != null && pathSpecial != null) {
       flag match {
@@ -37,6 +38,28 @@ object SubjectUtils {
     }
     result
   }
+
+  def getSubjectCodeByPathETL(pathSpecial:String, path: String, flag: String)= {
+    var result: String = null
+    if (flag != null && pathSpecial != null && path !=null) {
+      flag match {
+        case MEDUSA => {
+          if (SUBJECT.equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
+            result = getSubjectCode(pathSpecial)
+          }
+        }
+        case MORETV => {
+          val info = getSubjectCodeAndPath(path)
+          if (info.nonEmpty) {
+            val subjectCode = info(0)
+            result = subjectCode._1
+          }
+        }
+        case _ =>
+      }
+    }
+    result
+  }
 /**-------------------------------------- block 1 end--------------------------------------*/
 
 /**-------------------------------------- block 2--------------------------------------*/
@@ -47,7 +70,7 @@ object SubjectUtils {
   // private val regex_etl="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv|kid)([0-9]+)""".r
   private val regexSubjectName="""subject-([a-zA-Z0-9-\u4e00-\u9fa5]+)""".r
   // 获取 专题code
-  def getSubjectCode(subject:String) = {
+  def getSubjectCodeOld(subject:String) = {
     regex_etl findFirstMatchIn subject match {
       // 如果匹配成功，说明subject包含了专题code，直接返回专题code
       case Some(m) => {
@@ -56,6 +79,18 @@ object SubjectUtils {
       // 没有匹配成功，说明subject为专题名称，不包含专题code，因此直接返回专题名称
       case None => " "
     }
+  }
+
+  def getSubjectCode(subject:String) = {
+    var subjectCode: String = null
+    regex_etl findFirstMatchIn subject match {
+      // 如果匹配成功，说明subject包含了专题code，直接返回专题code
+      case Some(m) => {
+        subjectCode = m.group(1) + m.group(2)
+      }
+      case None =>
+    }
+    subjectCode
   }
 
   /*例子：假设pathSpecial为subject-儿歌一周热播榜,解析出 儿歌一周热播榜 */
@@ -90,14 +125,14 @@ object SubjectUtils {
   def getSubjectNameByPathETL(pathSpecial: String): String = {
     var result: String = null
     if (pathSpecial != null) {
-      if ("subject".equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
+      if (SUBJECT.equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
         val subjectCode = SubjectUtils.getSubjectCode(pathSpecial)
         val pathLen = pathSpecial.split("-").length
         if (pathLen == 2) {
           result = PathParserUtils.getPathMainInfo(pathSpecial, 2, 1)
         } else if (pathLen > 2) {
           var tempResult = PathParserUtils.getPathMainInfo(pathSpecial, 2, 1)
-          if (subjectCode != " ") {
+          if (subjectCode != null) {
             for (i <- 2 until pathLen - 1) {
               tempResult = tempResult.concat("-").concat(PathParserUtils.getPathMainInfo(pathSpecial, i + 1, 1))
             }
