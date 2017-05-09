@@ -1,6 +1,7 @@
 package cn.whaley.datawarehouse.fact.moretv
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
+import cn.whaley.datawarehouse.fact.constant.Constants
 import cn.whaley.datawarehouse.fact.util._
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
@@ -28,8 +29,8 @@ object Play extends FactEtlBase with  LogConfig{
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
     val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     if (medusaFlag && moretvFlag) {
-      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).withColumn("flag",lit(MEDUSA))
-      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).withColumn("flag",lit(MORETV))
+      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).selectExpr(Constants.schemaMedusaArray:_*).withColumn("flag",lit(MEDUSA))
+      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).selectExpr(Constants.schemaMoretvArray:_*).withColumn("flag",lit(MORETV))
       val medusaRDD=medusaDf.toJSON
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
@@ -73,12 +74,16 @@ object Play extends FactEtlBase with  LogConfig{
     * step 3, generate new columns
     * */
   addColumns = List(
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("ip")),
+    UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("datetime")),
+    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime")),
+    UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
+    UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version")),
     UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
     UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
     UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -117,12 +122,40 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得首页入口 launcher_entrance_sk */
     EntranceTypeUtils.getLauncherEntranceSK,
 
-    /** 获得user_sk */
+    /** 获得用户维度user_sk */
     new DimensionColumn("dim_medusa_terminal_user",
       List(
         DimensionJoinCondition(Map("userId" -> "user_id"))
       ),
-      "user_sk")
+      "user_sk"),
+
+    /** 获得设备型号维度product_model_sk */
+    new DimensionColumn("dim_medusa_product_model",
+    List(DimensionJoinCondition(Map("productModel" -> "product_model"))), "product_model_sk"),
+
+   /** 获得推广渠道维度promotion_sk */
+   new DimensionColumn("dim_medusa_promotion",
+    List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
+
+    /**获得用户登录维度user_login_sk */
+    new DimensionColumn("dim_medusa_terminal_user_login",
+      List(
+        DimensionJoinCondition(Map("userId" -> "user_id"))
+      ),
+      "user_login_sk"),
+
+    /**获得app版本维度app_version_sk */
+    new DimensionColumn("dim_app_version",
+      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))), "app_version_sk")
+
+    /**获得节目维度program_sk */
+    /**获得剧集节目维度episode_program_sk */
+    /**获得账号维度account_sk*/
+    /**获得音乐精选集维度amv_topic_sk*/
+    /**获得歌手维度singer_sk*/
+    /**获得电台维度mv_radio_sk*/
+    /**获得音乐榜单维度mv_hot_sk*/
+    /**获得体育比赛维度match_sk*/
 
   )
 
@@ -156,7 +189,9 @@ object Play extends FactEtlBase with  LogConfig{
     ("searchKeyword", "searchKeyword"),
     ("pageEntranceAreaCode", "pageEntranceAreaCode"),
     ("pageEntranceLocationCode", "pageEntranceLocationCode"),
-    ("pageEntrancePageCode", "pageEntrancePageCode")
+    ("pageEntrancePageCode", "pageEntrancePageCode"),
+    ("dim_date", "dim_date"),
+    ("dim_time", "dim_time")
   )
 
   factTime = null
@@ -170,6 +205,50 @@ object Play extends FactEtlBase with  LogConfig{
       } else 0
     } catch {
       case ex: Exception => 0
+    }
+  }
+
+  def getDimDate(dateTime: String): String = {
+    try {
+      val dateTimeInfo = dateTime.split(" ")
+      if (dateTimeInfo.length >= 2) {
+        dateTimeInfo(0)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getDimTime(dateTime: String): String = {
+    try {
+      val dateTimeInfo = dateTime.split(" ")
+      if (dateTimeInfo.length >= 2) {
+        dateTimeInfo(1)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getAppSeries(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(0, index)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getAppVersion(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(index + 1, seriesAndVersion.length)
+      } else ""
+    } catch {
+      case ex: Exception => ""
     }
   }
 
