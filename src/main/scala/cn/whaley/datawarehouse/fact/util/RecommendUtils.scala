@@ -10,9 +10,7 @@ import cn.whaley.datawarehouse.global.LogConfig
   *  2.增加解析recommend_slot_index字段功能
   */
 object RecommendUtils extends LogConfig {
-  /** \s: 匹配任何不可见字符，包括空格、制表符、换页符等,等价于[ \f\n\r\t\v], \S: 匹配任何可见字符 */
   private val medusaReg = ("(similar|peoplealsolike|guessyoulike)-[\\S]+-([\\S]+)\\*([\\S]+)").r
-  //private val moretvReg = ("home.*-(similar|peoplealsolike|guessyoulike)").r
   private val moretvReg = (".*-(similar|peoplealsolike|guessyoulike)").r
   private val medusaRecommendSlotIndexRex = ("^home\\*recommendation\\*(\\d+)$").r
 
