@@ -1,7 +1,6 @@
 package cn.whaley.datawarehouse.fact.moretv
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
-import cn.whaley.datawarehouse.fact.constant.Constants
 import cn.whaley.datawarehouse.fact.util._
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
@@ -29,8 +28,8 @@ object Play extends FactEtlBase with  LogConfig{
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
     val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     if (medusaFlag && moretvFlag) {
-      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).selectExpr(Constants.schemaMedusaArray:_*).withColumn("flag",lit(MEDUSA))
-      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).selectExpr(Constants.schemaMoretvArray:_*).withColumn("flag",lit(MORETV))
+      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).withColumn("flag",lit(MEDUSA))
+      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).withColumn("flag",lit(MORETV))
       val medusaRDD=medusaDf.toJSON
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
@@ -122,6 +121,12 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得首页入口 launcher_entrance_sk */
     EntranceTypeUtils.getLauncherEntranceSK,
 
+    /** 获得用户ip对应的地域维度user_web_location_sk */
+
+    /** 获得访问ip对应的地域维度user_web_location_sk */
+    new DimensionColumn("dim_web_location",
+      List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))), "web_location_sk","user_web_location_sk"),
+
     /** 获得用户维度user_sk */
     new DimensionColumn("dim_medusa_terminal_user",
       List(
@@ -151,12 +156,10 @@ object Play extends FactEtlBase with  LogConfig{
     /**获得节目维度program_sk */
     /**获得剧集节目维度episode_program_sk */
     /**获得账号维度account_sk*/
-    /**获得音乐精选集维度amv_topic_sk*/
+    /**获得音乐精选集维度mv_topic_sk*/
     /**获得歌手维度singer_sk*/
     /**获得电台维度mv_radio_sk*/
     /**获得音乐榜单维度mv_hot_sk*/
-    /**获得体育比赛维度match_sk*/
-
   )
 
 
