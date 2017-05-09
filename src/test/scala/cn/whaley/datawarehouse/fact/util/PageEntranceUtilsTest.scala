@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.fact.util
 
 import org.junit.Assert._
-import org.junit.{Before, ComparisonFailure, Test}
+import org.junit.{Before, Test}
 
 /**
   * Created by wujiulin on 2017/5/4.
