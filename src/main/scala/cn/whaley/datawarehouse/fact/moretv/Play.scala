@@ -150,7 +150,9 @@ object Play extends FactEtlBase with  LogConfig{
 
     /** 获得app版本维度app_version_sk */
     new DimensionColumn("dim_app_version",
-      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))),
+      List(DimensionJoinCondition(
+        Map("app_series" -> "app_series", "app_version" -> "version"))
+      ),
       "app_version_sk"),
 
     /** 获得节目维度program_sk */
@@ -159,6 +161,9 @@ object Play extends FactEtlBase with  LogConfig{
       "program_sk"),
 
     /** 获得剧集节目维度episode_program_sk */
+    new DimensionColumn("dim_medusa_program",
+      List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
+      "program_sk","episode_program_sk"),
 
     /** 获得账号维度account_sk*/
     new DimensionColumn("dim_medusa_account",
@@ -176,11 +181,14 @@ object Play extends FactEtlBase with  LogConfig{
       "singer_sk"),
 
     /** 获得电台维度mv_radio_sk*/
+    new DimensionColumn("dim_medusa_mv_radio",
+      List(DimensionJoinCondition(Map("station" -> "mv_radio_title"))),
+      "mv_radio_sk")
 
-    /** 获得音乐榜单维度mv_hot_sk*/
-    new DimensionColumn("dim_medusa_mv_hot_list",
+    /** 获得音乐榜单维度mv_hot_sk ,uncomment after dim_medusa_mv_hot_list table is ok*/
+   /* new DimensionColumn("dim_medusa_mv_hot_list",
       List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_id"))),
-      "mv_hot_sk")
+      "mv_hot_sk")*/
   )
 
 
@@ -188,6 +196,7 @@ object Play extends FactEtlBase with  LogConfig{
     * step 5,保留哪些列，以及别名声明
     * */
   columnsFromSource = List(
+    //作为测试字段,验证维度解析是否正确，上线后删除
     ("subject_name", "subjectName"),
     ("subject_code", "subjectCode"),
     ("main_category", "mainCategory"),
@@ -195,12 +204,6 @@ object Play extends FactEtlBase with  LogConfig{
     ("third_category", "thirdCategory"),
     ("launcher_area_code", "launcherAreaCode"),
     ("launcher_location_code", "launcherLocationCode"),
-    ("account_id", "accountId"),
-    ("user_id", "userId"),
-    ("path_main", "pathMain"),
-    ("path", "path"),
-    ("pathSpecial", "pathSpecial"),
-    ("pathSub", "pathSub"),
     ("filterCategoryFirst", "filterCategoryFirst"),
     ("filterCategorySecond", "filterCategorySecond"),
     ("filterCategoryThird", "filterCategoryThird"),
@@ -208,12 +211,38 @@ object Play extends FactEtlBase with  LogConfig{
     ("recommendSourceType", "recommendSourceType"),
     ("previousSid", "previousSid"),
     ("previousContentType", "previousContentType"),
-    ("ipKey", "ipKey"),
     ("searchFrom", "searchFrom"),
-    ("searchKeyword", "searchKeyword"),
     ("pageEntranceAreaCode", "pageEntranceAreaCode"),
     ("pageEntranceLocationCode", "pageEntranceLocationCode"),
     ("pageEntrancePageCode", "pageEntrancePageCode"),
+    ("ipKey", "ipKey"),
+    ("account_id", "accountId"),
+    ("path_main", "pathMain"),
+    ("path", "path"),
+    ("pathSpecial", "pathSpecial"),
+    ("pathSub", "pathSub"),
+
+
+
+//在fact_medusa_play表中展示的字段
+    ("duration", "duration"),
+    ("program_duration", "programDuration"),//programDuration
+    //("mid_post_duration", ""),//for now,not online filed
+    ("user_id", "userId"),
+    ("event", "event"),//no end_event,need to merge play
+    //("start_time", ""),//for now,not online filed
+    //("end_time", ""),//for now,not online filed
+    ("program_sid", "videoSid"),
+    ("program_content_type", "contentType"),//need,for 预告片类型
+    ("search_keyword", "searchKeyword"),
+    ("product_model", "productModel"),
+    ("auto_clarity", "tencentAutoClarity"),
+    ("contain_ad", "containAd"),
+    ("app_enter_way", "appEnterWay"),
+    //("session_id", "sessionId"),//for now,not online filed
+    //("device_id", "deviceId"),//for now,not online filed
+    //("display_id", "displayId"),//for now,not online filed
+    //("player_type", "playerType"),//for now,not online filed
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )

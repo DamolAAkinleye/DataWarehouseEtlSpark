@@ -160,6 +160,7 @@ abstract class FactEtlBase extends BaseClass {
     val cal = Calendar.getInstance
     val date = DateFormatUtils.readFormat.format(cal.getTime)
     val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + "00"
+    val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
     val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + date + File.separator + topicName
     val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName
     val onLineFactDirDelete = FACT_HDFS_BASE_PATH_DELETE + File.separator + topicName
@@ -169,7 +170,6 @@ abstract class FactEtlBase extends BaseClass {
     println("线上数据等待删除目录:" + onLineFactDirDelete)
 
     df.persist(StorageLevel.MEMORY_AND_DISK)
-    println("---------output count:"+df.count())
 
     val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
     if (isOnlineFileExist) {
@@ -211,6 +211,8 @@ abstract class FactEtlBase extends BaseClass {
       if (isOnlineFileExistAfterRename) {
         throw new RuntimeException("rename failed")
       } else {
+        val isOnLineFactParentDir = HdfsUtil.createDir(onLineFactParentDir)
+        println("数据上线的父目录是否创建成功:" + isOnLineFactParentDir)
         val isSuccess = HdfsUtil.rename(onLineFactDirTmp, onLineFactDir)
         println("数据上线状态:" + isSuccess)
       }
