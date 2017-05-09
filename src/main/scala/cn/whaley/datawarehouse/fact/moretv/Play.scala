@@ -143,41 +143,41 @@ object Play extends FactEtlBase with  LogConfig{
       List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
       "promotion_sk"),
 
-    /**获得用户登录维度user_login_sk */
+    /** 获得用户登录维度user_login_sk */
     new DimensionColumn("dim_medusa_terminal_user_login",
       List(DimensionJoinCondition(Map("userId" -> "user_id"))),
       "user_login_sk"),
 
-    /**获得app版本维度app_version_sk */
+    /** 获得app版本维度app_version_sk */
     new DimensionColumn("dim_app_version",
       List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))),
       "app_version_sk"),
 
-    /**获得节目维度program_sk */
+    /** 获得节目维度program_sk */
     new DimensionColumn("dim_medusa_program",
       List(DimensionJoinCondition(Map("videoSid" -> "sid"))),
       "program_sk"),
 
-    /**获得剧集节目维度episode_program_sk */
+    /** 获得剧集节目维度episode_program_sk */
 
-    /**获得账号维度account_sk*/
+    /** 获得账号维度account_sk*/
     new DimensionColumn("dim_medusa_account",
       List(DimensionJoinCondition(Map("accountId" -> "account_id"))),
       "account_sk"),
 
-    /**获得音乐精选集维度mv_topic_sk*/
+    /** 获得音乐精选集维度mv_topic_sk*/
     new DimensionColumn("dim_medusa_mv_topic",
       List(DimensionJoinCondition(Map("omnibusSid" -> "mv_topic_sid"))),
       "mv_topic_sk"),
 
-    /**获得歌手维度singer_sk*/
+    /** 获得歌手维度singer_sk*/
     new DimensionColumn("dim_medusa_singer",
       List(DimensionJoinCondition(Map("singerSid" -> "singer_id"))),
       "singer_sk"),
 
-    /**获得电台维度mv_radio_sk*/
+    /** 获得电台维度mv_radio_sk*/
 
-    /**获得音乐榜单维度mv_hot_sk*/
+    /** 获得音乐榜单维度mv_hot_sk*/
     new DimensionColumn("dim_medusa_mv_hot_list",
       List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_id"))),
       "mv_hot_sk")
