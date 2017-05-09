@@ -65,7 +65,6 @@ object Play extends FactEtlBase with  LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
-    println("--------input record count"+resultDF.count())
     resultDF
   }
 
