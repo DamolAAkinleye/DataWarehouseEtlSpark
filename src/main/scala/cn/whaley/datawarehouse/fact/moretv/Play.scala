@@ -104,10 +104,10 @@ object Play extends FactEtlBase with  LogConfig{
     * */
   dimensionColumns = List(
     /** 获得列表页sk source_site_sk */
-    ListCategoryUtils.getSourceSiteSK,
+    ListCategoryUtils.getSourceSiteSK(),
 
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSK,
+    SubjectUtils.getSubjectSK(),
 
     /** 获得筛选sk */
 
@@ -116,50 +116,71 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得搜索来源sk */
 
     /** 获得频道主页来源维度sk（只有少儿，音乐，体育有频道主页来源维度）*/
-    PageEntrancePathParseUtils.getPageEntranceSK,
+    PageEntrancePathParseUtils.getPageEntranceSK(),
 
     /** 获得首页入口 launcher_entrance_sk */
-    EntranceTypeUtils.getLauncherEntranceSK,
+    EntranceTypeUtils.getLauncherEntranceSK(),
 
     /** 获得用户ip对应的地域维度user_web_location_sk */
 
     /** 获得访问ip对应的地域维度user_web_location_sk */
     new DimensionColumn("dim_web_location",
-      List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))), "web_location_sk","user_web_location_sk"),
+      List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))),
+      "web_location_sk","user_web_location_sk"),
 
     /** 获得用户维度user_sk */
     new DimensionColumn("dim_medusa_terminal_user",
-      List(
-        DimensionJoinCondition(Map("userId" -> "user_id"))
-      ),
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
       "user_sk"),
 
     /** 获得设备型号维度product_model_sk */
     new DimensionColumn("dim_medusa_product_model",
-    List(DimensionJoinCondition(Map("productModel" -> "product_model"))), "product_model_sk"),
+      List(DimensionJoinCondition(Map("productModel" -> "product_model"))),
+      "product_model_sk"),
 
    /** 获得推广渠道维度promotion_sk */
-   new DimensionColumn("dim_medusa_promotion",
-    List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
+    new DimensionColumn("dim_medusa_promotion",
+      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
+      "promotion_sk"),
 
     /**获得用户登录维度user_login_sk */
     new DimensionColumn("dim_medusa_terminal_user_login",
-      List(
-        DimensionJoinCondition(Map("userId" -> "user_id"))
-      ),
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
       "user_login_sk"),
 
     /**获得app版本维度app_version_sk */
     new DimensionColumn("dim_app_version",
-      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))), "app_version_sk")
+      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))),
+      "app_version_sk"),
 
     /**获得节目维度program_sk */
+    new DimensionColumn("dim_medusa_program",
+      List(DimensionJoinCondition(Map("videoSid" -> "sid"))),
+      "program_sk"),
+
     /**获得剧集节目维度episode_program_sk */
+
     /**获得账号维度account_sk*/
+    new DimensionColumn("dim_medusa_account",
+      List(DimensionJoinCondition(Map("accountId" -> "account_id"))),
+      "account_sk"),
+
     /**获得音乐精选集维度mv_topic_sk*/
+    new DimensionColumn("dim_medusa_mv_topic",
+      List(DimensionJoinCondition(Map("omnibusSid" -> "mv_topic_sid"))),
+      "mv_topic_sk"),
+
     /**获得歌手维度singer_sk*/
+    new DimensionColumn("dim_medusa_singer",
+      List(DimensionJoinCondition(Map("singerSid" -> "singer_id"))),
+      "singer_sk"),
+
     /**获得电台维度mv_radio_sk*/
+
     /**获得音乐榜单维度mv_hot_sk*/
+    new DimensionColumn("dim_medusa_mv_hot_list",
+      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_id"))),
+      "mv_hot_sk")
   )
 
 
