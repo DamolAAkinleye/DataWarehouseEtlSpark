@@ -1,6 +1,6 @@
 package cn.whaley.datawarehouse.fact.moretv
 
-import cn.whaley.datawarehouse.common.UserDefinedColumn
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.util._
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
@@ -65,7 +65,6 @@ object Play extends FactEtlBase with  LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
-    println("--------input record count"+resultDF.count())
     resultDF
   }
 
@@ -73,12 +72,16 @@ object Play extends FactEtlBase with  LogConfig{
     * step 3, generate new columns
     * */
   addColumns = List(
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
+    UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("datetime")),
+    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime")),
+    UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
+    UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version")),
     UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
     UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
     UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -88,11 +91,12 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
     UserDefinedColumn("previousSid", udf(RecommendUtils.getPreviousSid: (String) => String), List("pathSub")),
     UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
+    UserDefinedColumn("recommendSlotIndex", udf(RecommendUtils.getRecommendSlotIndex: (String) => String), List("pathMain")),
     UserDefinedColumn("searchFrom", udf(SearchUtils.getSearchFrom: (String,String,String) => String),List("pathMain", "path", "flag")),
     UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag")),
+    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag"))
+    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag"))
   )
 
   /**
@@ -100,10 +104,10 @@ object Play extends FactEtlBase with  LogConfig{
     * */
   dimensionColumns = List(
     /** 获得列表页sk source_site_sk */
-    ListCategoryUtils.getSourceSiteSK,
+    ListCategoryUtils.getSourceSiteSK(),
 
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSK,
+    SubjectUtils.getSubjectSK(),
 
     /** 获得筛选sk */
 
@@ -112,10 +116,79 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得搜索来源sk */
 
     /** 获得频道主页来源维度sk（只有少儿，音乐，体育有频道主页来源维度）*/
-    PageEntrancePathParseUtils.getPageEntranceSK,
+    PageEntrancePathParseUtils.getPageEntranceSK(),
 
     /** 获得首页入口 launcher_entrance_sk */
-    EntranceTypeUtils.getLauncherEntranceSK
+    EntranceTypeUtils.getLauncherEntranceSK(),
+
+    /** 获得用户ip对应的地域维度user_web_location_sk */
+
+    /** 获得访问ip对应的地域维度user_web_location_sk */
+    new DimensionColumn("dim_web_location",
+      List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))),
+      "web_location_sk","user_web_location_sk"),
+
+    /** 获得用户维度user_sk */
+    new DimensionColumn("dim_medusa_terminal_user",
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
+      "user_sk"),
+
+    /** 获得设备型号维度product_model_sk */
+    new DimensionColumn("dim_medusa_product_model",
+      List(DimensionJoinCondition(Map("productModel" -> "product_model"))),
+      "product_model_sk"),
+
+   /** 获得推广渠道维度promotion_sk */
+    new DimensionColumn("dim_medusa_promotion",
+      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
+      "promotion_sk"),
+
+    /** 获得用户登录维度user_login_sk */
+    new DimensionColumn("dim_medusa_terminal_user_login",
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
+      "user_login_sk"),
+
+    /** 获得app版本维度app_version_sk */
+    new DimensionColumn("dim_app_version",
+      List(DimensionJoinCondition(
+        Map("app_series" -> "app_series", "app_version" -> "version"))
+      ),
+      "app_version_sk"),
+
+    /** 获得节目维度program_sk */
+    new DimensionColumn("dim_medusa_program",
+      List(DimensionJoinCondition(Map("videoSid" -> "sid"))),
+      "program_sk"),
+
+    /** 获得剧集节目维度episode_program_sk */
+    new DimensionColumn("dim_medusa_program",
+      List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
+      "program_sk","episode_program_sk"),
+
+    /** 获得账号维度account_sk*/
+    new DimensionColumn("dim_medusa_account",
+      List(DimensionJoinCondition(Map("accountId" -> "account_id"))),
+      "account_sk"),
+
+    /** 获得音乐精选集维度mv_topic_sk*/
+    new DimensionColumn("dim_medusa_mv_topic",
+      List(DimensionJoinCondition(Map("omnibusSid" -> "mv_topic_sid"))),
+      "mv_topic_sk"),
+
+    /** 获得歌手维度singer_sk*/
+    new DimensionColumn("dim_medusa_singer",
+      List(DimensionJoinCondition(Map("singerSid" -> "singer_id"))),
+      "singer_sk"),
+
+    /** 获得电台维度mv_radio_sk*/
+    new DimensionColumn("dim_medusa_mv_radio",
+      List(DimensionJoinCondition(Map("station" -> "mv_radio_title"))),
+      "mv_radio_sk")
+
+    /** 获得音乐榜单维度mv_hot_sk ,uncomment after dim_medusa_mv_hot_list table is ok*/
+   /* new DimensionColumn("dim_medusa_mv_hot_list",
+      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_id"))),
+      "mv_hot_sk")*/
   )
 
 
@@ -123,6 +196,7 @@ object Play extends FactEtlBase with  LogConfig{
     * step 5,保留哪些列，以及别名声明
     * */
   columnsFromSource = List(
+    //作为测试字段,验证维度解析是否正确，上线后删除
     ("subject_name", "subjectName"),
     ("subject_code", "subjectCode"),
     ("main_category", "mainCategory"),
@@ -130,12 +204,6 @@ object Play extends FactEtlBase with  LogConfig{
     ("third_category", "thirdCategory"),
     ("launcher_area_code", "launcherAreaCode"),
     ("launcher_location_code", "launcherLocationCode"),
-    ("account_id", "accountId"),
-    ("user_id", "userId"),
-    ("path_main", "pathMain"),
-    ("path", "path"),
-    ("pathSpecial", "pathSpecial"),
-    ("pathSub", "pathSub"),
     ("filterCategoryFirst", "filterCategoryFirst"),
     ("filterCategorySecond", "filterCategorySecond"),
     ("filterCategoryThird", "filterCategoryThird"),
@@ -143,12 +211,40 @@ object Play extends FactEtlBase with  LogConfig{
     ("recommendSourceType", "recommendSourceType"),
     ("previousSid", "previousSid"),
     ("previousContentType", "previousContentType"),
-    ("ipKey", "ipKey"),
     ("searchFrom", "searchFrom"),
-    ("searchKeyword", "searchKeyword"),
     ("pageEntranceAreaCode", "pageEntranceAreaCode"),
     ("pageEntranceLocationCode", "pageEntranceLocationCode"),
-    ("pageEntrancePageCode", "pageEntrancePageCode")
+    ("pageEntrancePageCode", "pageEntrancePageCode"),
+    ("ipKey", "ipKey"),
+    ("account_id", "accountId"),
+    ("path_main", "pathMain"),
+    ("path", "path"),
+    ("pathSpecial", "pathSpecial"),
+    ("pathSub", "pathSub"),
+
+
+
+//在fact_medusa_play表中展示的字段
+    ("duration", "duration"),
+    ("program_duration", "programDuration"),//programDuration
+    //("mid_post_duration", ""),//for now,not online filed
+    ("user_id", "userId"),
+    ("event", "event"),//no end_event,need to merge play
+    //("start_time", ""),//for now,not online filed
+    //("end_time", ""),//for now,not online filed
+    ("program_sid", "videoSid"),
+    ("program_content_type", "contentType"),//need,for 预告片类型
+    ("search_keyword", "searchKeyword"),
+    ("product_model", "productModel"),
+    ("auto_clarity", "tencentAutoClarity"),
+    ("contain_ad", "containAd"),
+    ("app_enter_way", "appEnterWay"),
+    //("session_id", "sessionId"),//for now,not online filed
+    //("device_id", "deviceId"),//for now,not online filed
+    //("display_id", "displayId"),//for now,not online filed
+    //("player_type", "playerType"),//for now,not online filed
+    ("dim_date", "dim_date"),
+    ("dim_time", "dim_time")
   )
 
   factTime = null
@@ -162,6 +258,50 @@ object Play extends FactEtlBase with  LogConfig{
       } else 0
     } catch {
       case ex: Exception => 0
+    }
+  }
+
+  def getDimDate(dateTime: String): String = {
+    try {
+      val dateTimeInfo = dateTime.split(" ")
+      if (dateTimeInfo.length >= 2) {
+        dateTimeInfo(0)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getDimTime(dateTime: String): String = {
+    try {
+      val dateTimeInfo = dateTime.split(" ")
+      if (dateTimeInfo.length >= 2) {
+        dateTimeInfo(1)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getAppSeries(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(0, index)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getAppVersion(seriesAndVersion: String): String = {
+    try {
+      val index = seriesAndVersion.lastIndexOf("_")
+      if (index > 0) {
+        seriesAndVersion.substring(index + 1, seriesAndVersion.length)
+      } else ""
+    } catch {
+      case ex: Exception => ""
     }
   }
 

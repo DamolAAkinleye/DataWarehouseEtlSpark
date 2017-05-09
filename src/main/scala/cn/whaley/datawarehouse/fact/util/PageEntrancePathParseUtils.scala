@@ -163,6 +163,13 @@ object PageEntrancePathParseUtils extends LogConfig {
     *   home*my_tv*mv-mv*horizontal*site_collect-mv_collection
     * 4.home*classification*kids-kids_rhymes*舞蹈律动
     *   home*classification*kids-kids_home-kids_rhymes-search*SHUYA
+    *
+    *   area_code            location_code
+    *   mvTopHomePage        personal_recommend     个人推荐
+    *   horizontal(水平)      site_collect           收藏
+    *   (现在添加下面两个记录)
+    *   mvCategoryHomePage   location_code is null  其他分类
+    *   mineHomePage         location_code is null  其他我的
     */
 
 }

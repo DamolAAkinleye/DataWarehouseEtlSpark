@@ -89,9 +89,9 @@ class EntranceTypeUtilsTest {
 
     val testCaseList=my_tv_medusa_list++foundation_medusa_list++classification_medusa_list++
       live_medusa_list++recommendation_medusa_list++search_medusa_list++setting_medusa_list++live_moretv_list
-    println("首页入口维度工具类测试用例")
+    //println("首页入口维度工具类测试用例")
     testCaseList.foreach(w => {
-      println(w._1+","+w._2+","+w._3+","+w._4+","+w._5)
+      //println(w._1+","+w._2+","+w._3+","+w._4+","+w._5)
       val areaCode=EntranceTypeUtils.getEntranceAreaCode(w._1,w._2,w._3)
       val locationCode=EntranceTypeUtils.getEntranceLocationCode(w._1,w._2,w._3)
       assertEquals(w._4,areaCode)

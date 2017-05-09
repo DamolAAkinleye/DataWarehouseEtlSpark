@@ -29,7 +29,7 @@ class FilterCategoryUtilsTest {
       ("xxx","home-tv-multi_search-hot-all-neidi-1990-1999",MORETV,"hot","all","neidi","1990-1999")
     )
       testCaseList.foreach(w => {
-        println(w._1+","+w._2+","+w._3+","+w._4+","+w._5+","+w._6+","+w._7)
+        //println(w._1+","+w._2+","+w._3+","+w._4+","+w._5+","+w._6+","+w._7)
         val firstFilterCategory=FilterCategoryUtils.getFilterCategoryFirst(w._1,w._2,w._3)
         val secondFilterCategory=FilterCategoryUtils.getFilterCategorySecond(w._1,w._2,w._3)
         val thirdFilterCategory=FilterCategoryUtils.getFilterCategoryThird(w._1,w._2,w._3)
