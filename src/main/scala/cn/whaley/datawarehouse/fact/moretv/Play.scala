@@ -73,7 +73,7 @@ object Play extends FactEtlBase with  LogConfig{
     * step 3, generate new columns
     * */
   addColumns = List(
-    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("ip")),
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("datetime")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime")),
     UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
