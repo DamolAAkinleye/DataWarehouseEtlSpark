@@ -166,7 +166,10 @@ abstract class DimensionBase extends BaseClass {
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
       val result = DataFrameUtil.dfZipWithIndex(
-        DataFrameUtil.addDimTime(filteredSourceDf, DimensionBase.defaultValidTime, null),
+        DataFrameUtil.addDimTime(
+          filteredSourceDf.selectExpr(columns.getSourceColumns :_*),
+          DimensionBase.defaultValidTime,
+          null),
         columns.skName
       )
       return result
