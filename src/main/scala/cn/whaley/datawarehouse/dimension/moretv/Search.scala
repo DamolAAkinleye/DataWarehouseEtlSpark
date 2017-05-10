@@ -3,9 +3,11 @@ package cn.whaley.datawarehouse.dimension.moretv
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
-import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
+
+import scala.collection.JavaConversions._
 
 
 /**
@@ -40,13 +42,19 @@ object Search extends DimensionBase {
     val searchTabDf = sourceDf.where("content = 'search_tab'").select("value")
       .withColumnRenamed("value", "search_tab").withColumn("fake_id", lit(1))
 
-//    val searchFromHotWordDf = sqlContext.createDataFrame(
-//      (0 to 1).map(s => Row.fromTuple(Seq(s))),
-//      StructType(Array(StructField("search_from_hot_word", IntegerType)))
-//    ).withColumn("fake_id", lit(1))
+    val searchFromHotWordDf = sqlContext.createDataFrame(
+      (0 to 1).map(s => Row.fromSeq(List(s))),
+      StructType(Array(StructField("search_from_hot_word", IntegerType)))
+    ).withColumn("fake_id", lit(1))
 
-        searchFromDf.join(searchTabDf, List("fake_id"), "leftouter")
-      .withColumn("search_from_hot_word", lit(0))
-      .withColumn("search_result_index", lit("未知"))
+    //搜索结果索引列，其中0表示未知或者超过100
+    val searchResultIndexDf = sqlContext.createDataFrame(
+      (0 to 100).map(s => Row.fromSeq(List(s))),
+      StructType(Array(StructField("search_result_index", IntegerType)))
+    ).withColumn("fake_id", lit(1))
+
+    searchFromDf.join(searchTabDf, List("fake_id"), "leftouter")
+      .join(searchFromHotWordDf, List("fake_id"), "leftouter")
+      .join(searchResultIndexDf, List("fake_id"), "leftouter")
   }
 }
