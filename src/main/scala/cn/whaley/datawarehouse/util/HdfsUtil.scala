@@ -100,4 +100,17 @@ object HdfsUtil {
     flag=fs.exists(new Path(path+File.separator+"_SUCCESS"))
     flag
   }
+
+
+/**
+  * Make the given file and all non-existent parents into
+  * directories. Has the semantics of Unix 'mkdir -p'.
+  * */
+  def createDir(dirName: String): Boolean = {
+    val conf = new Configuration()
+    val fs = FileSystem.get(conf)
+    val path = new Path(dirName)
+    val flag=fs.mkdirs(path)
+    flag
+  }
 }

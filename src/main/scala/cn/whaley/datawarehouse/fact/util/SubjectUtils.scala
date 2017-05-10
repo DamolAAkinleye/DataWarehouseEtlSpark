@@ -1,19 +1,20 @@
 package cn.whaley.datawarehouse.fact.util
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
+import cn.whaley.datawarehouse.global.LogConfig
 
 
 /**
   * Created by michael on 2017/4/24.
   * 收集所有关于专题的工具类到此类中
   */
-object SubjectUtils {
+object SubjectUtils extends LogConfig{
 
 /**-------------------------------------- block 1--------------------------------------*/
   /**
     * 从路径中获取专题code
     */
-  def getSubjectCodeByPathETL(pathSpecial:String, path: String, flag: String)= {
+  def getSubjectCodeByPathETLOld(pathSpecial:String, path: String, flag: String)= {
     var result: String = null
     if (flag != null && pathSpecial != null) {
       flag match {
@@ -37,6 +38,27 @@ object SubjectUtils {
     }
     result
   }
+
+  def getSubjectCodeByPathETL(pathSpecial:String, path: String, flag: String)= {
+    var result: String = null
+    flag match {
+      case MEDUSA => {
+        if (SUBJECT.equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
+          result = getSubjectCode(pathSpecial)
+        }
+      }
+      case MORETV => {
+        val info = getSubjectCodeAndPath(path)
+        if (info.nonEmpty) {
+          val subjectCode = info(0)
+          result = subjectCode._1
+        }
+      }
+      case _ =>
+    }
+
+    result
+  }
 /**-------------------------------------- block 1 end--------------------------------------*/
 
 /**-------------------------------------- block 2--------------------------------------*/
@@ -47,7 +69,7 @@ object SubjectUtils {
   // private val regex_etl="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv|kid)([0-9]+)""".r
   private val regexSubjectName="""subject-([a-zA-Z0-9-\u4e00-\u9fa5]+)""".r
   // 获取 专题code
-  def getSubjectCode(subject:String) = {
+  def getSubjectCodeOld(subject:String) = {
     regex_etl findFirstMatchIn subject match {
       // 如果匹配成功，说明subject包含了专题code，直接返回专题code
       case Some(m) => {
@@ -56,6 +78,20 @@ object SubjectUtils {
       // 没有匹配成功，说明subject为专题名称，不包含专题code，因此直接返回专题名称
       case None => " "
     }
+  }
+
+  def getSubjectCode(subject:String) = {
+    var subjectCode: String = null
+    if (subject != null){
+      regex_etl findFirstMatchIn subject match {
+        // 如果匹配成功，说明subject包含了专题code，直接返回专题code
+        case Some(m) => {
+          subjectCode = m.group(1) + m.group(2)
+        }
+        case None =>
+      }
+    }
+    subjectCode
   }
 
   /*例子：假设pathSpecial为subject-儿歌一周热播榜,解析出 儿歌一周热播榜 */
@@ -90,14 +126,14 @@ object SubjectUtils {
   def getSubjectNameByPathETL(pathSpecial: String): String = {
     var result: String = null
     if (pathSpecial != null) {
-      if ("subject".equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
+      if (SUBJECT.equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
         val subjectCode = SubjectUtils.getSubjectCode(pathSpecial)
         val pathLen = pathSpecial.split("-").length
         if (pathLen == 2) {
           result = PathParserUtils.getPathMainInfo(pathSpecial, 2, 1)
         } else if (pathLen > 2) {
           var tempResult = PathParserUtils.getPathMainInfo(pathSpecial, 2, 1)
-          if (subjectCode != " ") {
+          if (subjectCode != null) {
             for (i <- 2 until pathLen - 1) {
               tempResult = tempResult.concat("-").concat(PathParserUtils.getPathMainInfo(pathSpecial, i + 1, 1))
             }
@@ -169,27 +205,30 @@ def getSubjectSK() :DimensionColumn = {
   val regexSubjectG = "home-(movie|zongyi|tv|comic|kids|jilu|hot)-(movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|hot\\d+|sports\\d+)".r
 
   def getSubjectCodeAndPath(path:String) = {
-    regexSubjectA2 findFirstMatchIn path match {
-      case Some(a2) => (a2.group(4),a2.group(1))::(a2.group(3),a2.group(1))::Nil
-      case None => regexSubjectA findFirstMatchIn path match {
-        case Some(a) => (a.group(3),a.group(1))::Nil
-        case None => regexSubjectB2 findFirstMatchIn path match {
-          case Some(b2) => (b2.group(3),b2.group(2))::(b2.group(4),b2.group(2))::Nil
-          case None => regexSubjectB findFirstMatchIn path match {
-            case Some(b) => (b.group(3),b.group(2))::Nil
-            case None => regexSubjectC findFirstMatchIn path match {
-              case Some(c) => (c.group(2),c.group(1))::Nil
-              case None => regexSubjectD findFirstMatchIn path match {
-                case Some(d) => (d.group(2),d.group(1))::Nil
-                case None => regexSubjectE findFirstMatchIn path match {
-                  case Some(e) => (e.group(3),e.group(2))::Nil
-                  case None => regexSubjectF2 findFirstMatchIn path match {
-                    case Some(f2) => (f2.group(2),f2.group(1))::(f2.group(3),f2.group(1))::Nil
-                    case None => regexSubjectF findFirstMatchIn path match {
-                      case Some(f) => (f.group(2),f.group(1))::Nil
-                      case None => regexSubjectG findFirstMatchIn path match {
-                        case Some(g) => (g.group(2),g.group(1))::Nil
-                        case None => Nil
+    var result: List[(String, String)] = List()
+    if (path != null){
+      regexSubjectA2 findFirstMatchIn path match {
+        case Some(a2) => result = (a2.group(4),a2.group(1))::(a2.group(3),a2.group(1))::Nil
+        case None => regexSubjectA findFirstMatchIn path match {
+          case Some(a) => result = (a.group(3),a.group(1))::Nil
+          case None => regexSubjectB2 findFirstMatchIn path match {
+            case Some(b2) => result = (b2.group(3),b2.group(2))::(b2.group(4),b2.group(2))::Nil
+            case None => regexSubjectB findFirstMatchIn path match {
+              case Some(b) => result = (b.group(3),b.group(2))::Nil
+              case None => regexSubjectC findFirstMatchIn path match {
+                case Some(c) => result = (c.group(2),c.group(1))::Nil
+                case None => regexSubjectD findFirstMatchIn path match {
+                  case Some(d) => result = (d.group(2),d.group(1))::Nil
+                  case None => regexSubjectE findFirstMatchIn path match {
+                    case Some(e) => result = (e.group(3),e.group(2))::Nil
+                    case None => regexSubjectF2 findFirstMatchIn path match {
+                      case Some(f2) => result = (f2.group(2),f2.group(1))::(f2.group(3),f2.group(1))::Nil
+                      case None => regexSubjectF findFirstMatchIn path match {
+                        case Some(f) => result = (f.group(2),f.group(1))::Nil
+                        case None => regexSubjectG findFirstMatchIn path match {
+                          case Some(g) => result = (g.group(2),g.group(1))::Nil
+                          case None => Nil
+                        }
                       }
                     }
                   }
@@ -200,6 +239,7 @@ def getSubjectSK() :DimensionColumn = {
         }
       }
     }
+    result
   }
   def getSubjectCodeAndPathWithId(path:String,userId:String) = {
     getSubjectCodeAndPath(path).map(x => (x,userId))

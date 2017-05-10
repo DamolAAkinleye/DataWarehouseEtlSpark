@@ -1,7 +1,7 @@
 package cn.whaley.datawarehouse.fact.util
 
 import org.junit.Assert._
-import org.junit.{Before, ComparisonFailure, Test}
+import org.junit.{Before, Test}
 
 /**
   * Created by wujiulin on 2017/5/4.
@@ -54,8 +54,10 @@ class PageEntranceUtilsTest {
       ("home*classification*mv-mv*mvCategoryHomePage*site_mvarea-mv_category*内地", "", MEDUSA, "mv", "mvCategoryHomePage", "site_mvarea"),
       ("home*my_tv*mv-mv*mvCategoryHomePage*site_mvyear-mv_category*其他", "", MEDUSA, "mv", "mvCategoryHomePage", "site_mvyear"),
       ("home*my_tv*mv-mv*mvCategoryHomePage*site_mvstyle-mv_category*电子", "", MEDUSA, "mv", "mvCategoryHomePage", "site_mvstyle"),
+      ("home*classification*mv-mv*mvCategoryHomePage*efv012a123b2", "", MEDUSA, "mv", "mvCategoryHomePage", null),
 
       ("home*my_tv*mv-mv*mineHomePage*site_collect-mv_collection", "", MEDUSA, "mv", "mineHomePage", "site_collect"),
+      ("home*classification*mv-mv*mineHomePage*2do8wxm7xz8q", "", MEDUSA, "mv", "mineHomePage", null),
       //sports
       ("sports*newsHomePage*tvn8xz1b8qab", "", MEDUSA, "sports", "newsHomePage", null),
       ("home*classification*3-sports*newsHomePage*tvn8iklni6vw", "", MEDUSA, "sports", "newsHomePage", null),

@@ -15,6 +15,7 @@ trait LogConfig {
   val EAGLE = "eagle"
   val MTVKIDSLOGIN = "mtvkidsloginlog"
   val ACTIVITY = "activity"
+  val SUBJECT = "subject"
 
   /**
     * 频道类型 */

@@ -53,7 +53,10 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP"))
+    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
+    UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
+    UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
+    UserDefinedColumn("recommendSlotIndex", udf(RecommendUtils.getRecommendSlotIndex: (String) => String), List("pathMain"))
   )
 
   /**
@@ -61,13 +64,15 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     * */
   dimensionColumns = List(
     /** 获得列表页sk source_site_sk*/
-    ListCategoryUtils.getSourceSiteSK,
+    ListCategoryUtils.getSourceSiteSK(),
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSK,
+    SubjectUtils.getSubjectSK(),
     /** 获得首页入口 launcher_entrance_sk */
-    EntranceTypeUtils.getLauncherEntranceSK,
+    EntranceTypeUtils.getLauncherEntranceSK(),
     /** 获得频道主页来源 page_entrance_sk */
-    PageEntrancePathParseUtils.getPageEntranceSK
+    PageEntrancePathParseUtils.getPageEntranceSK(),
+    /** 获得推荐来源 recommend_position_sk */
+    RecommendUtils.getRecommendPositionSK()
   )
 
 
@@ -89,7 +94,11 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     ("pathSpecial", "pathSpecial"),
     ("area_code", "pageEntranceAreaCode"),
     ("location_code", "pageEntranceLocationCode"),
-    ("page_code", "pageEntrancePageCode")
+    ("page_code", "pageEntrancePageCode"),
+    ("recommend_position", "recommendSourceType"),
+    ("recommend_position_type", "previousContentType"),
+    ("recommend_slot_index", "recommendSlotIndex"),
+    ("recommend_method", "recommendType")
   )
 
   factTime = null

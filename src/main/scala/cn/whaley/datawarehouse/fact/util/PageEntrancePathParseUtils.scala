@@ -152,29 +152,24 @@ object PageEntrancePathParseUtils extends LogConfig {
       "page_entrance_sk")
   }
 
-  @TestAnnotation
-  def main(args: Array[String]): Unit = {
-    val path = ""
-    val pathMain = "home*classification*mv-mv*mvRecommendHomePage*8qc3op34qr23-mv_station"
-    println(path)
-    println(pathMain)
-    println(getPageEntrancePageCode(pathMain, path, MEDUSA))
-    println(getPageEntranceAreaCode(pathMain, path, MEDUSA))
-    println(getPageEntranceLocationCode(pathMain, path, MEDUSA))
-
-    //    println(PAGE_ENTRANCE_LOCATION_CODE_LIST.map(e=>
-    //      "'" + e + "'"
-    //    ).mkString(","))
-
-//    PAGE_ENTRANCE_MV_REGEX findFirstMatchIn pathMain match {
-//      case Some(p) => {
-//        (1 until p.groupCount + 1).foreach(i => {
-//          println(p.group(i))
-//        })
-//      }
-//      case None =>
-//    }
-
-  }
+  /**
+    * 问题:
+    * 1.解析出mvTopHomePage---personal_recommend在维度表没有对应记录
+    *   home*classification*mv-mv*mvTopHomePage*personal_recommend
+    * 2.mvCategoryHomePage---null在维度表没有对应记录,mineHomePage---null在维度表没有对应记录
+    *   home*classification*mv-mv*mvCategoryHomePage*efv012a123b2
+    *   home*classification*mv-mv*mineHomePage*2do8wxm7xz8q
+    * 3.解析出horizontal---site_collect的记录
+    *   home*my_tv*mv-mv*horizontal*site_collect-mv_collection
+    * 4.home*classification*kids-kids_rhymes*舞蹈律动
+    *   home*classification*kids-kids_home-kids_rhymes-search*SHUYA
+    *
+    *   area_code            location_code
+    *   mvTopHomePage        personal_recommend     个人推荐
+    *   horizontal(水平)      site_collect           收藏
+    *   (现在添加下面两个记录)
+    *   mvCategoryHomePage   location_code is null  其他分类
+    *   mineHomePage         location_code is null  其他我的
+    */
 
 }
