@@ -67,7 +67,7 @@ object ProgramTagMappingOther extends NormalizedEtlBase {
         "sid as program_sid",
         "display_name as program_title",
         "content_type as content_type",
-        s"each_$columnName as tag_name",
+        s"trim(each_$columnName) as tag_name",
         s"'$tagTypeName' as tag_type")
   }
 
@@ -91,7 +91,7 @@ object ProgramTagMappingOther extends NormalizedEtlBase {
       "live_program_sid as program_sid",
       "live_program_title as program_title",
       "'live' as content_type",
-      s"$columnName as tag_name",
+      s"trim($columnName) as tag_name",
       s"'$tagTypeName' as tag_type")
   }
 
