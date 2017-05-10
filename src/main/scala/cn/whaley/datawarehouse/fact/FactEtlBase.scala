@@ -86,10 +86,10 @@ abstract class FactEtlBase extends BaseClass {
   override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
 
     val filteredSourceDf = filterRows(sourceDf)
-//    filteredSourceDf.dropDuplicates()
+    filteredSourceDf.cache()
 
     val completeSourceDf = addNewColumns(filteredSourceDf)
-    completeSourceDf.persist()
+    completeSourceDf.cache()
 
     if(debug) {
       println("完整事实表行数：" + completeSourceDf.count())
@@ -169,7 +169,7 @@ abstract class FactEtlBase extends BaseClass {
     println("线上数据临时目录:" + onLineFactDirTmp)
     println("线上数据等待删除目录:" + onLineFactDirDelete)
 
-    df.persist(StorageLevel.MEMORY_AND_DISK)
+    //df.persist(StorageLevel.MEMORY_AND_DISK)
 
     val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
     if (isOnlineFileExist) {
@@ -186,9 +186,9 @@ abstract class FactEtlBase extends BaseClass {
     }
 
     //防止文件碎片
-    val total_count = BigDecimal(df.count())
+/*    val total_count = BigDecimal(df.count())
     val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
-    println("repartition:" + partition)
+    println("repartition:" + partition)*/
 
     val isTmpExist = HdfsUtil.IsDirExist(onLineFactDirTmp)
     if (isTmpExist) {
@@ -196,7 +196,7 @@ abstract class FactEtlBase extends BaseClass {
       HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
     }
     println("生成线上维度数据到临时目录:" + onLineFactDirTmp)
-    df.repartition(partition).write.parquet(onLineFactDirTmp)
+    df.repartition(2000).write.parquet(onLineFactDirTmp)
 
     println("数据是否上线:" + p.isOnline)
     if (p.isOnline) {

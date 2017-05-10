@@ -34,7 +34,7 @@ object Play extends FactEtlBase with  LogConfig{
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
-      mergerDataFrame
+      mergerDataFrame.repartition(2000)
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
     }
@@ -160,10 +160,10 @@ object Play extends FactEtlBase with  LogConfig{
       List(DimensionJoinCondition(Map("videoSid" -> "sid"))),
       "program_sk"),
 
-    /** 获得剧集节目维度episode_program_sk */
-    new DimensionColumn("dim_medusa_program",
+    /** 获得剧集节目维度episode_program_sk ,uncomment after handle ambiguous question by lituo*/
+   /* new DimensionColumn("dim_medusa_program",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
-      "program_sk","episode_program_sk"),
+      "program_sk","episode_program_sk"),*/
 
     /** 获得账号维度account_sk*/
     new DimensionColumn("dim_medusa_account",
