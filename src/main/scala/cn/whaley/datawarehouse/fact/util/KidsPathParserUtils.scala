@@ -131,7 +131,7 @@ object KidsPathParserUtils {
       case Some(p) => {
         res1 = p.group(3)
         val (p4Arr, len) = splitStr(p.group(4), "-")
-        if (len >= 0) {
+        if (len >= 1) {
           res2 = p4Arr(0)
         }
       }
