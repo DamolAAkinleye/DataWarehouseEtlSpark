@@ -84,12 +84,12 @@ abstract class FactEtlBase extends BaseClass {
     * @return
     */
   override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
-
+    println("------- before transform "+Calendar.getInstance().getTime)
     val filteredSourceDf = filterRows(sourceDf)
-    //filteredSourceDf.cache()
-
     val completeSourceDf = addNewColumns(filteredSourceDf)
+    println("-------start completeSourceDf.cache()"+Calendar.getInstance().getTime)
     completeSourceDf.cache()
+    println("-------end completeSourceDf.cache()"+Calendar.getInstance().getTime)
 
     if(debug) {
       println("完整事实表行数：" + completeSourceDf.count())
@@ -104,7 +104,9 @@ abstract class FactEtlBase extends BaseClass {
 //      dimensionJoinDf.show()
     }
 
+    println("-------before completeSourceDf join dimensionJoinDf"+Calendar.getInstance().getTime)
     val df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")
+    println("-------after completeSourceDf join dimensionJoinDf"+Calendar.getInstance().getTime)
     /*if (dimensionColumns != null) {
       //关联所有的维度  TODO 判断只关联用到的维度
       dimensionColumns.foreach(c => {
@@ -114,6 +116,7 @@ abstract class FactEtlBase extends BaseClass {
           "leftouter")
       })
     }*/
+    println("-------before 筛选特定列"+Calendar.getInstance().getTime)
     val result = df.selectExpr(
       columnsFromSource.map(
         c => if (c._2.contains(" ") || c._2.contains("."))
@@ -123,11 +126,12 @@ abstract class FactEtlBase extends BaseClass {
         ++ dimensionJoinDf.schema.fields.filter(_.name != INDEX_NAME).map("source." + _.name)
         : _*
     )
+    println("-------after 筛选特定列"+Calendar.getInstance().getTime)
 
     if(debug) {
       println("最终结果行数：" + result.count())
     }
-
+    println("------- last line in transform "+Calendar.getInstance().getTime)
     result
   }
 
@@ -136,12 +140,17 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   private def addNewColumns(sourceDf: DataFrame): DataFrame = {
+    println("-------before addNewColumns "+Calendar.getInstance().getTime)
     var result = DataFrameUtil.dfZipWithIndex(sourceDf, INDEX_NAME)
     if (addColumns != null) {
-      addColumns.foreach(column =>
+      addColumns.foreach(column =>{
+        println("-------start add column: "+column.name+","+Calendar.getInstance().getTime)
         result = result.withColumn(column.name, column.udf(column.inputColumns.map(col): _*))
+        println("-------end add column: "+","+column.name+Calendar.getInstance().getTime)
+      }
       )
     }
+    println("-------after addNewColumns "+Calendar.getInstance().getTime)
     result
   }
 /*

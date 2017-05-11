@@ -1,6 +1,6 @@
 package cn.whaley.datawarehouse.util
 
-import java.util.Date
+import java.util.{Calendar, Date}
 
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
@@ -15,7 +15,8 @@ object DataFrameUtil {
                      offset: Long = 0,
                      inFront: Boolean = true
                     ): DataFrame = {
-    df.sqlContext.createDataFrame(
+    println("-------before dfZipWithIndex "+Calendar.getInstance().getTime)
+    val result=df.sqlContext.createDataFrame(
       df.rdd.zipWithIndex.map(ln =>
         Row.fromSeq(
           (if (inFront) Seq(ln._2 + offset + 1) else Seq())
@@ -29,6 +30,8 @@ object DataFrameUtil {
           (if (inFront) Array[StructField]() else Array(StructField(colName, LongType, false)))
       )
     )
+    println("-------end dfZipWithIndex "+Calendar.getInstance().getTime)
+    result
   }
 
   def addDimTime(df: DataFrame,

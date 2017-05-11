@@ -1,11 +1,15 @@
 package cn.whaley.datawarehouse.fact.moretv
 
+import java.io.File
+import java.util.Calendar
+
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.util._
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
+import cn.whaley.datawarehouse.global.{Constants, Globals, LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
+import org.apache.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
@@ -15,7 +19,6 @@ import org.apache.spark.sql.functions._
   * Created by michel on 17/4/24.
   */
 object Play extends FactEtlBase with  LogConfig{
-
   /** log type name */
   topicName = "fact_medusa_play"
 
@@ -23,6 +26,7 @@ object Play extends FactEtlBase with  LogConfig{
     * step 1, get data source
     * */
   override def readSource(startDate: String): DataFrame = {
+    println("------- before readSource "+Calendar.getInstance().getTime)
     val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, startDate)
     val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, startDate)
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
@@ -44,6 +48,7 @@ object Play extends FactEtlBase with  LogConfig{
     * step 2, filter data source record
     * */
   override def filterRows(sourceDf: DataFrame): DataFrame = {
+    println("------- before filterRows "+Calendar.getInstance().getTime)
     /** 用于过滤单个用户播放单个视频量过大的情况 */
     val playNumLimit=5000
     sourceDf.registerTempTable("source_log")
@@ -65,6 +70,7 @@ object Play extends FactEtlBase with  LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
+    println("------- after filterRows "+Calendar.getInstance().getTime)
     resultDF
   }
 
@@ -303,6 +309,108 @@ object Play extends FactEtlBase with  LogConfig{
     } catch {
       case ex: Exception => ""
     }
+  }
+
+
+  /**
+    * 维度解析方法
+    *
+    * @param sourceDf         目标表
+    * @param dimensionColumns 解析用的join参数
+    * @param uniqueKeyName    目标表的唯一键列
+    * @param sourceTimeColumn 源数据时间列获取sql(或者只是个列名)
+    * @return 输出包含uniqueKeyName列和所以维度表的代理键列，不包含目标表中的数据，失败返回null
+    */
+  override def parseDimension(sourceDf: DataFrame,
+                     dimensionColumns: List[DimensionColumn],
+                     uniqueKeyName: String,
+                     sourceTimeColumn: String = null): DataFrame = {
+    println("-------in play parseDimension "+Calendar.getInstance().getTime)
+    var dimensionColumnDf: DataFrame = null
+    if (dimensionColumns != null) {
+      //对每个维度表
+      dimensionColumns.foreach(c => {
+        println(s"-------in play parseDimension ${c.dimensionName},"+Calendar.getInstance().getTime)
+        val dimensionDfBase = sqlContext.read.parquet(Globals.DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
+        var df: DataFrame = null
+        //对每组关联条件
+        c.joinColumnList.foreach(jc => {
+//          val debugString=jc.columnPairs
+//          println(s"-------in play parseDimension ${c.dimensionName} , $debugString,"+Calendar.getInstance().getTime)
+
+          var dimensionDf = dimensionDfBase
+          //维度表过滤
+          if (jc.whereClause != null && !jc.whereClause.isEmpty) {
+            dimensionDf = dimensionDf.where(jc.whereClause)
+          }
+          //维度表排序
+          if (jc.orderBy != null && jc.orderBy.nonEmpty) {
+            dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
+          }
+          //维度表去重 [维度表应该去重]
+          //          dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)
+          //实时表源数据过滤
+          var sourceFilterDf =
+            if (jc.sourceWhereClause != null && !jc.sourceWhereClause.isEmpty)
+              sourceDf.where(jc.sourceWhereClause)
+            else
+              sourceDf
+          sourceFilterDf =
+            if (sourceTimeColumn == null || sourceTimeColumn.isEmpty) {
+              sourceFilterDf.withColumn(Constants.COLUMN_NAME_FOR_SOURCE_TIME, expr("null"))
+            } else {
+              sourceFilterDf.withColumn(Constants.COLUMN_NAME_FOR_SOURCE_TIME, expr(sourceTimeColumn))
+            }
+          //源表与维度表join
+          if (df == null) {
+            df = sourceFilterDf.as("a").join(
+              dimensionDf.as("b"),
+              jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
+                && (expr(s"a.${Constants.COLUMN_NAME_FOR_SOURCE_TIME} is null") ||
+                expr(s"a.${Constants.COLUMN_NAME_FOR_SOURCE_TIME} >= b.dim_valid_time and " +
+                  s"(a.${Constants.COLUMN_NAME_FOR_SOURCE_TIME} < b.dim_invalid_time or b.dim_invalid_time is null)")),
+              "inner"
+            ).selectExpr("a." + uniqueKeyName, "b." + c.dimensionSkName).dropDuplicates(List(uniqueKeyName))
+          } else {
+            //源数据中未关联上的行
+            val notJoinDf = sourceFilterDf.as("a").join(
+              df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
+            ).where("dim."+c.dimensionSkName + " is null").selectExpr("a.*")
+            if(debug) {
+              println("dimensionName " + c.dimensionName)
+              println("sourceFilterDf " + sourceFilterDf.count())
+              println("df " + df.count())
+              println("notJoinDf " + notJoinDf.count())
+            }
+
+            df = notJoinDf.as("a").join(
+              dimensionDf.as("b"),
+              jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
+                && (expr(s"a.${Constants.COLUMN_NAME_FOR_SOURCE_TIME} is null") ||
+                expr(s"a.${Constants.COLUMN_NAME_FOR_SOURCE_TIME} >= b.dim_valid_time and " +
+                  s"(a.${Constants.COLUMN_NAME_FOR_SOURCE_TIME} < b.dim_invalid_time or b.dim_invalid_time is null)")),
+              "inner"
+            ).selectExpr(
+              "a." + uniqueKeyName, "b." + c.dimensionSkName
+            ).dropDuplicates(List(uniqueKeyName)
+            ).unionAll(df)
+          }
+        })
+
+        df = sourceDf.as("a").join(df.as("b"), sourceDf(uniqueKeyName) === df(uniqueKeyName), "leftouter").selectExpr(
+          "a." + uniqueKeyName, "b." + c.dimensionSkName + " as " + c.dimensionColumnName)
+        //多个维度合成一个DataFrame
+        if (dimensionColumnDf == null) {
+          dimensionColumnDf = df
+        } else {
+          dimensionColumnDf = dimensionColumnDf.join(df, uniqueKeyName)
+        }
+        println(s"-------after play parseDimension ${c.dimensionName},"+Calendar.getInstance().getTime)
+      }
+      )
+    }
+    println("-------last line in play parseDimension "+Calendar.getInstance().getTime)
+    dimensionColumnDf
   }
 
 }
