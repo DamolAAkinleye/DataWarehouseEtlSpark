@@ -1,11 +1,10 @@
-package cn.whaley.datawarehouse.dimension.moretv
+package cn.whaley.datawarehouse.dimension.whaley
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
-import org.apache.spark.sql.{DataFrame, UserDefinedFunction}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-
 
 
 /**
@@ -14,7 +13,7 @@ import org.apache.spark.sql.functions._
   */
 object RecommendPosition extends DimensionBase {
 
-  dimensionName = "dim_medusa_recommend_position"
+  dimensionName = "dim_whaley_recommend_position"
 
   columns.skName = "recommend_position_sk"
 
@@ -38,7 +37,7 @@ object RecommendPosition extends DimensionBase {
 
   readSourceType = jdbc
 
-  sourceDb = MysqlDB.dwDimensionDb("moretv_recommend_position")
+  sourceDb = MysqlDB.dwDimensionDb("whaley_recommend_position")
 
 
   override def filterSource(sourceDf: DataFrame): DataFrame = {
