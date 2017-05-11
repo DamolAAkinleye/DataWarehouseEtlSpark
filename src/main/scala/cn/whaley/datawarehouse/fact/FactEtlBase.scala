@@ -86,7 +86,7 @@ abstract class FactEtlBase extends BaseClass {
   override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
 
     val filteredSourceDf = filterRows(sourceDf)
-    filteredSourceDf.cache()
+    //filteredSourceDf.cache()
 
     val completeSourceDf = addNewColumns(filteredSourceDf)
     completeSourceDf.cache()
@@ -104,8 +104,8 @@ abstract class FactEtlBase extends BaseClass {
 //      dimensionJoinDf.show()
     }
 
-    var df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")
-    if (dimensionColumns != null) {
+    val df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")
+    /*if (dimensionColumns != null) {
       //关联所有的维度  TODO 判断只关联用到的维度
       dimensionColumns.foreach(c => {
         val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
@@ -113,7 +113,7 @@ abstract class FactEtlBase extends BaseClass {
           expr("source." + c.dimensionColumnName + " = " + c.dimensionName + "." + c.dimensionSkName),
           "leftouter")
       })
-    }
+    }*/
     val result = df.selectExpr(
       columnsFromSource.map(
         c => if (c._2.contains(" ") || c._2.contains("."))
@@ -144,9 +144,28 @@ abstract class FactEtlBase extends BaseClass {
     }
     result
   }
+/*
+  private def addNewColumns(sourceDf: DataFrame): DataFrame = {
+    val sourceDfWithIndex = DataFrameUtil.dfZipWithIndex(sourceDf, INDEX_NAME)
+    if (addColumns != null) {
+      val buf = scala.collection.mutable.ListBuffer.empty[DataFrame]
+      addColumns.foreach(column =>{
+         val result2 = addNewColumn(sourceDfWithIndex,column)
+        buf.+=(result2)
+      }
+      )
+    }
+    sourceDfWithIndex
+  }
+
+  private def addNewColumn(sourceDf: DataFrame,column:UserDefinedColumn): DataFrame = {
+    sourceDf.withColumn(column.name, column.udf(column.inputColumns.map(col): _*))
+  }*/
 
   override def load(params: Params, df: DataFrame): Unit = {
-    backup(params, df, topicName)
+    HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+    df.repartition(2000).write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+    //backup(params, df, topicName)
   }
 
   /**
