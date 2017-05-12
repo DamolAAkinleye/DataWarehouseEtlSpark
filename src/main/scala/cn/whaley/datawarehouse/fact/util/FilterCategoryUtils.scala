@@ -120,13 +120,13 @@ object FilterCategoryUtils extends LogConfig{
     * filterCategorySecond (udf解析出字段)     对应      filter_category_first
     * filterCategoryThird  (udf解析出字段)     对应      filter_category_second
     * filterCategoryFourth (udf解析出字段)     对应      filter_category_third
-    * retrievalContentType (udf解析出字段)     对应      content_type
+    * filterContentType    (udf解析出字段)     对应      content_type
     */
   def getRetrievalSK() :DimensionColumn = {
     new DimensionColumn("dim_medusa_retrieval",
       List(
         DimensionJoinCondition(
-          Map("retrievalContentType" -> "content_type","filterCategoryFirst" -> "sort_type",
+          Map("filterContentType" -> "content_type","filterCategoryFirst" -> "sort_type",
             "filterCategorySecond" -> "filter_category_first","filterCategoryThird" -> "filter_category_second",
           "filterCategoryFourth" -> "filter_category_third"),
           null, null, null
