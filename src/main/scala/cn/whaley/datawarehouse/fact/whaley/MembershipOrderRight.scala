@@ -34,6 +34,8 @@ object MembershipOrderRight extends FactEtlBase{
     ("dim_time", "dim_time")
   )
 
+  dimensionsNeedInFact = List("dim_whaley_membership_order_delivered")
+
   dimensionColumns = List(
     new DimensionColumn("dim_whaley_membership_account_order",
       List(DimensionJoinCondition(Map("sn" -> "product_sn","whaleyOrder" -> "order_id"))), "membership_order_sk"),
