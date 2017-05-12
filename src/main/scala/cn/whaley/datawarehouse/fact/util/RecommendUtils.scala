@@ -14,6 +14,7 @@ object RecommendUtils extends LogConfig {
   private val moretvReg = (".*-(similar|peoplealsolike|guessyoulike)").r
   private val medusaRecommendSlotIndexRex = ("^home\\*recommendation\\*(\\d+)$").r
   private val recommendLogType="other"
+  private val recommendLogHomeType="home"
   def getRecommendSourceType(pathSub: String, path: String, flag: String): String = {
     var result: String = null
     flag match {
@@ -50,7 +51,9 @@ object RecommendUtils extends LogConfig {
             case Some(p) => {
               result =recommendLogType
             }
-            case None =>
+            case None =>{
+              result = recommendLogHomeType
+            }
           }
         }
       }
@@ -60,7 +63,9 @@ object RecommendUtils extends LogConfig {
             case Some(p) => {
               result = recommendLogType
             }
-            case None =>
+            case None =>{
+              result = recommendLogHomeType
+            }
           }
         }
       }
@@ -117,7 +122,6 @@ object RecommendUtils extends LogConfig {
     事实表中字段                                     维度表字段
  recommendSourceType                    对应     recommend_position     （guessyoulike，similar，peoplealsolike）
  previousContentType                    对应     recommend_position_type (comic,hot,mv等)
- recommendType(推荐类型，日志自带)         对应     recommend_method        (0,1)[可加可不加]
     */
   def getRecommendPositionSK(): DimensionColumn = {
     new DimensionColumn("dim_medusa_recommend_position",
@@ -125,12 +129,12 @@ object RecommendUtils extends LogConfig {
         //1.首页推荐
         DimensionJoinCondition(
           Map("recommendSlotIndex" -> "recommend_slot_index"),
-          "recommend_algorithm='未知' and recommend_position='portalrecommend' and recommend_slot_index>0", null, s"recommendLogType!='$recommendLogType'"
+          "recommend_algorithm='未知' and recommend_position='portalrecommend' and recommend_slot_index>0", null, s"recommendLogType='$recommendLogHomeType'"
         ),
         //2.其他推荐
         DimensionJoinCondition(
           Map("recommendSourceType" -> "recommend_position", "previousContentType" -> "recommend_position_type"
-            , "recommendType" -> "recommend_method"),
+            ),
           "recommend_algorithm='未知' and recommend_slot_index=0", null, s"recommendLogType='$recommendLogType'"
         )
       ),
