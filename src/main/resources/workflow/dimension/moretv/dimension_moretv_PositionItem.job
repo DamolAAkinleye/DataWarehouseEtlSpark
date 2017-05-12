@@ -1,4 +1,0 @@
-type=command
-mainclass=cn.whaley.datawarehouse.dimension.moretv.PositionItem
-command=sh ${working.dir}/../../bin/submit.sh ${mainclass}  --isOnline  ${isOnline}
-
