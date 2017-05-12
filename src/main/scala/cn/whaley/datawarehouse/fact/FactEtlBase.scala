@@ -1,5 +1,6 @@
 package cn.whaley.datawarehouse.fact
 
+import java.io.File
 import java.util.Calendar
 
 import cn.whaley.datawarehouse.BaseClass
@@ -11,9 +12,6 @@ import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.{DataFrameUtil, DateFormatUtils, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-
-import scala.reflect.io.File
-
 
 /**
   * Created by Tony on 17/4/5.
@@ -163,23 +161,6 @@ abstract class FactEtlBase extends BaseClass {
     println("-------after addNewColumns "+Calendar.getInstance().getTime)
     result
   }
-/*
-  private def addNewColumns(sourceDf: DataFrame): DataFrame = {
-    val sourceDfWithIndex = DataFrameUtil.dfZipWithIndex(sourceDf, INDEX_NAME)
-    if (addColumns != null) {
-      val buf = scala.collection.mutable.ListBuffer.empty[DataFrame]
-      addColumns.foreach(column =>{
-         val result2 = addNewColumn(sourceDfWithIndex,column)
-        buf.+=(result2)
-      }
-      )
-    }
-    sourceDfWithIndex
-  }
-
-  private def addNewColumn(sourceDf: DataFrame,column:UserDefinedColumn): DataFrame = {
-    sourceDf.withColumn(column.name, column.udf(column.inputColumns.map(col): _*))
-  }*/
 
   override def load(params: Params, df: DataFrame): Unit = {
     HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
