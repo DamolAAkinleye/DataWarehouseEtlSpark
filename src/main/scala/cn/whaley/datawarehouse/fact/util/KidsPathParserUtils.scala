@@ -46,7 +46,7 @@ object KidsPathParserUtils {
 
 
   /**
-    * This function is used to parse the ''path'' field in 2x version of medusa
+    * This function is used to parse the ''path'' field in 2x version of moretv
     *
     * @param path
     * @param out_index
@@ -55,11 +55,12 @@ object KidsPathParserUtils {
     var res: String = null
     if (path != null && path != "") {
       if (path.contains("kids")) {
-        if (out_index == 1)
+        if (out_index == 1) {
           res = "kids"
-      } else {
-        val (category, tab) = parse2xListCategoryInfo(path)
-        if (out_index == 2) res = category else if (out_index == 3) res = tab
+        } else {
+          val (category, tab) = parse2xListCategoryInfo(path)
+          if (out_index == 2) res = category else if (out_index == 3) res = tab
+        }
       }
     }
     res
@@ -130,7 +131,7 @@ object KidsPathParserUtils {
       case Some(p) => {
         res1 = p.group(3)
         val (p4Arr, len) = splitStr(p.group(4), "-")
-        if (len >= 0) {
+        if (len >= 1) {
           res2 = p4Arr(0)
         }
       }
@@ -176,7 +177,7 @@ object KidsPathParserUtils {
 
   @TestAnnotation
   def main(args: Array[String]): Unit = {
-    val str = "home*classification*kids-kids_home-kandonghua*0-4岁"
+    val str = "home*my_tv*kids-kids_home-tingerge*随便听听"
     KIDS_3X_LIST_CATEGORY_REGEX findFirstMatchIn str match {
       case Some(p) => {
         (1 until p.groupCount + 1).foreach(i => {

@@ -6,8 +6,8 @@ import cn.whaley.datawarehouse.global.LogConfig
 /**
   * Created by michael on 2017/5/2.
   * update by wujiulin on 2017/5/8.
-  *  1.修改moretv的正则表达式
-  *  2.增加解析recommend_slot_index字段功能
+  * 1.修改moretv的正则表达式
+  * 2.增加解析recommend_slot_index字段功能
   */
 object RecommendUtils extends LogConfig {
   private val medusaReg = ("(similar|peoplealsolike|guessyoulike)-[\\S]+-([\\S]+)\\*([\\S]+)").r
@@ -84,10 +84,16 @@ object RecommendUtils extends LogConfig {
   def getRecommendPositionSK(): DimensionColumn = {
     new DimensionColumn("dim_medusa_recommend_position",
       List(
+        //1.首页推荐
         DimensionJoinCondition(
-          Map("recommendSourceType" -> "recommend_position", "previousContentType" -> "recommend_position_type",
-          "recommendSlotIndex" -> "recommend_slot_index", "recommendType" -> "recommend_method"),
-          null, null, null
+          Map("recommendSlotIndex" -> "recommend_slot_index"),
+          "recommend_algorithm='未知' and recommend_position='portalrecommend' and recommend_slot_index>0", null, null
+        ),
+        //2.其他推荐
+        DimensionJoinCondition(
+          Map("recommendSourceType" -> "recommend_position", "previousContentType" -> "recommend_position_type"
+            , "recommendType" -> "recommend_method"),
+          "recommend_algorithm='未知' and recommend_slot_index=0", null, null
         )
       ),
       "recommend_position_sk")
@@ -96,9 +102,12 @@ object RecommendUtils extends LogConfig {
   /* 推荐维度表，获得sk
  事实表中字段                                     维度表字段
  recommendSourceType                    对应     recommend_position     （guessyoulike，similar，peoplealsolike）
+ previousContentType                    对应     recommend_position_type (comic,hot,mv等) [可加可不加]
  recommendType(推荐类型，日志自带)         对应     recommend_method        (0,1)
- previousContentType                    对应     recommend_position_type (comic,hot,mv等)
+
+
  解析首页推荐位置（home*recommendation*14） 对应     recommend_slot_index
+
  */
 
 }
