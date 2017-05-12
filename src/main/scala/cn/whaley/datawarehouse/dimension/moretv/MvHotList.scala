@@ -5,8 +5,8 @@ import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
 
 /**
-  * Created by witnes on 3/13/17.
-  * 直播频道维度表
+  * Created by Tony.
+  * 音乐榜单维度表
   */
 object MvHotList extends DimensionBase {
 
