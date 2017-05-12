@@ -9,8 +9,8 @@ import cn.whaley.datawarehouse.global.LogConfig
   *  2.获得retrieval_sk
   */
 object FilterCategoryUtils extends LogConfig{
-  private val regex_moretv_filter = (".*multi_search-(hot|new|score)-([\\w]+)-([\\w]+)-([\\w]+)[-]?.*").r
-  private val regex_moretv_filter_number = (".*multi_search-(hot|new|score)-([\\w]+)-([\\w]+)-([\\d]+-[\\d]+)[-]?.*").r
+  private val regex_moretv_filter = (".*(movie|tv|zongyi|jilu|comic|xiqu|hot|mv|kids|sports)-multi_search-(hot|new|score)-([\\w]+)-([\\w]+)-([\\w]+)[-]?.*").r
+  private val regex_moretv_filter_number = (".*(movie|tv|zongyi|jilu|comic|xiqu|hot|mv|kids|sports)-multi_search-(hot|new|score)-([\\w]+)-([\\w]+)-([\\d]+-[\\d]+)[-]?.*").r
   private val regex_medusa_filter = (".*(movie|tv|zongyi|jilu|comic|xiqu|hot|mv|kids|sports)-retrieval\\*(hot|new|score)\\*([\\w]+)\\*([\\w]+)\\*(all|qita|[\\d]+[\\*\\d]*)").r
 
   //获取筛选维度【排序方式：最新、最热、得分；标签；地区；年代】
@@ -49,8 +49,17 @@ object FilterCategoryUtils extends LogConfig{
     result
   }
 
-  def getFilterCategoryContentType(pathMain: String): String = {
-    getFilterCategory(pathMain,1,MEDUSA)
+  def getFilterCategoryContentType(pathMain: String,path:String,flag:String): String = {
+    var result: String = null
+    flag match {
+      case MEDUSA => {
+        result = getFilterCategory(pathMain,1,MEDUSA)
+      }
+      case MORETV => {
+        result = getFilterCategory(path,1,MORETV)
+      }
+    }
+    result
   }
 
   def getFilterCategoryFirst(pathMain: String, path: String, flag: String): String = {
@@ -60,7 +69,7 @@ object FilterCategoryUtils extends LogConfig{
         result = getFilterCategory(pathMain,2,MEDUSA)
       }
       case MORETV => {
-        result = getFilterCategory(path,1,MORETV)
+        result = getFilterCategory(path,2,MORETV)
       }
     }
     result
@@ -73,7 +82,7 @@ object FilterCategoryUtils extends LogConfig{
         result = getFilterCategory(pathMain,3,MEDUSA)
       }
       case MORETV => {
-        result = getFilterCategory(path,2,MORETV)
+        result = getFilterCategory(path,3,MORETV)
       }
     }
     result
@@ -86,7 +95,7 @@ object FilterCategoryUtils extends LogConfig{
         result = getFilterCategory(pathMain,4,MEDUSA)
       }
       case MORETV => {
-        result = getFilterCategory(path,3,MORETV)
+        result = getFilterCategory(path,4,MORETV)
       }
     }
     result
@@ -99,7 +108,7 @@ object FilterCategoryUtils extends LogConfig{
         result = getFilterCategory(pathMain,5,MEDUSA)
       }
       case MORETV => {
-        result = getFilterCategory(path,4,MORETV)
+        result = getFilterCategory(path,5,MORETV)
       }
     }
     result
