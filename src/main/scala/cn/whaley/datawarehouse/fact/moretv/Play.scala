@@ -13,7 +13,6 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
 
-
 /**
   * Created by michel on 17/4/24.
   */
@@ -96,6 +95,7 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("filterCategoryThird", udf(FilterCategoryUtils.getFilterCategoryThird: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
+    UserDefinedColumn("recommendLogType", udf(RecommendUtils.getRecommendLogType: (String,String,String) => String), List("pathSub", "path", "flag")),
     UserDefinedColumn("previousSid", udf(RecommendUtils.getPreviousSid: (String) => String), List("pathSub")),
     UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
     UserDefinedColumn("recommendSlotIndex", udf(RecommendUtils.getRecommendSlotIndex: (String) => String), List("pathMain")),
@@ -132,6 +132,11 @@ object Play extends FactEtlBase with  LogConfig{
     EntranceTypeUtils.getLauncherEntranceSK(),
 
     /** 获得用户ip对应的地域维度user_web_location_sk */
+
+    /** 获得音乐榜单维度mv_hot_sk */
+    new DimensionColumn("dim_medusa_mv_hot_list",
+      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_rank_id"))),
+      "mv_hot_sk"),
 
     /** 获得访问ip对应的地域维度user_web_location_sk */
     new DimensionColumn("dim_web_location",
@@ -194,11 +199,6 @@ object Play extends FactEtlBase with  LogConfig{
     new DimensionColumn("dim_medusa_mv_radio",
       List(DimensionJoinCondition(Map("station" -> "mv_radio_title"))),
       "mv_radio_sk")
-
-    /** 获得音乐榜单维度mv_hot_sk ,uncomment after dim_medusa_mv_hot_list table is ok*/
-   /* new DimensionColumn("dim_medusa_mv_hot_list",
-      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_id"))),
-      "mv_hot_sk")*/
   )
 
 
@@ -223,6 +223,8 @@ object Play extends FactEtlBase with  LogConfig{
     ("previousSid", "previousSid"),
     ("previousContentType", "previousContentType"),
     ("recommendSlotIndex", "recommendSlotIndex"),
+    ("recommendType", "recommendType"),
+    ("recommendLogType", "recommendLogType"),
     ("pageEntranceAreaCode", "pageEntranceAreaCode"),
     ("pageEntranceLocationCode", "pageEntranceLocationCode"),
     ("pageEntrancePageCode", "pageEntrancePageCode"),

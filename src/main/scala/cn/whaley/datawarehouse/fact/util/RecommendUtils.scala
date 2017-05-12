@@ -13,7 +13,7 @@ object RecommendUtils extends LogConfig {
   private val medusaReg = ("(similar|peoplealsolike|guessyoulike)-[\\S]+-([\\S]+)\\*([\\S]+)").r
   private val moretvReg = (".*-(similar|peoplealsolike|guessyoulike)").r
   private val medusaRecommendSlotIndexRex = ("^home\\*recommendation\\*(\\d+)$").r
-
+  private val recommendLogType="other"
   def getRecommendSourceType(pathSub: String, path: String, flag: String): String = {
     var result: String = null
     flag match {
@@ -32,6 +32,33 @@ object RecommendUtils extends LogConfig {
           moretvReg findFirstMatchIn path match {
             case Some(p) => {
               result = p.group(1)
+            }
+            case None =>
+          }
+        }
+      }
+    }
+    result
+  }
+
+  def getRecommendLogType(pathSub: String, path: String, flag: String): String = {
+    var result: String = null
+    flag match {
+      case MEDUSA => {
+        if (null != pathSub) {
+          medusaReg findFirstMatchIn pathSub match {
+            case Some(p) => {
+              result =recommendLogType
+            }
+            case None =>
+          }
+        }
+      }
+      case MORETV => {
+        if (null != path) {
+          moretvReg findFirstMatchIn path match {
+            case Some(p) => {
+              result = recommendLogType
             }
             case None =>
           }
@@ -98,13 +125,13 @@ object RecommendUtils extends LogConfig {
         //1.首页推荐
         DimensionJoinCondition(
           Map("recommendSlotIndex" -> "recommend_slot_index"),
-          "recommend_algorithm='未知' and recommend_position='portalrecommend' and recommend_slot_index>0", null, null
+          "recommend_algorithm='未知' and recommend_position='portalrecommend' and recommend_slot_index>0", null, s"recommendLogType!='$recommendLogType'"
         ),
         //2.其他推荐
         DimensionJoinCondition(
           Map("recommendSourceType" -> "recommend_position", "previousContentType" -> "recommend_position_type"
             , "recommendType" -> "recommend_method"),
-          "recommend_algorithm='未知' and recommend_slot_index=0", null, null
+          "recommend_algorithm='未知' and recommend_slot_index=0", null, s"recommendLogType='$recommendLogType'"
         )
       ),
       "recommend_position_sk")
