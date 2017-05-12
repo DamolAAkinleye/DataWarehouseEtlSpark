@@ -39,6 +39,7 @@ trait BaseClass {
     init()
     System.out.println("init success ....")
 
+    beforeExecute()
     println("execute start ....")
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
@@ -75,8 +76,11 @@ trait BaseClass {
     //    DataIO.init("hdfs://hans/test/config.json")
   }
 
+  def beforeExecute(): Unit = {
 
-  /**
+  }
+
+    /**
     * ETL过程执行程序
     */
   def execute(params: Params): Unit = {
