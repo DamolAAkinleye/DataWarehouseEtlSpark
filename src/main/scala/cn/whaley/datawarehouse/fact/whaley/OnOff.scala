@@ -6,6 +6,7 @@ import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.util.DataExtractUtils
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.{IntegerType, StringType,DataType}
 
 /**
   * 创建人：郭浩
@@ -40,18 +41,27 @@ object OnOff extends FactEtlBase{
   )
 
   override def readSource(startDate: String): DataFrame = {
+    val fields = List(
+      ("productSN",null,StringType),
+      ("productLine",null,StringType),
+      ("accountId",null,StringType),
+      ("currentVipLevel",null,StringType),
+      ("firmwareVersion",null,StringType),
+      ("isYunos",null,StringType),
+      ("event",null,StringType),
+      ("duration",0,IntegerType),
+      ("startTime",0,IntegerType),
+      ("endTime",0,IntegerType),
+      ("datetime",null,StringType)
+    )
 
-    //ota19 off 新增startTime,endTime
-    val flag = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
-      .schema.fieldNames.contains("startTime")
+    var onDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_ON,startDate)
     var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
-    if(!flag){
-      offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate).withColumn("startTime",expr("'0'"))
-        .withColumn("endTime",expr("'0'"))
-    }
+    onDf = addColumn(offDf,fields)
+    offDf = addColumn(offDf,fields)
+
     //on,off日志合并
-    DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_ON,startDate)
-          .selectExpr(
+    onDf.selectExpr(
             "productSN as product_sn",
             "productLine as product_line",
             "accountId as account_id",
@@ -64,9 +74,9 @@ object OnOff extends FactEtlBase{
             "0 as end_time",
             "substr(datetime,1,10) as dim_date",
             "substr(datetime,12,8) as dim_time"
-          ).unionAll(
-            offDf
-              .selectExpr(
+          )
+      .unionAll(
+         offDf.selectExpr(
                 "productSN as product_sn",
                 "productLine as product_line",
                 "accountId as account_id",
@@ -82,6 +92,20 @@ object OnOff extends FactEtlBase{
               )
     )
 
+  }
+
+  def addColumn(df:DataFrame,fields:List[(String,Any,DataType)]):DataFrame = {
+    var dataFrame:DataFrame = df
+    fields.foreach(tuple=>{
+      val field =  tuple._1
+      val value = tuple._2
+      val dataType = tuple._3
+      val flag = dataFrame.schema.fieldNames.contains(field)
+      if(!flag){
+        dataFrame = dataFrame.withColumn(field,lit(value).cast(dataType))
+      }
+    })
+    dataFrame
   }
 
 }
