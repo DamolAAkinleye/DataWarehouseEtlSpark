@@ -8,10 +8,9 @@ import cn.whaley.datawarehouse.fact.constant.Constants._
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
-import cn.whaley.datawarehouse.util.{DateFormatUtils, DataFrameUtil, HdfsUtil, Params}
+import cn.whaley.datawarehouse.util.{DataFrameUtil, DateFormatUtils, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-import org.apache.spark.storage.StorageLevel
 
 import scala.reflect.io.File
 
@@ -32,6 +31,11 @@ abstract class FactEtlBase extends BaseClass {
   var addColumns: List[UserDefinedColumn] = _
 
   var dimensionColumns: List[DimensionColumn] = _
+
+  /**
+    * 在最终获取事实表字段时需要用到的维度表名称
+    */
+  var dimensionsNeedInFact: List[String] = _
 
   /**
     * 事实发生的时间，格式yyyy-MM-dd HH:mm:ss
@@ -84,39 +88,45 @@ abstract class FactEtlBase extends BaseClass {
     * @return
     */
   override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
-    println("------- before transform "+Calendar.getInstance().getTime)
+    println("------- before transform " + Calendar.getInstance().getTime)
     val filteredSourceDf = filterRows(sourceDf)
     val completeSourceDf = addNewColumns(filteredSourceDf)
-    println("-------start completeSourceDf.cache()"+Calendar.getInstance().getTime)
+    println("-------start completeSourceDf.cache()" + Calendar.getInstance().getTime)
     completeSourceDf.cache()
-    println("-------end completeSourceDf.cache()"+Calendar.getInstance().getTime)
+    println("-------end completeSourceDf.cache()" + Calendar.getInstance().getTime)
 
-    if(debug) {
+    if (debug) {
       println("完整事实表行数：" + completeSourceDf.count())
-//      completeSourceDf.show()
+      //      completeSourceDf.show()
     }
 
 
     val dimensionJoinDf = parseDimension(completeSourceDf, dimensionColumns, INDEX_NAME, factTime)
-    if(debug) {
+    if (debug) {
       dimensionJoinDf.persist()
       println("维度关联表行数：" + dimensionJoinDf.count())
-//      dimensionJoinDf.show()
+      //      dimensionJoinDf.show()
     }
 
-    println("-------before completeSourceDf join dimensionJoinDf"+Calendar.getInstance().getTime)
-    val df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")
-    println("-------after completeSourceDf join dimensionJoinDf"+Calendar.getInstance().getTime)
-    /*if (dimensionColumns != null) {
-      //关联所有的维度  TODO 判断只关联用到的维度
+    println("-------before completeSourceDf join dimensionJoinDf" + Calendar.getInstance().getTime)
+    //关联源数据和join到的维度
+    var df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")
+    println("-------after completeSourceDf join dimensionJoinDf" + Calendar.getInstance().getTime)
+
+    // 关联用到的维度
+    if (dimensionColumns != null && dimensionsNeedInFact != null) {
       dimensionColumns.foreach(c => {
-        val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
-        df = df.join(dimensionDf.as(c.dimensionName),
-          expr("source." + c.dimensionColumnName + " = " + c.dimensionName + "." + c.dimensionSkName),
-          "leftouter")
+        if (dimensionsNeedInFact.contains(c.dimensionName)) {
+          val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
+          df = df.join(dimensionDf.as(c.dimensionName),
+            expr("source." + c.dimensionColumnName + " = " + c.dimensionName + "." + c.dimensionSkName),
+            "leftouter")
+        }
       })
-    }*/
-    println("-------before 筛选特定列"+Calendar.getInstance().getTime)
+    }
+    println("-------before 筛选特定列" + Calendar.getInstance().getTime)
+
+    //筛选指定的列
     val result = df.selectExpr(
       columnsFromSource.map(
         c => if (c._2.contains(" ") || c._2.contains("."))
