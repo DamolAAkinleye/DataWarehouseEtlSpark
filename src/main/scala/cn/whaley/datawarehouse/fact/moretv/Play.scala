@@ -9,7 +9,6 @@ import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.global.{Constants, Globals, LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
-import org.apache.log4j.LogManager
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
@@ -51,6 +50,7 @@ object Play extends FactEtlBase with  LogConfig{
     println("------- before filterRows "+Calendar.getInstance().getTime)
     /** 用于过滤单个用户播放单个视频量过大的情况 */
     val playNumLimit=5000
+    println("sourceDf.count():"+sourceDf.count())
     sourceDf.registerTempTable("source_log")
     var sqlStr =
       s"""
@@ -70,7 +70,7 @@ object Play extends FactEtlBase with  LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
-    println("------- after filterRows "+Calendar.getInstance().getTime)
+    println("------- after filterRows "+Calendar.getInstance().getTime+"filterRows resultDF.count():"+resultDF.count())
     resultDF
   }
 
@@ -90,6 +90,7 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("filterContentType", udf(FilterCategoryUtils.getFilterCategoryContentType: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategorySecond", udf(FilterCategoryUtils.getFilterCategorySecond: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategoryThird", udf(FilterCategoryUtils.getFilterCategoryThird: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -116,10 +117,13 @@ object Play extends FactEtlBase with  LogConfig{
     SubjectUtils.getSubjectSK(),
 
     /** 获得筛选sk */
+    FilterCategoryUtils.getRetrievalSK(),
 
     /** 获得推荐来源sk */
+    RecommendUtils.getRecommendPositionSK(),
 
     /** 获得搜索来源sk */
+    SearchUtils.getSearchSK(),
 
     /** 获得频道主页来源维度sk（只有少儿，音乐，体育有频道主页来源维度）*/
     PageEntrancePathParseUtils.getPageEntranceSK(),
@@ -210,6 +214,7 @@ object Play extends FactEtlBase with  LogConfig{
     ("third_category", "thirdCategory"),
     ("launcher_area_code", "launcherAreaCode"),
     ("launcher_location_code", "launcherLocationCode"),
+    ("filterContentType", "filterContentType"),
     ("filterCategoryFirst", "filterCategoryFirst"),
     ("filterCategorySecond", "filterCategorySecond"),
     ("filterCategoryThird", "filterCategoryThird"),
@@ -217,7 +222,7 @@ object Play extends FactEtlBase with  LogConfig{
     ("recommendSourceType", "recommendSourceType"),
     ("previousSid", "previousSid"),
     ("previousContentType", "previousContentType"),
-    ("searchFrom", "searchFrom"),
+    ("recommendSlotIndex", "recommendSlotIndex"),
     ("pageEntranceAreaCode", "pageEntranceAreaCode"),
     ("pageEntranceLocationCode", "pageEntranceLocationCode"),
     ("pageEntrancePageCode", "pageEntrancePageCode"),
@@ -227,10 +232,13 @@ object Play extends FactEtlBase with  LogConfig{
     ("path", "path"),
     ("pathSpecial", "pathSpecial"),
     ("pathSub", "pathSub"),
+    ("searchFrom", "searchFrom"),
+    ("resultIndex", "resultIndex"),
+    ("tabName", "tabName"),
+    ("extraPath", "extraPath"),
 
 
-
-//在fact_medusa_play表中展示的字段
+//--------在fact_medusa_play表中展示的字段---------
     ("duration", "duration"),
     ("program_duration", "programDuration"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
@@ -321,7 +329,7 @@ object Play extends FactEtlBase with  LogConfig{
     * @param sourceTimeColumn 源数据时间列获取sql(或者只是个列名)
     * @return 输出包含uniqueKeyName列和所以维度表的代理键列，不包含目标表中的数据，失败返回null
     */
-  override def parseDimension(sourceDf: DataFrame,
+   def parseDimensionDebug(sourceDf: DataFrame,
                      dimensionColumns: List[DimensionColumn],
                      uniqueKeyName: String,
                      sourceTimeColumn: String = null): DataFrame = {

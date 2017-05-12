@@ -80,7 +80,18 @@ object RecommendUtils extends LogConfig {
     result
   }
 
-  /** get recommend_position_sk through recommendSourceType, recommendType, previousContentType and recommendSlotIndex */
+  /** get recommend_position_sk through recommendSourceType, recommendType, previousContentType and recommendSlotIndex
+   推荐维度表，获得sk
+   1.首页推荐
+     事实表中字段                                     维度表字段
+    recommendSlotIndex                    对应     recommend_slot_index
+
+   2.其他推荐
+    事实表中字段                                     维度表字段
+ recommendSourceType                    对应     recommend_position     （guessyoulike，similar，peoplealsolike）
+ previousContentType                    对应     recommend_position_type (comic,hot,mv等)
+ recommendType(推荐类型，日志自带)         对应     recommend_method        (0,1)[可加可不加]
+    */
   def getRecommendPositionSK(): DimensionColumn = {
     new DimensionColumn("dim_medusa_recommend_position",
       List(
@@ -99,15 +110,6 @@ object RecommendUtils extends LogConfig {
       "recommend_position_sk")
   }
 
-  /* 推荐维度表，获得sk
- 事实表中字段                                     维度表字段
- recommendSourceType                    对应     recommend_position     （guessyoulike，similar，peoplealsolike）
- previousContentType                    对应     recommend_position_type (comic,hot,mv等) [可加可不加]
- recommendType(推荐类型，日志自带)         对应     recommend_method        (0,1)
 
-
- 解析首页推荐位置（home*recommendation*14） 对应     recommend_slot_index
-
- */
 
 }
