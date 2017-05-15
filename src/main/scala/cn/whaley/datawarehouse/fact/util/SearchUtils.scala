@@ -76,6 +76,17 @@ object SearchUtils extends LogConfig {
     result
   }
 
+  /** extraPath, mostpeoplelike: 1, null: 0 */
+  def isSearchFromHotWord(extraPath: String): Int = {
+    var result: Int = 0
+    if (extraPath != null) {
+      if (extraPath == "mostpeoplelike") {
+        result = 1
+      }
+    }
+    result
+  }
+
  /** 搜索维度表，获得sk
   事实表中字段                              维度表中字段
   searchFrom  (udf解析出字段)        对应   search_from
