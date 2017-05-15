@@ -93,18 +93,16 @@ abstract class FactEtlBase extends BaseClass {
     completeSourceDf.cache()
     println("-------end completeSourceDf.cache()" + Calendar.getInstance().getTime)
 
-    if (debug) {
-      println("完整事实表行数：" + completeSourceDf.count())
-      //      completeSourceDf.show()
-    }
+//    if (debug) {
+//      println("完整事实表行数：" + completeSourceDf.count())
+//    }
 
 
     val dimensionJoinDf = parseDimension(completeSourceDf, dimensionColumns, INDEX_NAME, factTime)
-    if (debug) {
-      dimensionJoinDf.persist()
-      println("维度关联表行数：" + dimensionJoinDf.count())
-      //      dimensionJoinDf.show()
-    }
+//    if (debug) {
+//      dimensionJoinDf.persist()
+//      println("维度关联表行数：" + dimensionJoinDf.count())
+//    }
 
     println("-------before completeSourceDf join dimensionJoinDf" + Calendar.getInstance().getTime)
     //关联源数据和join到的维度
@@ -117,7 +115,7 @@ abstract class FactEtlBase extends BaseClass {
         if (dimensionsNeedInFact.contains(c.dimensionName)) {
           val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
           df = df.join(dimensionDf.as(c.dimensionName),
-            expr("source." + c.dimensionColumnName + " = " + c.dimensionName + "." + c.dimensionSkName),
+            expr("source." + c.factSkColumnName + " = " + c.dimensionName + "." + c.dimensionSkName),
             "leftouter")
         }
       })
@@ -131,14 +129,14 @@ abstract class FactEtlBase extends BaseClass {
           c._2 + " as " + c._1
         else
           "source." + c._2 + " as " + c._1)
-        ++ dimensionJoinDf.schema.fields.filter(_.name != INDEX_NAME).map("source." + _.name)
+        ++ dimensionJoinDf.schema.fields.filter(_.name != INDEX_NAME || debug).map("source." + _.name)
         : _*
     )
     println("-------after 筛选特定列"+Calendar.getInstance().getTime)
 
-    if(debug) {
-      println("最终结果行数：" + result.count())
-    }
+//    if(debug) {
+//      println("最终结果行数：" + result.count())
+//    }
     println("------- last line in transform "+Calendar.getInstance().getTime)
     result
   }

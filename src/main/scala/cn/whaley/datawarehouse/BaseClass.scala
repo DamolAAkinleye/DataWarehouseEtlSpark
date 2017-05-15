@@ -178,18 +178,13 @@ trait BaseClass {
                 expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
                   s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
               "inner"
-            ).selectExpr("a." + uniqueKeyName, "b." + c.dimensionSkName).dropDuplicates(List(uniqueKeyName))
+            ).selectExpr("a." + uniqueKeyName :: c.dimensionColumnName.map("b." + _._1) :_*
+            ).dropDuplicates(List(uniqueKeyName))
           } else {
             //源数据中未关联上的行
             val notJoinDf = sourceFilterDf.as("a").join(
               df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
-            ).where("dim."+c.dimensionSkName + " is null").selectExpr("a.*")
-            if(debug) {
-              println("dimensionName " + c.dimensionName)
-              println("sourceFilterDf " + sourceFilterDf.count())
-              println("df " + df.count())
-              println("notJoinDf " + notJoinDf.count())
-            }
+            ).where(c.dimensionColumnName.map("dim."+ _._1 + " is null").mkString(" and ")).selectExpr("a.*")
 
             df = notJoinDf.as("a").join(
               dimensionDf.as("b"),
@@ -199,13 +194,16 @@ trait BaseClass {
                   s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
               "inner"
             ).selectExpr(
-              "a." + uniqueKeyName, "b." + c.dimensionSkName
+              "a." + uniqueKeyName :: c.dimensionColumnName.map("b." + _._1) :_*
             ).dropDuplicates(List(uniqueKeyName)
             ).unionAll(df)
           }
         })
-        df = sourceDf.as("a").join(df.as("b"), sourceDf(uniqueKeyName) === df(uniqueKeyName), "leftouter").selectExpr(
-          "a." + uniqueKeyName, "b." + c.dimensionSkName + " as " + c.dimensionColumnName)
+        df = sourceDf.as("a").join(
+          df.as("b"), sourceDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
+        ).selectExpr(
+          "a." + uniqueKeyName :: c.dimensionColumnName.map(c => "b." + c._1 + " as " + c._2) :_*
+        )
         //多个维度合成一个DataFrame
         if (dimensionColumnDf == null) {
           dimensionColumnDf = df
