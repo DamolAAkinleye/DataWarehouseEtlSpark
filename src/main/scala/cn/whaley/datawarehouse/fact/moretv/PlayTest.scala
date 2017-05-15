@@ -75,7 +75,7 @@ object PlayTest extends FactEtlBase with  LogConfig{
     ("recommendSlotIndex", "recommendSlotIndex"),
     ("recommendType", "recommendType"),
     ("recommendLogType", "recommendLogType"),
-    ("path_main", "pathMain"),
+    ("pathMain", "pathMain"),
     ("path", "path"),
     ("pathSpecial", "pathSpecial"),
     ("pathSub", "pathSub")
