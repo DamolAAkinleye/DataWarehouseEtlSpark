@@ -9,7 +9,7 @@ import org.apache.spark.sql.DataFrame
 /**
   * Created by 郭浩 on 17/4/17.
   *
-  * 微鲸会员账号订单
+  * 微鲸会员订单发货表
   */
 object MemberShipOrderDelivered extends DimensionBase {
   columns.skName = "membership_order_delivered_sk"
