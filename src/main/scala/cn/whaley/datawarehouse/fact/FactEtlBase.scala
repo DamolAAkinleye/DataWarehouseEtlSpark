@@ -159,9 +159,7 @@ abstract class FactEtlBase extends BaseClass {
     var result = sourceDf
     if (addColumns != null) {
       addColumns.foreach(column =>{
-        println("-------start add column: "+column.name+","+Calendar.getInstance().getTime)
         result = result.withColumn(column.name, column.udf(column.inputColumns.map(col): _*))
-        println("-------end add column: "+","+column.name+Calendar.getInstance().getTime)
       }
       )
     }
