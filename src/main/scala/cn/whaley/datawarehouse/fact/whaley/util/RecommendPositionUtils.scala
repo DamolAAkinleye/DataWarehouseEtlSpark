@@ -1,0 +1,32 @@
+package cn.whaley.datawarehouse.fact.whaley.util
+
+/**
+  * Created by huanghu 2017/5/16.
+  * 收集所有关于推荐位的信息工具类到此类中
+  */
+object RecommendPositionUtils {
+
+  def getRecommendPosition(path: String,subPath:String) = {
+    var position = ""
+    if(subPath == "" || subPath == null){
+      if(path == "home-movie-movie")       position = "guessyoulike"
+    }else if(subPath == "guessyoulike")   position = "peoplealsolike"
+    else position = subPath
+
+    position
+
+  }
+
+  def getRecommendIndex(locationIndex:String,subPath:String) = {
+
+    if(locationIndex == ""|| locationIndex == null) -1
+    else if(subPath == "similar" && locationIndex.toInt > 72)  -2
+    else if(subPath == "peoplealsolike" && locationIndex.toInt > 5)  -2
+    else if(subPath == "guessyoulike" && locationIndex.toInt > 100)  -2
+    else  locationIndex.toInt
+
+  }
+
+}
+
+
