@@ -4,7 +4,7 @@ package cn.whaley.datawarehouse.fact.whaley.util
  * Created by zhangyu on 17/5/16.
  * 解析微鲸播放日志首页入口维度的几个指标
  */
-object EntranceTypeUtils{
+object LauncherEntranceUtils{
 
   /**
    * 获取首页WUI版本
