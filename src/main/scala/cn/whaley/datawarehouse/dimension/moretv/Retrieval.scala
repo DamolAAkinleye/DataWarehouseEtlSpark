@@ -17,15 +17,14 @@ object Retrieval extends DimensionBase {
 
   columns.skName = "retrieval_sk"
 
-  columns.primaryKeys = List("sort_type",
-    "filter_category_first",
-    "filter_category_second",
-    "filter_category_third",
+  columns.primaryKeys = List(
+    "retrieval_key",
     "content_type")
 
   columns.trackingColumns = List()
 
   columns.allColumns = List(
+    "retrieval_key",
     "sort_type",
     "filter_category_first",
     "filter_category_second",
@@ -72,6 +71,8 @@ object Retrieval extends DimensionBase {
       }
     })
 
-    result
+    result.withColumn("retrieval_key",
+      expr("concat(sort_type, '-', filter_category_first, '-', filter_category_second, '-', filter_category_third)"))
+
   }
 }

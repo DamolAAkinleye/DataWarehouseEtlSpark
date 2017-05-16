@@ -47,9 +47,9 @@ object Search extends DimensionBase {
       StructType(Array(StructField("search_from_hot_word", IntegerType)))
     ).withColumn("fake_id", lit(1))
 
-    //搜索结果索引列，其中0表示未知或者超过100
+    //搜索结果索引列，其中-1表示未知,-2表示超过100
     val searchResultIndexDf = sqlContext.createDataFrame(
-      (0 to 100).map(s => Row.fromSeq(List(s))),
+      (-2 to 100).map(s => Row.fromSeq(List(s))),
       StructType(Array(StructField("search_result_index", IntegerType)))
     ).withColumn("fake_id", lit(1))
 

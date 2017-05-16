@@ -20,7 +20,8 @@ object PageEntrance extends DimensionBase {
     "area_code",
     "area_name",
     "location_code",
-    "location_name")
+    "location_name",
+    "location_index")
 
   readSourceType = jdbc
 

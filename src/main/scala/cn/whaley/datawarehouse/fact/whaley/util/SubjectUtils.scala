@@ -7,7 +7,7 @@ package cn.whaley.datawarehouse.fact.whaley.util
   */
 object SubjectUtils {
   //专题code解析
-  def getSubjectCode(path:String)={
+  def getSubjectCode(path:String): String ={
     val reg = "-([a-zA-Z]+)([0-9]+)$".r
     if(path != null && path != ""){
       val format = reg findFirstMatchIn path
