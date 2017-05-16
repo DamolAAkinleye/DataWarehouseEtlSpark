@@ -1,6 +1,6 @@
 package cn.whaley.datawarehouse.fact.moretv
 
-import cn.whaley.datawarehouse.common.UserDefinedColumn
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.{FactEtlBase, util}
 import cn.whaley.datawarehouse.fact.util._
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
@@ -33,7 +33,7 @@ object PlayTemp extends FactEtlBase with  LogConfig{
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
-      mergerDataFrame
+      mergerDataFrame.repartition(2000)
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
     }
@@ -43,36 +43,130 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     * step 2, generate new columns
     * */
   addColumns = List(
+//    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
+//    UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("datetime")),
+//    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime")),
+//    UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
+//    UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version")),
     UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
-    UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
-    UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-    UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
-    UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
-    UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
-    UserDefinedColumn("recommendSlotIndex", udf(RecommendUtils.getRecommendSlotIndex: (String) => String), List("pathMain"))
+    UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial"))
+//    UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("filterContentType", udf(FilterCategoryUtils.getFilterCategoryContentType: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("filterCategorySecond", udf(FilterCategoryUtils.getFilterCategorySecond: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("filterCategoryThird", udf(FilterCategoryUtils.getFilterCategoryThird: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag"))
+//    UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
+//    UserDefinedColumn("recommendLogType", udf(RecommendUtils.getRecommendLogType: (String,String,String) => String), List("pathSub", "path", "flag")),
+//    UserDefinedColumn("previousSid", udf(RecommendUtils.getPreviousSid: (String) => String), List("pathSub")),
+//    UserDefinedColumn("previousContentType", udf(RecommendUtils.getPreviousContentType: (String) => String), List("pathSub")),
+//    UserDefinedColumn("recommendSlotIndex", udf(RecommendUtils.getRecommendSlotIndex: (String) => String), List("pathMain")),
+//    UserDefinedColumn("searchFrom", udf(SearchUtils.getSearchFrom: (String,String,String) => String),List("pathMain", "path", "flag")),
+//    UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag")),
+//    UserDefinedColumn("searchFromHotWord", udf(SearchUtils.isSearchFromHotWord: String => Int),List("extraPath"))
+//    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag"))
   )
 
   /**
     * step 3, left join dimension table,get new column
     * */
   dimensionColumns = List(
-    /** 获得列表页sk source_site_sk*/
-    ListCategoryUtils.getSourceSiteSK(),
+    /** 获得列表页sk source_site_sk */
+//    ListCategoryUtils.getSourceSiteSK(),
+
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSK(),
+    SubjectUtils.getSubjectSK()
+
+    /** 获得筛选sk */
+//    FilterCategoryUtils.getRetrievalSK(),
+
+    /** 获得推荐来源sk */
+//    RecommendUtils.getRecommendPositionSK(),
+
+    /** 获得搜索来源sk */
+//    SearchUtils.getSearchSK(),
+
+    /** 获得频道主页来源维度sk（只有少儿，音乐，体育有频道主页来源维度）*/
+//    PageEntrancePathParseUtils.getPageEntranceSK(),
+
     /** 获得首页入口 launcher_entrance_sk */
-    EntranceTypeUtils.getLauncherEntranceSK(),
-    /** 获得频道主页来源 page_entrance_sk */
-    PageEntrancePathParseUtils.getPageEntranceSK(),
-    /** 获得推荐来源 recommend_position_sk */
-    RecommendUtils.getRecommendPositionSK()
+//    EntranceTypeUtils.getLauncherEntranceSK(),
+
+    /** 获得用户ip对应的地域维度user_web_location_sk */
+
+    /** 获得音乐榜单维度mv_hot_sk */
+//    new DimensionColumn("dim_medusa_mv_hot_list",
+//      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_rank_id"))),
+//      "mv_hot_sk"),
+
+    /** 获得访问ip对应的地域维度user_web_location_sk */
+//    new DimensionColumn("dim_web_location",
+//      List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))),
+//      "web_location_sk","user_web_location_sk"),
+
+    /** 获得用户维度user_sk */
+//    new DimensionColumn("dim_medusa_terminal_user",
+//      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
+//      "user_sk"),
+
+    /** 获得设备型号维度product_model_sk */
+//    new DimensionColumn("dim_medusa_product_model",
+//      List(DimensionJoinCondition(Map("productModel" -> "product_model"))),
+//      "product_model_sk"),
+
+    /** 获得推广渠道维度promotion_sk */
+//    new DimensionColumn("dim_medusa_promotion",
+//      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
+//      "promotion_sk"),
+
+    /** 获得用户登录维度user_login_sk */
+//    new DimensionColumn("dim_medusa_terminal_user_login",
+//      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
+//      "user_login_sk"),
+
+    /** 获得app版本维度app_version_sk */
+//    new DimensionColumn("dim_app_version",
+//      List(DimensionJoinCondition(
+//        Map("app_series" -> "app_series", "app_version" -> "version"))
+//      ),
+//      "app_version_sk"),
+
+    /** 获得节目维度program_sk */
+//    new DimensionColumn("dim_medusa_program",
+//      List(DimensionJoinCondition(Map("videoSid" -> "sid"))),
+//      "program_sk"),
+
+    /** 获得剧集节目维度episode_program_sk ,uncomment after handle ambiguous question by lituo*/
+    /* new DimensionColumn("dim_medusa_program",
+       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
+       "program_sk","episode_program_sk"),*/
+
+    /** 获得账号维度account_sk*/
+//    new DimensionColumn("dim_medusa_account",
+//      List(DimensionJoinCondition(Map("accountId" -> "account_id"))),
+//      "account_sk"),
+
+    /** 获得音乐精选集维度mv_topic_sk*/
+//    new DimensionColumn("dim_medusa_mv_topic",
+//      List(DimensionJoinCondition(Map("omnibusSid" -> "mv_topic_sid"))),
+//      "mv_topic_sk"),
+
+    /** 获得歌手维度singer_sk*/
+//    new DimensionColumn("dim_medusa_singer",
+//      List(DimensionJoinCondition(Map("singerSid" -> "singer_id"))),
+//      "singer_sk"),
+
+    /** 获得电台维度mv_radio_sk*/
+//    new DimensionColumn("dim_medusa_mv_radio",
+//      List(DimensionJoinCondition(Map("station" -> "mv_radio_title"))),
+//      "mv_radio_sk")
+
   )
 
 
@@ -80,25 +174,38 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     * step 4,保留哪些列，以及别名声明
     * */
   columnsFromSource = List(
-    ("subject_name", "subjectName"),
-    ("subject_code", "subjectCode"),
-    ("main_category", "mainCategory"),
-    ("second_category", "secondCategory"),
-    ("third_category", "thirdCategory"),
-    ("launcher_area_code", "launcherAreaCode"),
-    ("launcher_location_code", "launcherLocationCode"),
-    ("account_id", "accountId"),
-    ("user_id", "userId"),
-    ("path_main", "pathMain"),
+    ("subjectName", "subjectName"),
+    ("subjectCode", "subjectCode"),
+//    ("mainCategory", "mainCategory"),
+//    ("secondCategory", "secondCategory"),
+//    ("thirdCategory", "thirdCategory"),
+//    ("launcherAreaCode", "launcherAreaCode"),
+//    ("launcherLocationCode", "launcherLocationCode"),
+//    ("filterContentType", "filterContentType"),
+//    ("filterCategoryFirst", "filterCategoryFirst"),
+//    ("filterCategorySecond", "filterCategorySecond"),
+//    ("filterCategoryThird", "filterCategoryThird"),
+//    ("filterCategoryFourth", "filterCategoryFourth"),
+//    ("recommendSourceType", "recommendSourceType"),
+//    ("previousSid", "previousSid"),
+//    ("previousContentType", "previousContentType"),
+//    ("recommendSlotIndex", "recommendSlotIndex"),
+//    ("recommendType", "recommendType"),
+//    ("recommendLogType", "recommendLogType"),
+//    ("pageEntranceAreaCode", "pageEntranceAreaCode"),
+//    ("pageEntranceLocationCode", "pageEntranceLocationCode"),
+//    ("pageEntrancePageCode", "pageEntrancePageCode"),
+//    ("ipKey", "ipKey"),
+//    ("account_id", "accountId"),
+    ("pathMain", "pathMain"),
     ("path", "path"),
     ("pathSpecial", "pathSpecial"),
-    ("area_code", "pageEntranceAreaCode"),
-    ("location_code", "pageEntranceLocationCode"),
-    ("page_code", "pageEntrancePageCode"),
-    ("recommend_position", "recommendSourceType"),
-    ("recommend_position_type", "previousContentType"),
-    ("recommend_slot_index", "recommendSlotIndex"),
-    ("recommend_method", "recommendType")
+    ("pathSub", "pathSub")
+//    ("searchFrom", "searchFrom"),
+//    ("resultIndex", "resultIndex"),
+//    ("tabName", "tabName"),
+//    ("searchFromHotWord", "searchFromHotWord"),
+//    ("searchKeyword", "searchKeyword")
   )
 
   factTime = null

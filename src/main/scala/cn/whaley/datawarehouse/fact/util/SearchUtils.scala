@@ -98,7 +98,7 @@ object SearchUtils extends LogConfig {
    new DimensionColumn("dim_medusa_search",
      List(
        DimensionJoinCondition(
-         Map("searchFrom" -> "search_from","resultIndex" -> "search_result_index","tabName" -> "search_tab","extraPath" -> "search_from_hot_word"),
+         Map("searchFrom" -> "search_from","resultIndex" -> "search_result_index","tabName" -> "search_tab","searchFromHotWord" -> "search_from_hot_word"),
          null, null, null
        )
      ),

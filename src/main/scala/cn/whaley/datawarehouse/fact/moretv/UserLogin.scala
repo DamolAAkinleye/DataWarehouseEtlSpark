@@ -18,7 +18,7 @@ object UserLogin extends FactEtlBase {
 
   topicName = "fact_medusa_user_login"
 
-  parquetPath = LogPath.LOGIN_LOG_PATH
+  parquetPath = LogPath.MEDUSA_LOGIN_LOG_PATH
 
   addColumns = List(
     UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("ip")),

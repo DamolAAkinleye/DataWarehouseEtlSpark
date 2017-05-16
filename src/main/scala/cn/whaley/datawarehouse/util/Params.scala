@@ -6,7 +6,7 @@ import scala.collection.mutable
   * Created by baozhiwang on 2017/3/6.
   */
 
-case class Params(
+case class  Params(
                    isOnline: Boolean = false, //参数决定维度数据是否上线
                    startDate: String = null,
                    endDate: String = null,

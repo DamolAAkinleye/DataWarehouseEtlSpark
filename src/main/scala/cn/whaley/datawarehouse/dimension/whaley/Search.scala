@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimension.moretv
+package cn.whaley.datawarehouse.dimension.whaley
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType._
@@ -16,7 +16,7 @@ import scala.collection.JavaConversions._
   */
 object Search extends DimensionBase {
 
-  dimensionName = "dim_medusa_search"
+  dimensionName = "dim_whaley_search"
 
   columns.skName = "search_sk"
 
@@ -33,7 +33,7 @@ object Search extends DimensionBase {
 
   readSourceType = jdbc
 
-  sourceDb = MysqlDB.dwDimensionDb("moretv_search")
+  sourceDb = MysqlDB.dwDimensionDb("whaley_search")
 
 
   override def filterSource(sourceDf: DataFrame): DataFrame = {
@@ -47,7 +47,7 @@ object Search extends DimensionBase {
       StructType(Array(StructField("search_from_hot_word", IntegerType)))
     ).withColumn("fake_id", lit(1))
 
-    //搜索结果索引列，其中-1表示未知,-2表示超过100
+    //搜索结果索引列，其中0表示未知或者超过100
     val searchResultIndexDf = sqlContext.createDataFrame(
       (-2 to 100).map(s => Row.fromSeq(List(s))),
       StructType(Array(StructField("search_result_index", IntegerType)))

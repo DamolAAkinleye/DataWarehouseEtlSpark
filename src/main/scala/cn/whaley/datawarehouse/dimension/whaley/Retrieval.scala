@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.dimension.moretv
+package cn.whaley.datawarehouse.dimension.whaley
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType._
@@ -8,12 +8,12 @@ import org.apache.spark.sql.functions._
 
 
 /**
-  * Created by Tony
+  * Created by huanghu
   * 筛选维度表
   */
 object Retrieval extends DimensionBase {
 
-  dimensionName = "dim_medusa_retrieval"
+  dimensionName = "dim_whaley_retrieval"
 
   columns.skName = "retrieval_sk"
 
@@ -34,7 +34,7 @@ object Retrieval extends DimensionBase {
 
   readSourceType = jdbc
 
-  sourceDb = MysqlDB.dwDimensionDb("moretv_retrieval")
+  sourceDb = MysqlDB.dwDimensionDb("whaley_retrieval")
 
 
   override def filterSource(sourceDf: DataFrame): DataFrame = {
@@ -73,6 +73,5 @@ object Retrieval extends DimensionBase {
 
     result.withColumn("retrieval_key",
       expr("concat(sort_type, '-', filter_category_first, '-', filter_category_second, '-', filter_category_third)"))
-
   }
 }
