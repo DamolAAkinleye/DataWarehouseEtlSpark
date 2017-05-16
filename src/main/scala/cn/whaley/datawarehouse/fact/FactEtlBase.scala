@@ -167,13 +167,13 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
-    HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+   /* HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
     if (partition == 0) {
       df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
     }else{
       df.repartition(partition).write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
-    }
-    //backup(params, df, topicName)
+    }*/
+    backup(params, df, topicName)
   }
 
   /**
@@ -195,8 +195,6 @@ abstract class FactEtlBase extends BaseClass {
     println("线上数据备份目录:" + onLineFactBackupDir)
     println("线上数据临时目录:" + onLineFactDirTmp)
     println("线上数据等待删除目录:" + onLineFactDirDelete)
-
-    //df.persist(StorageLevel.MEMORY_AND_DISK)
 
     val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
     if (isOnlineFileExist) {
@@ -228,7 +226,6 @@ abstract class FactEtlBase extends BaseClass {
     }else{
       df.repartition(partition).write.parquet(onLineFactDirTmp)
     }
-
 
     println("数据是否上线:" + p.isOnline)
     if (p.isOnline) {

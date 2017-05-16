@@ -19,6 +19,8 @@ import org.apache.spark.sql.functions._
 object Play extends FactEtlBase with  LogConfig{
   /** log type name */
   topicName = "fact_medusa_play"
+  partition = 2000
+
 
   /**
     * step 1, get data source
@@ -36,7 +38,7 @@ object Play extends FactEtlBase with  LogConfig{
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
-      mergerDataFrame.repartition(2000)
+      mergerDataFrame
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
     }
@@ -101,6 +103,7 @@ object Play extends FactEtlBase with  LogConfig{
     UserDefinedColumn("recommendSlotIndex", udf(RecommendUtils.getRecommendSlotIndex: (String) => String), List("pathMain")),
     UserDefinedColumn("searchFrom", udf(SearchUtils.getSearchFrom: (String,String,String) => String),List("pathMain", "path", "flag")),
     UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag")),
+    UserDefinedColumn("searchFromHotWord", udf(SearchUtils.isSearchFromHotWord: String => Int),List("extraPath")),
     UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag"))
@@ -175,10 +178,10 @@ object Play extends FactEtlBase with  LogConfig{
       List(DimensionJoinCondition(Map("videoSid" -> "sid"))),
       "program_sk"),
 
-    /** 获得剧集节目维度episode_program_sk ,uncomment after handle ambiguous question by lituo*/
-   /* new DimensionColumn("dim_medusa_program",
+    /** 获得剧集节目维度episode_program_sk*/
+    new DimensionColumn("dim_medusa_program",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
-      "program_sk","episode_program_sk"),*/
+      "program_sk","episode_program_sk"),
 
     /** 获得账号维度account_sk*/
     new DimensionColumn("dim_medusa_account",

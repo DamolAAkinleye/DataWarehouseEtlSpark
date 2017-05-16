@@ -5,6 +5,7 @@ import java.util.Calendar
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
+import cn.whaley.datawarehouse.fact.moretv.Play._
 import cn.whaley.datawarehouse.fact.util._
 import cn.whaley.datawarehouse.global.{Constants, Globals, LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
@@ -19,7 +20,7 @@ import org.apache.spark.sql.functions._
 object PlayTest extends FactEtlBase with  LogConfig{
   /** log type name */
   topicName = "fact_medusa_play"
-
+  partition = 500
   /**
     * step 1, get data source
     * */
@@ -36,7 +37,7 @@ object PlayTest extends FactEtlBase with  LogConfig{
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
-      mergerDataFrame.randomSplit(Array(0.2,0.8)).head.repartition(2000)
+      mergerDataFrame.randomSplit(Array(0.2,0.8)).head
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
     }
