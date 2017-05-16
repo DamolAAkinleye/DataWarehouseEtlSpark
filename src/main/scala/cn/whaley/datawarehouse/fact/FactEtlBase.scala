@@ -35,6 +35,8 @@ abstract class FactEtlBase extends BaseClass {
     */
   var dimensionsNeedInFact: List[String] = _
 
+  var partition: Int = 0
+
   /**
     * 事实发生的时间，格式yyyy-MM-dd HH:mm:ss
     */
@@ -57,7 +59,11 @@ abstract class FactEtlBase extends BaseClass {
     params.paramMap.get("date") match {
       case Some(d) => {
         println("数据时间：" + d)
-        readSource(d.toString)
+        if (partition == 0) {
+          readSource(d.toString)
+        }else{
+          readSource(d.toString).repartition(partition)
+        }
       }
       case None =>
         throw new RuntimeException("未设置时间参数！")
@@ -164,9 +170,13 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
-    HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
-    df.repartition(2000).write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
-    //backup(params, df, topicName)
+   /* HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+    if (partition == 0) {
+      df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+    }else{
+      df.repartition(partition).write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+    }*/
+    backup(params, df, topicName)
   }
 
   /**
@@ -188,8 +198,6 @@ abstract class FactEtlBase extends BaseClass {
     println("线上数据备份目录:" + onLineFactBackupDir)
     println("线上数据临时目录:" + onLineFactDirTmp)
     println("线上数据等待删除目录:" + onLineFactDirDelete)
-
-    //df.persist(StorageLevel.MEMORY_AND_DISK)
 
     val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
     if (isOnlineFileExist) {
@@ -216,7 +224,11 @@ abstract class FactEtlBase extends BaseClass {
       HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
     }
     println("生成线上维度数据到临时目录:" + onLineFactDirTmp)
-    df.repartition(2000).write.parquet(onLineFactDirTmp)
+    if (partition == 0) {
+      df.write.parquet(onLineFactDirTmp)
+    }else{
+      df.repartition(partition).write.parquet(onLineFactDirTmp)
+    }
 
     println("数据是否上线:" + p.isOnline)
     if (p.isOnline) {
