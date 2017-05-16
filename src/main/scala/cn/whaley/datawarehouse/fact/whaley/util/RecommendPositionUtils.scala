@@ -2,19 +2,17 @@ package cn.whaley.datawarehouse.fact.whaley.util
 
 /**
   * Created by huanghu 2017/5/16.
-  * 收集所有关于推荐位的信息工具类到此类中
+  * 收集所有关于推荐位的信息工具类到此类中(不包含首页推荐的信息）
   */
 object RecommendPositionUtils {
 
-  def getRecommendPosition(path: String,subPath:String) = {
-    var position = ""
+  def getRecommendPosition(path: String,subPath:String):String = {
+
     if(subPath == "" || subPath == null){
-      if(path == "home-movie-movie")       position = "guessyoulike"
-    }else if(subPath == "guessyoulike")   position = "peoplealsolike"
-    else position = subPath
-
-    position
-
+      if(path == "home-movie-movie")        "guessyoulike"
+      else  null
+    }else  if(subPath == "guessyoulike")    "peoplealsolike"
+    else  subPath
   }
 
   def getRecommendIndex(locationIndex:String,subPath:String) = {
