@@ -3,7 +3,7 @@ package cn.whaley.datawarehouse.fact.whaley
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
-import cn.whaley.datawarehouse.fact.whaley.util.{EntranceTypeUtils, SubjectUtils}
+import cn.whaley.datawarehouse.fact.whaley.util.{LauncherEntranceUtils, SubjectUtils}
 import org.apache.spark.sql.functions.udf
 
 /**
@@ -19,13 +19,13 @@ object Play extends FactEtlBase {
 
   addColumns = List(
     UserDefinedColumn("subject_code", udf(SubjectUtils.getSubjectCode: String => String), List("path")),
-    UserDefinedColumn("wui_version", udf(EntranceTypeUtils.wuiVersionFromPlay: (String, String) => String),
+    UserDefinedColumn("wui_version", udf(LauncherEntranceUtils.wuiVersionFromPlay: (String, String) => String),
       List("romVersion", "firmwareVersion")),
     UserDefinedColumn("launcher_access_location",
-      udf(EntranceTypeUtils.launcherAccessLocationFromPath: (String, String) => String),
+      udf(LauncherEntranceUtils.launcherAccessLocationFromPath: (String, String) => String),
       List("path", "linkValue")),
     UserDefinedColumn("launcher_location_index",
-      udf(EntranceTypeUtils.launcherLocationIndexFromPlay: String => Int),
+      udf(LauncherEntranceUtils.launcherLocationIndexFromPlay: String => Int),
       List("recommendLocation"))
 
   )
