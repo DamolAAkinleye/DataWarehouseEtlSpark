@@ -14,7 +14,7 @@ import org.apache.spark.sql.functions._
   */
 object UserLogin extends FactEtlBase {
 
-  debug = true
+//  debug = true
 
   topicName = "fact_medusa_user_login"
 
