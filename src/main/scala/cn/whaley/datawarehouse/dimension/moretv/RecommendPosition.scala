@@ -52,7 +52,7 @@ object RecommendPosition extends DimensionBase {
 
     newSourceDf.explode("max_index", "recommend_slot_index") {
       maxIndex: Int => {
-        (0 to maxIndex).toList
+        (-1 to maxIndex).toList
       }
     }.withColumn(
       "recommend_method", getRecommendMethodUdf(col("ai_index"), col("recommend_slot_index"))

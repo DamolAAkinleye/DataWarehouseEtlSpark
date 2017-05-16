@@ -93,8 +93,11 @@ abstract class FactEtlBase extends BaseClass {
     completeSourceDf.cache()
     println("-------end completeSourceDf.cache()" + Calendar.getInstance().getTime)
 
+    println("完整事实表行数：" + completeSourceDf.count())
 //    if (debug) {
 //      println("完整事实表行数：" + completeSourceDf.count())
+//      HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
+//      completeSourceDf.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
 //    }
 
 
@@ -147,7 +150,7 @@ abstract class FactEtlBase extends BaseClass {
 
   private def addNewColumns(sourceDf: DataFrame): DataFrame = {
     println("-------before addNewColumns "+Calendar.getInstance().getTime)
-    var result = DataFrameUtil.dfZipWithIndex(sourceDf, INDEX_NAME)
+    var result = sourceDf
     if (addColumns != null) {
       addColumns.foreach(column =>{
         println("-------start add column: "+column.name+","+Calendar.getInstance().getTime)
@@ -157,7 +160,7 @@ abstract class FactEtlBase extends BaseClass {
       )
     }
     println("-------after addNewColumns "+Calendar.getInstance().getTime)
-    result
+    DataFrameUtil.dfZipWithIndex(result, INDEX_NAME)
   }
 
   override def load(params: Params, df: DataFrame): Unit = {

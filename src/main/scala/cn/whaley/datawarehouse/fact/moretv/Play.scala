@@ -176,9 +176,9 @@ object Play extends FactEtlBase with  LogConfig{
       "program_sk"),
 
     /** 获得剧集节目维度episode_program_sk ,uncomment after handle ambiguous question by lituo*/
-   /* new DimensionColumn("dim_medusa_program",
+    new DimensionColumn("dim_medusa_program",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
-      "program_sk","episode_program_sk"),*/
+      "program_sk","episode_program_sk"),
 
     /** 获得账号维度account_sk*/
     new DimensionColumn("dim_medusa_account",
