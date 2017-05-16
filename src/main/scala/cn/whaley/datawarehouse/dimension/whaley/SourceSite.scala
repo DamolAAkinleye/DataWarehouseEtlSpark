@@ -24,7 +24,8 @@ object SourceSite extends DimensionBase {
     "third_category_code",
     "fourth_category",
     "fourth_category_code",
-    "template_code")
+    "first_code",
+    "second_code")
 
   readSourceType = jdbc
 
@@ -38,7 +39,7 @@ object SourceSite extends DimensionBase {
     val whaleySourceSite = MysqlDB.dwDimensionDb("whaley_source_site")
     val df1 = sqlContext.read.format("jdbc").options(whaleySourceSite).load()
 
-    sourceDf.filter("status = 1").filter("id <> 1").registerTempTable("mtv_program_site")
+    sourceDf.filter("status = 1").filter("trim(name) != '站点树' ").registerTempTable("mtv_program_site")
 
     //cms 表中获取
     //最大包含四级目录，从包含4级目录的站点树开始
@@ -46,8 +47,9 @@ object SourceSite extends DimensionBase {
       "d.name AS main_category, d.code AS main_category_code, " +
       "c.name AS second_category, c.code AS second_category_code, " +
       "b.name AS third_category, b.code AS third_category_code," +
-      "a.name AS fourth_category, a.code AS fourth_category_code, " +
-      "a.templateCode AS template_code  " +
+      "a.name AS fourth_category, case when trim(a.templateCode)!= '' then concat_ws('_',a.code,a.templateCode) else a.code end fourth_category_code, " +
+      " b.code AS first_code , " +
+      "case when (trim(a.templateCode)!= '' and a.contentType='sports') then concat_ws('_',a.code,a.templateCode) else a.code end second_code  " +
       " FROM mtv_program_site AS a " +
       " INNER JOIN mtv_program_site AS b ON ( a.parentId = b.id)" +
       " INNER JOIN mtv_program_site AS c ON ( b.parentId = c.id)" +
@@ -59,7 +61,8 @@ object SourceSite extends DimensionBase {
       "b.name AS second_category, b.code AS second_category_code, " +
       "a.name AS third_category, a.code AS third_category_code," +
       "null AS fourth_category, null AS fourth_category_code ," +
-      " '' AS template_code  " +
+      " b.code AS first_code , " +
+      " a.code AS second_code  " +
       " FROM mtv_program_site AS a " +
       " INNER JOIN mtv_program_site AS b ON ( a.parentId = b.id )" +
       " INNER JOIN mtv_program_site AS c ON ( b.parentId = c.id and c.status = 1)" +
@@ -70,7 +73,8 @@ object SourceSite extends DimensionBase {
       "a.name AS second_category, a.code AS second_category_code, " +
       "null AS third_category, null AS third_category_code, " +
       "null AS fourth_category, null AS fourth_category_code, " +
-      " '' AS template_code  " +
+      " a.contentType AS first_code , " +
+      " a.code AS second_code  " +
       " FROM mtv_program_site AS a " +
       " INNER JOIN mtv_program_site AS b ON ( a.parentId = b.id and b.status = 1)" +
       " WHERE b.parentId IN (0,1)")
