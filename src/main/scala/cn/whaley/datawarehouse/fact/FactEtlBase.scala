@@ -185,8 +185,7 @@ abstract class FactEtlBase extends BaseClass {
     * @return a Unit.
     */
   private def backup(p: Params, df: DataFrame, topicName: String): Unit = {
-    val cal = Calendar.getInstance
-    val date = DateFormatUtils.readFormat.format(cal.getTime)
+    val date = p.paramMap("date")
     val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + "00"
     val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
     val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + date + File.separator + topicName
