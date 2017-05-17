@@ -15,7 +15,7 @@ object PlayCheck extends BaseClass{
   val topicName = "fact_medusa_play"
   val INDEX_NAME="fact_index"
   val baseOutputPath = FACT_HDFS_BASE_PATH_CHECK+ File.separator + topicName
-
+  val fact_table_name="log_data"
   /**加载待check数据*/
   override def extract(params: Params): DataFrame = {
     params.paramMap.get("date") match {
@@ -40,9 +40,10 @@ object PlayCheck extends BaseClass{
     val isBaseOutputPathExist = HdfsUtil.IsDirExist(baseOutputPath)
     if (isBaseOutputPathExist) {
       val isDelete=HdfsUtil.deleteHDFSFileOrPath(baseOutputPath)
-      println(s"删除 $topicName 的基础目录: $baseOutputPath,是否删除:$isDelete ")
+      println(s"删除 $topicName 的基础目录: $baseOutputPath")
     } else {
       println(s"$baseOutputPath 文件夹不存在，创建此文件夹")
+      HdfsUtil.createDir(baseOutputPath)
     }
 
     val factDFWithIndex=DataFrameUtil.dfZipWithIndex(factDataFrame, INDEX_NAME)
@@ -55,7 +56,7 @@ object PlayCheck extends BaseClass{
     /**-----写入不同的check结果数据-----*/
     /**写入factDFWithIndex数据,作为基础数据*/
     factDFWithIndex.write.parquet(baseOutputPath+File.separator+"factDFWithIndex")
-
+    factDFWithIndex.registerTempTable(fact_table_name)
     /**写入列表页维度check的异常数据*/
     val checkListCategoryCase1DF=checkListCategoryCase1(factDFWithIndex)
     checkListCategoryCase1DF.write.parquet(baseOutputPath+File.separator+"checkListCategoryCase1DF")
@@ -70,14 +71,14 @@ object PlayCheck extends BaseClass{
 
   def checkListCategoryCase1(factDFWithIndex:DataFrame):DataFrame={
     /**1.mainCategory,secondCategory维度能够解析出来,但是source_site_sk为null*/
-    factDFWithIndex.registerTempTable("log_data")
-    val df=factDFWithIndex.sqlContext.sql(
-      s"""select $INDEX_NAME,mainCategory,secondCategory,thirdCategory,pathMain,path
-         |from log_data
-         |where mainCategory is not null and
-         |secondCategory is not null and
-         |source_site_sk is null and
-       """.stripMargin )
+    val sqlStr=s"""select $INDEX_NAME,mainCategory,secondCategory,thirdCategory,pathMain,path
+                     |from $fact_table_name
+                     |where mainCategory is not null and
+                     |secondCategory is not null and
+                     |source_site_sk is null
+       """.stripMargin
+    println(s"checkListCategoryCase1 sql: $sqlStr")
+    val df=sqlContext.sql(sqlStr)
     df
   }
 
