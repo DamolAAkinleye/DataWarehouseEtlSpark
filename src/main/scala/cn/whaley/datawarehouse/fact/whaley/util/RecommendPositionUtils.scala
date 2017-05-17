@@ -15,7 +15,7 @@ object RecommendPositionUtils {
     else  subPath
   }
 
-  def getRecommendIndex(locationIndex:String,subPath:String) = {
+  def getRecommendIndex(locationIndex:String,subPath:String): Int = {
 
     if(locationIndex == ""|| locationIndex == null) -1
     else if(subPath == "similar" && locationIndex.toInt > 72)  -2
