@@ -240,7 +240,7 @@ object Play extends FactEtlBase with  LogConfig{
     ("searchFrom", "searchFrom"),
     ("resultIndex", "resultIndex"),
     ("tabName", "tabName"),
-    ("extraPath", "extraPath"),
+    ("searchFromHotWord", "searchFromHotWord"),
 
 
 //--------在fact_medusa_play表中展示的字段---------
