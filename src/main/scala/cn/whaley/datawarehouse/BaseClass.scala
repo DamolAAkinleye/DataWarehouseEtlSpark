@@ -193,6 +193,8 @@ trait BaseClass {
 
           if (df != null) {
             df = afterJoinDf.unionAll(df)
+          } else {
+            df = afterJoinDf
           }
         })
         df = sourceDf.as("a").join(
