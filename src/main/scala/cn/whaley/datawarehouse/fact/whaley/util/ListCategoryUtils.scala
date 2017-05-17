@@ -12,52 +12,58 @@ object ListCategoryUtils {
     * 获取站点树
     * @param path
     */
-  def getLastCategory(path:String):String ={
-    var sourceSite :String = null
+  def getLastFirstCode(path:String):String ={
+    var lastFirstCode :String = null
     val paths = path.split("-")
     if(paths.length >2){
       val contentType = paths(1)
          contentType match {
-           case "sports" => sourceSite ={
+           case "sports" => lastFirstCode ={
              //sports 站点树取第四位
              if(paths.length>=4){
-               sourceSite= paths(3)
+               lastFirstCode= paths(3)
              }
-             sourceSite
+             lastFirstCode
            }
-           case "mv"  =>sourceSite={
+           case "mv"  =>lastFirstCode={
              //mv 站点树取第5位
 
              if(paths.length>=5){
-               sourceSite= paths(4)
+               lastFirstCode= paths(4)
              }
-             sourceSite
+             lastFirstCode
            }
-           case "kids" =>sourceSite = {
+           case "kids" =>lastFirstCode = {
              val kids_type=paths(2)
 
              kids_type match{
                //鲸鲸学院->精选推荐
-               case "kids_value_added_package" => sourceSite = path
-               case _ =>  sourceSite={
-                 if(paths.length>=4){
-                   sourceSite= paths(3)
+               case "kids_value_added_package" =>
+                 lastFirstCode = {
+                   if(paths.length>=6){
+                     lastFirstCode = paths(5)
+                   }
+                   lastFirstCode
                  }
-                 sourceSite
+               case _ =>  lastFirstCode={
+                 if(paths.length>=4){
+                   lastFirstCode= paths(3)
+                 }
+                 lastFirstCode
                }
              }
-             sourceSite
+             lastFirstCode
            }
-           case _  => sourceSite = {
+           case _  => lastFirstCode = {
              //其他频道 站点树取第3位
              if(paths.length>=3){
-               sourceSite= paths(2)
+               lastFirstCode= paths(2)
              }
-             sourceSite
+             lastFirstCode
            }
          }
     }
-    sourceSite
+    lastFirstCode
   }
 
   /**
@@ -65,65 +71,71 @@ object ListCategoryUtils {
     * @param path
     * @return
     */
-  def getListThirdCategory(path:String):String ={
-    var thirdCategory :String = null
+  def getLastSecondCode(path:String):String ={
+    var lastSecondCode :String = null
     val paths = path.split("-")
     if(paths.length >2){
       val contentType = paths(1)
       contentType match {
 
-        case "sports" => thirdCategory ={
+        case "sports" => lastSecondCode ={
           //sports 站点树取第四位 ok
           if(paths.length>=4){
-            thirdCategory= paths(2)
+            lastSecondCode= paths(2)
           }
-          thirdCategory
+          lastSecondCode
         }
-        case "mv"  =>thirdCategory={
+        case "mv"  =>lastSecondCode={
           //mv 站点树取第5位 ok
           if(paths.length>=5){
-            thirdCategory= paths(3)
+            lastSecondCode= paths(3)
           }
-          thirdCategory
+          lastSecondCode
         }
-        case "kids" =>thirdCategory = {
+        case "kids" =>lastSecondCode = {
           val kids_type=paths(2)
-
           kids_type match{
             //鲸鲸学院->精选推荐
-            case "kids_value_added_package" => thirdCategory = path
-            case _ =>  thirdCategory={
-              if(paths.length>=4){
-                //需要处理
-                thirdCategory= paths(2)
-                thirdCategory match{
-                  //鲸鲸学园
-                  case "wcampus" => thirdCategory="kids_value_added_package"
-                   //看动画片
-                   case "animation" => thirdCategory="show_kidsSite"
-                  //听儿歌
-                  case "rhyme" => thirdCategory="show_kidsSongSite"
-                   //学知识
-                  case "learn" => thirdCategory="kids_learning"
-                  case "recommendation" => thirdCategory="kids_scroll"
-
+            case "kids_value_added_package" =>
+              lastSecondCode ={
+                if(paths.length>=6){
+                  lastSecondCode = paths(4)
                 }
+                lastSecondCode
               }
-              thirdCategory
-            }
+            case _ =>
+              lastSecondCode={
+                if(paths.length>=4){
+                  //需要处理
+                  lastSecondCode= paths(2)
+                  lastSecondCode match{
+                    //鲸鲸学园
+                    case "wcampus" => lastSecondCode="kids_value_added_package"
+                     //看动画片
+                     case "animation" => lastSecondCode="show_kidsSite"
+                    //听儿歌
+                    case "rhyme" => lastSecondCode="show_kidsSongSite"
+                     //学知识
+                    case "learn" => lastSecondCode="kids_learning"
+                    case "recommendation" => lastSecondCode="kids_scroll"
+
+                  }
+                }
+                lastSecondCode
+              }
           }
-          thirdCategory
+          lastSecondCode
         }
-        case _  => thirdCategory = {
+        case _  => lastSecondCode = {
           //其他频道 站点树取第3位 ok
           if(paths.length>=3){
-            thirdCategory= contentType
+            lastSecondCode= contentType
           }
-          thirdCategory
+          lastSecondCode
         }
       }
     }
-    thirdCategory
+    lastSecondCode
   }
 
 
@@ -142,7 +154,7 @@ object ListCategoryUtils {
       "home-sports-cba-league_matchreplay","home-kids-kids_value_added_package-kids_jingxuanzhuanqu-kids_bbc_animation-kids_bbc_hot-movie851")
 
     paths.foreach(path=>{
-      println(getLastCategory(path))
+      println(getLastSecondCode(path)+" :  "+getLastFirstCode(path))
     })
   }
 
