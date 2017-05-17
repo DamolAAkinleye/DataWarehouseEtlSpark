@@ -85,6 +85,7 @@ object ListCategoryUtils {
                   //学知识
                   case "learn" => categoryCodes(1)="kids_learning"
                   case "recommendation" => categoryCodes(1)="kids_scroll"
+                  case _ =>  categoryCodes(1)= kids_type
                 }
                 categoryCodes(2)= paths(3)
               }
@@ -236,7 +237,7 @@ object ListCategoryUtils {
 
   def main(args: Array[String]): Unit = {
     val paths = Array("home-movie-movie_hot-台湾-林嘉欣","home-mv-class-site_mvstyle-1_mv_style_pop",
-      "home-sports-cba-league_matchreplay","home-kids-rhyme-songs_jingdian-kids212","home-kids-animation-kids_star-kids220","home-kids-kids_value_added_package-kids_jingxuanzhuanqu-kids_bbc_animation-kids_bbc_hot-movie851")
+      "home-sports-cba-league_matchreplay","home-kids-rhyme1-songs_jingdian-kids212","home-kids-animation-kids_star-kids220","home-kids-kids_value_added_package-kids_jingxuanzhuanqu-kids_bbc_animation-kids_bbc_hot-movie851")
     paths.foreach(path=>{
       println(getLastSecondCode(path)+" :  "+getLastFirstCode(path) +" : "+ getListCategoryCode(path).toList )
     })
