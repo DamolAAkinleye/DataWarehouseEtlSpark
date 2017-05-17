@@ -11,60 +11,155 @@ object ListCategoryUtils {
   /**
     * 获取站点树
     * @param path
+    *   @return 最后一个站点树
     */
+  def getLastFirstCode(path:String):String ={
+    getListCategoryCode(path)(2)
+  }
+
+  /**
+    * @param path
+    * @return mv,sports,kids 倒数第二个站点树,其他取contentType
+    */
+  def getLastSecondCode(path:String):String ={
+    getListCategoryCode(path)(1)
+  }
+
+  /**
+    * 获取contentType
+    * @param path
+    * @return
+    */
+  def contentType(path:String):String={
+    getListCategoryCode(path)(0)
+  }
+
+  /**
+    *
+    * @param path
+    * @return contentType:倒数第二个站点树:最后一个站点树
+    */
+  def getListCategoryCode(path:String):Array[String] ={
+    val categoryCodes= new Array[String](3)
+    val paths = path.split("-")
+    if(paths.length >2){
+      val contentType = paths(1)
+      categoryCodes(0)= contentType
+      contentType match {
+        case "sports" => {
+          //sports 站点树取第四位
+          if(paths.length>=4){
+            categoryCodes(1) = paths(2)
+            categoryCodes(2) = paths(3)
+          }
+        }
+        case "mv"  =>{
+          //mv 站点树取第5位
+          if(paths.length>=5){
+            categoryCodes(1)= paths(3)
+            categoryCodes(2)= paths(4)
+          }
+        }
+        case "kids" => {
+          val kids_type=paths(2)
+          kids_type match{
+            case "kids_value_added_package" =>{
+              // 鲸鲸学院->精选推荐 站点树取第6位
+              if(paths.length>=6){
+                categoryCodes(1) = paths(4)
+                categoryCodes(2) = paths(5)  //需要测试
+              }
+            }
+            case _ =>{
+              //少儿其他  站点树取第4位
+              if(paths.length>=4){
+                //需要处理
+                kids_type match{
+                  //前台code和后台code映射
+                  //鲸鲸学园
+                  case "wcampus" => categoryCodes(1)="kids_value_added_package"
+                  //看动画片
+                  case "animation" => categoryCodes(1)="show_kidsSite"
+                  //听儿歌
+                  case "rhyme" => categoryCodes(1)="show_kidsSongSite"
+                  //学知识
+                  case "learn" => categoryCodes(1)="kids_learning"
+                  case "recommendation" => categoryCodes(1)="kids_scroll"
+                }
+                categoryCodes(2)= paths(3)
+              }
+
+            }
+          }
+        }
+        case _  => {
+          //其他频道 站点树取第3位
+          if(paths.length>=3){
+            categoryCodes(1)= contentType
+            categoryCodes(2)= paths(2)
+          }
+        }
+      }
+    }
+    categoryCodes
+  }
+
+/*
+
   def getLastFirstCode(path:String):String ={
     var lastFirstCode :String = null
     val paths = path.split("-")
     if(paths.length >2){
       val contentType = paths(1)
-         contentType match {
-           case "sports" => lastFirstCode ={
-             //sports 站点树取第四位
-             if(paths.length>=4){
-               lastFirstCode= paths(3)
-             }
-             lastFirstCode
-           }
-           case "mv"  =>lastFirstCode={
-             //mv 站点树取第5位
+      contentType match {
+        case "sports" => lastFirstCode ={
+          //sports 站点树取第四位
+          if(paths.length>=4){
+            lastFirstCode= paths(3)
+          }
+          lastFirstCode
+        }
+        case "mv"  =>lastFirstCode={
+          //mv 站点树取第5位
 
-             if(paths.length>=5){
-               lastFirstCode= paths(4)
-             }
-             lastFirstCode
-           }
-           case "kids" =>lastFirstCode = {
-             val kids_type=paths(2)
+          if(paths.length>=5){
+            lastFirstCode= paths(4)
+          }
+          lastFirstCode
+        }
+        case "kids" =>lastFirstCode = {
+          val kids_type=paths(2)
 
-             kids_type match{
-               //鲸鲸学院->精选推荐
-               case "kids_value_added_package" =>
-                 lastFirstCode = {
-                   if(paths.length>=6){
-                     lastFirstCode = paths(5)
-                   }
-                   lastFirstCode
-                 }
-               case _ =>  lastFirstCode={
-                 if(paths.length>=4){
-                   lastFirstCode= paths(3)
-                 }
-                 lastFirstCode
-               }
-             }
-             lastFirstCode
-           }
-           case _  => lastFirstCode = {
-             //其他频道 站点树取第3位
-             if(paths.length>=3){
-               lastFirstCode= paths(2)
-             }
-             lastFirstCode
-           }
-         }
+          kids_type match{
+            //鲸鲸学院->精选推荐
+            case "kids_value_added_package" =>
+              lastFirstCode = {
+                if(paths.length>=6){
+                  lastFirstCode = paths(5)
+                }
+                lastFirstCode
+              }
+            case _ =>  lastFirstCode={
+              if(paths.length>=4){
+                lastFirstCode= paths(3)
+              }
+              lastFirstCode
+            }
+          }
+          lastFirstCode
+        }
+        case _  => lastFirstCode = {
+          //其他频道 站点树取第3位
+          if(paths.length>=3){
+            lastFirstCode= paths(2)
+          }
+          lastFirstCode
+        }
+      }
     }
     lastFirstCode
   }
+
 
   /**
     * 取前一个
@@ -111,11 +206,11 @@ object ListCategoryUtils {
                   lastSecondCode match{
                     //鲸鲸学园
                     case "wcampus" => lastSecondCode="kids_value_added_package"
-                     //看动画片
-                     case "animation" => lastSecondCode="show_kidsSite"
+                    //看动画片
+                    case "animation" => lastSecondCode="show_kidsSite"
                     //听儿歌
                     case "rhyme" => lastSecondCode="show_kidsSongSite"
-                     //学知识
+                    //学知识
                     case "learn" => lastSecondCode="kids_learning"
                     case "recommendation" => lastSecondCode="kids_scroll"
 
@@ -137,24 +232,13 @@ object ListCategoryUtils {
     }
     lastSecondCode
   }
-
-
-  def contentType(path:String):String={
-    var contentType:String = null
-    val paths = path.split("-")
-    if(paths.length >2){
-      contentType = paths(1)
-    }
-    contentType
-  }
-
+*/
 
   def main(args: Array[String]): Unit = {
-    val paths = Array("home-mv-class-site_mvstyle-1_mv_style_pop",
-      "home-sports-cba-league_matchreplay","home-kids-kids_value_added_package-kids_jingxuanzhuanqu-kids_bbc_animation-kids_bbc_hot-movie851")
-
+    val paths = Array("home-movie-movie_hot-台湾-林嘉欣","home-mv-class-site_mvstyle-1_mv_style_pop",
+      "home-sports-cba-league_matchreplay","home-kids-rhyme-songs_jingdian-kids212","home-kids-animation-kids_star-kids220","home-kids-kids_value_added_package-kids_jingxuanzhuanqu-kids_bbc_animation-kids_bbc_hot-movie851")
     paths.foreach(path=>{
-      println(getLastSecondCode(path)+" :  "+getLastFirstCode(path))
+      println(getLastSecondCode(path)+" :  "+getLastFirstCode(path) +" : "+ getListCategoryCode(path).toList )
     })
   }
 
