@@ -9,7 +9,7 @@ import cn.whaley.datawarehouse.fact.constant.Constants._
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
-import cn.whaley.datawarehouse.util.{DataFrameUtil, DateFormatUtils, HdfsUtil, Params}
+import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
@@ -61,7 +61,7 @@ abstract class FactEtlBase extends BaseClass {
         println("数据时间：" + d)
         if (partition == 0) {
           readSource(d.toString)
-        }else{
+        } else {
           readSource(d.toString).repartition(partition)
         }
       }
@@ -100,18 +100,18 @@ abstract class FactEtlBase extends BaseClass {
     println("-------end completeSourceDf.cache()" + Calendar.getInstance().getTime)
 
     println("完整事实表行数：" + completeSourceDf.count())
-//    if (debug) {
-//      println("完整事实表行数：" + completeSourceDf.count())
-//      HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
-//      completeSourceDf.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
-//    }
+    //    if (debug) {
+    //      println("完整事实表行数：" + completeSourceDf.count())
+    //      HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
+    //      completeSourceDf.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
+    //    }
 
 
     val dimensionJoinDf = parseDimension(completeSourceDf, dimensionColumns, INDEX_NAME, factTime)
-//    if (debug) {
-//      dimensionJoinDf.persist()
-//      println("维度关联表行数：" + dimensionJoinDf.count())
-//    }
+    //    if (debug) {
+    //      dimensionJoinDf.persist()
+    //      println("维度关联表行数：" + dimensionJoinDf.count())
+    //    }
 
     println("-------before completeSourceDf join dimensionJoinDf" + Calendar.getInstance().getTime)
     //关联源数据和join到的维度
@@ -141,12 +141,12 @@ abstract class FactEtlBase extends BaseClass {
         ++ dimensionJoinDf.schema.fields.filter(_.name != INDEX_NAME || debug).map("source." + _.name)
         : _*
     )
-    println("-------after 筛选特定列"+Calendar.getInstance().getTime)
+    println("-------after 筛选特定列" + Calendar.getInstance().getTime)
 
-//    if(debug) {
-//      println("最终结果行数：" + result.count())
-//    }
-    println("------- last line in transform "+Calendar.getInstance().getTime)
+    //    if(debug) {
+    //      println("最终结果行数：" + result.count())
+    //    }
+    println("------- last line in transform " + Calendar.getInstance().getTime)
     result
   }
 
@@ -155,30 +155,30 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   private def addNewColumns(sourceDf: DataFrame): DataFrame = {
-    println("-------before addNewColumns "+Calendar.getInstance().getTime)
+    println("-------before addNewColumns " + Calendar.getInstance().getTime)
     var result = sourceDf
     if (addColumns != null) {
-      addColumns.foreach(column =>{
+      addColumns.foreach(column => {
         result = result.withColumn(column.name, column.udf(column.inputColumns.map(col): _*))
       }
       )
     }
-    println("-------after addNewColumns "+Calendar.getInstance().getTime)
+    println("-------after addNewColumns " + Calendar.getInstance().getTime)
     DataFrameUtil.dfZipWithIndex(result, INDEX_NAME)
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
-   /* HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
-    if (partition == 0) {
-      df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
-    }else{
-      df.repartition(partition).write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
-    }*/
+    /* HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+     if (partition == 0) {
+       df.write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+     }else{
+       df.repartition(partition).write.parquet(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + params.paramMap("date") + File.separator + "00")
+     }*/
     backup(params, df, topicName)
   }
 
   /**
-    * 用来备份维度数据，然后将维度数据生成在临时目录，当isOnline参数为true的时候，将临时目录的数据替换线上维度
+    * 用来备份实时表数据，然后将维度数据生成在临时目录，当isOnline参数为true的时候，将临时目录的数据替换线上维度
     *
     * @param p  the main args
     * @param df the DataFrame from execute function
@@ -188,52 +188,37 @@ abstract class FactEtlBase extends BaseClass {
     val date = p.paramMap("date")
     val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + "00"
     val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
-    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + date + File.separator + topicName
-    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName
-    val onLineFactDirDelete = FACT_HDFS_BASE_PATH_DELETE + File.separator + topicName
+    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + "00"
+    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator +  date
     println("线上数据目录:" + onLineFactDir)
     println("线上数据备份目录:" + onLineFactBackupDir)
     println("线上数据临时目录:" + onLineFactDirTmp)
-    println("线上数据等待删除目录:" + onLineFactDirDelete)
-
-    val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
-    if (isOnlineFileExist) {
-      val isBackupExist = HdfsUtil.IsDirExist(onLineFactBackupDir)
-      if (isBackupExist) {
-        println("数据已经备份,跳过备份过程")
-      } else {
-        println("生成线上维度备份数据:" + onLineFactBackupDir)
-        val isSuccessBackup = HdfsUtil.copyFilesInDir(onLineFactDir, onLineFactBackupDir)
-        println("备份数据状态:" + isSuccessBackup)
-      }
-    } else {
-      println("无可用备份数据")
-    }
 
     //防止文件碎片
-/*    val total_count = BigDecimal(df.count())
-    val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
-    println("repartition:" + partition)*/
+    /*    val total_count = BigDecimal(df.count())
+        val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
+        println("repartition:" + partition)*/
 
     val isTmpExist = HdfsUtil.IsDirExist(onLineFactDirTmp)
-    if (isTmpExist) {
-      println("删除线上维度临时数据:" + onLineFactDirTmp)
-      HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
-    }
+
+    HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
+
     println("生成线上维度数据到临时目录:" + onLineFactDirTmp)
     if (partition == 0) {
       df.write.parquet(onLineFactDirTmp)
-    }else{
+    } else {
       df.repartition(partition).write.parquet(onLineFactDirTmp)
     }
 
     println("数据是否上线:" + p.isOnline)
     if (p.isOnline) {
+      val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
       println("数据上线:" + onLineFactDir)
       if (isOnlineFileExist) {
-        println("移动线上数据:from " + onLineFactDir + " to " + onLineFactDirDelete)
-        val isRenameSuccess = HdfsUtil.rename(onLineFactDir, onLineFactDirDelete)
-        println("isRenameSuccess:" + isRenameSuccess)
+        println("生成线上维度备份数据:" + onLineFactBackupDir)
+        HdfsUtil.deleteHDFSFileOrPath(onLineFactBackupDir)
+        val isSuccessBackup = HdfsUtil.rename(onLineFactDir, onLineFactBackupDir)
+        println("备份数据状态:" + isSuccessBackup)
       }
 
       val isOnlineFileExistAfterRename = HdfsUtil.IsDirExist(onLineFactDir)
@@ -245,8 +230,6 @@ abstract class FactEtlBase extends BaseClass {
         val isSuccess = HdfsUtil.rename(onLineFactDirTmp, onLineFactDir)
         println("数据上线状态:" + isSuccess)
       }
-      println("删除过期数据:" + onLineFactDirDelete)
-      HdfsUtil.deleteHDFSFileOrPath(onLineFactDirDelete)
     }
   }
 
