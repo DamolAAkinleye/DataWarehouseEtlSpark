@@ -21,7 +21,7 @@ object RecommendPositionUtils {
     else if(subPath == "similar" && locationIndex.toInt > 72)  -2
     else if(subPath == "peoplealsolike" && locationIndex.toInt > 5)  -2
     else if(subPath == "guessyoulike" && locationIndex.toInt > 100)  -2
-    else  locationIndex.toInt
+    else  locationIndex.toInt +1
 
   }
 
