@@ -41,6 +41,9 @@ object ListCategoryUtils {
     */
   def getListCategoryCode(path:String):Array[String] ={
     val categoryCodes= new Array[String](3)
+    if(path == null) {
+      return categoryCodes
+    }
     val paths = path.split("-")
     if(paths.length >2){
       val contentType = paths(1)
