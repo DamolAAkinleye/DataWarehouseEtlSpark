@@ -67,6 +67,7 @@ object LauncherEntranceUtils{
 
   /**
    * 将 发现 一行的首页入口替换为具体的榜单信息
+   * 处理hot11的路径bug(home-hot11)
    * @param secondPath
    * @param linkValue
    * @return
@@ -75,6 +76,8 @@ object LauncherEntranceUtils{
   def getAccessLocation(secondPath:String,linkValue:String):String = {
     if(secondPath == "top"){
       linkValue
+    }else if(secondPath == "hot11"){
+      "recommend"
     }else secondPath
   }
 
