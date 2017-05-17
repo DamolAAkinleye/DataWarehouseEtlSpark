@@ -80,12 +80,12 @@ trait BaseClass {
 
   }
 
-    /**
+  /**
     * ETL过程执行程序
     */
   def execute(params: Params): Unit = {
 
-    if(params.debug) debug = true
+    if (params.debug) debug = true
 
     val df = extract(params)
 
@@ -169,40 +169,36 @@ trait BaseClass {
             } else {
               sourceFilterDf.withColumn(COLUMN_NAME_FOR_SOURCE_TIME, expr(sourceTimeColumn))
             }
-          //源表与维度表join
-          if (df == null) {
-            df = sourceFilterDf.as("a").join(
-              dimensionDf.as("b"),
-              jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
-                && (expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME is null") ||
-                expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
-                  s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
-              "inner"
-            ).selectExpr("a." + uniqueKeyName :: c.dimensionColumnName.map("b." + _._1) :_*
-            ).dropDuplicates(List(uniqueKeyName))
-          } else {
-            //源数据中未关联上的行
-            val notJoinDf = sourceFilterDf.as("a").join(
-              df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
-            ).where(c.dimensionColumnName.map("dim."+ _._1 + " is null").mkString(" and ")).selectExpr("a.*")
 
-            df = notJoinDf.as("a").join(
-              dimensionDf.as("b"),
-              jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
-                && (expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME is null") ||
-                expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
-                  s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
-              "inner"
-            ).selectExpr(
-              "a." + uniqueKeyName :: c.dimensionColumnName.map("b." + _._1) :_*
-            ).dropDuplicates(List(uniqueKeyName)
-            ).unionAll(df)
+          //源数据中未关联上的行
+          val notJoinDf =
+            if (df != null) {
+              sourceFilterDf.as("a").join(
+                df.as("dim"), sourceFilterDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
+              ).where(c.dimensionColumnName.map("dim." + _._1 + " is null").mkString(" and ")).selectExpr("a.*")
+            } else {
+              sourceFilterDf
+            }
+
+          //源表与维度表join
+          val afterJoinDf = notJoinDf.as("a").join(
+            dimensionDf.as("b"),
+            jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
+              && (expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME is null and b.dim_invalid_time is null") ||
+              expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
+                s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
+            "inner"
+          ).selectExpr("a." + uniqueKeyName :: c.dimensionColumnName.map("b." + _._1): _*
+          ).dropDuplicates(List(uniqueKeyName))
+
+          if (df != null) {
+            df = afterJoinDf.unionAll(df)
           }
         })
         df = sourceDf.as("a").join(
           df.as("b"), sourceDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
         ).selectExpr(
-          "a." + uniqueKeyName :: c.dimensionColumnName.map(c => "b." + c._1 + " as " + c._2) :_*
+          "a." + uniqueKeyName :: c.dimensionColumnName.map(c => "b." + c._1 + " as " + c._2): _*
         )
         //多个维度合成一个DataFrame
         if (dimensionColumnDf == null) {
