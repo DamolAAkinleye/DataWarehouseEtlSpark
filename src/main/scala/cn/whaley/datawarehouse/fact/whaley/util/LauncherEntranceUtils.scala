@@ -16,13 +16,14 @@ object LauncherEntranceUtils{
     if(wui == null || wui.isEmpty){
       null
     }else{
-      val startIndex = romVersion.indexOf(".")
+      val startIndex = wui.indexOf(".")
       if(startIndex > 0){
         val wuiVersion = wui.substring(0,startIndex)
-        if(wuiVersion == "00" || wuiVersion == "01"){ //将00版本替换为01版本
-          "01"
-        }else if(wuiVersion == "02"){
+        val tmp = wui.split("-")
+        if(tmp.length == 4 || wuiVersion =="02"){
           "02"
+        } else if(wuiVersion == "00" || wuiVersion == "01") {
+         "01" //将00版本替换为01版本
         }else null
       }else null
     }
