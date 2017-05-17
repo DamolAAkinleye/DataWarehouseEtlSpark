@@ -29,12 +29,12 @@ object ChannelLauncherEntranceUtils extends LogConfig {
   def getContentType(path: String, contentType: String): String = {
     if (path == null || path.isEmpty) {
       contentType
-    } else if (path.contains("my_tv")) {
-      contentType
-    } else {
+    }else {
       val tmp = path.split("-")
       if (tmp.length >= 2) {
-        tmp(1)
+        if(tmp(1) == "my_tv"){
+          contentType
+        } else tmp(1)
       } else contentType
     }
   }
@@ -62,16 +62,28 @@ object ChannelLauncherEntranceUtils extends LogConfig {
           case CHANNEL_MV => {
             page = tmp(1)
             area = tmp(2)
-            if (area == "rank" || area == "class") {
-              if (tmp.length >= 4) {
-                location = tmp(3)
+            area match {
+              case "class" | "myAccount" => {
+                if (tmp.length >= 4) {
+                  location = tmp(3)
+                }
               }
+              case "rank"  => {
+                if(tmp.length >= 4){
+                  val rankTmp = tmp(3).split("_")
+                  location = rankTmp(0)
+                }
+              }
+              case _ =>
             }
           }
           case _ => {
-            if(tmp(1) == "collection" || tmp(1) == "collect"){
-              page = tmp(1)
-              area = tmp(2)
+            tmp(1) match {
+              case "collection" | "collect" => {
+                page = "collect"
+                area = tmp(2)
+              }
+              case _ =>
             }
           }
         }
