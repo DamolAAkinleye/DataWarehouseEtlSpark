@@ -9,6 +9,7 @@ object Constants {
   val FACT_HDFS_BASE_PATH_BACKUP: String = FACT_HDFS_BASE_PATH + "/backup"
   val FACT_HDFS_BASE_PATH_TMP: String = FACT_HDFS_BASE_PATH + "/tmp"
   val FACT_HDFS_BASE_PATH_DELETE: String = FACT_HDFS_BASE_PATH + "/delete"
+  val FACT_HDFS_BASE_PATH_CHECK: String = FACT_HDFS_BASE_PATH + "/check"
   val THRESHOLD_VALUE = 5120000
 
 }

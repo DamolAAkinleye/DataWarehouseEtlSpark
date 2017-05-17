@@ -1,6 +1,5 @@
 package cn.whaley.datawarehouse.fact.moretv
 
-import java.io.File
 import java.util.Calendar
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
@@ -71,7 +70,8 @@ object Play extends FactEtlBase with  LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
-    println("------- after filterRows "+Calendar.getInstance().getTime+"filterRows resultDF.count():"+resultDF.count())
+    println("------- after filterRows "+Calendar.getInstance().getTime)
+    println("filterRows resultDF.count():"+resultDF.count())
     resultDF
   }
 
