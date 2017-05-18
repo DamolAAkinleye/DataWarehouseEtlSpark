@@ -1,10 +1,11 @@
 package cn.whaley.datawarehouse.dimension.whaley
 
-import java.lang.{Long => JLong}
 
+import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.util.MysqlDB
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.udf
 
 /**
   * Created by huanghu on 17/3/14.
@@ -16,8 +17,20 @@ object ProductSN extends DimensionBase {
   columns.skName = "product_sn_sk"
   columns.primaryKeys = List("product_sn")
   columns.trackingColumns = List("rom_version")
-  columns.allColumns = List("product_sn","product_line", "product_model", "user_id", "rom_version", "mac", "open_time", "wifi_mac", "ip", "vip_type", "country", "area", "province", "city","district", "isp", "city_level","prefecture_level_city")
+  columns.allColumns = List("product_sn","product_line", "product_model", "user_id", "rom_version",
+    "mac", "open_time", "wifi_mac", "ip", "vip_type",
+    "country", "area", "province", "city","district", "isp", "city_level","prefecture_level_city")
 
+  columns.addColumns = List(
+    UserDefinedColumn("ip_key", udf(getIpKey: String => Long), List("ip")))
+
+  columns.linkDimensionColumns = List(
+    new DimensionColumn(
+      "dim_web_location",
+      List(DimensionJoinCondition(Map("ip_key" -> "web_location_key"))),
+      "web_location_sk"
+    )
+  )
 
   sourceDb = MysqlDB.whaleyTerminalMember
 
@@ -143,6 +156,17 @@ object ProductSN extends DimensionBase {
       }
     }
     thirdip
+  }
+
+  def getIpKey(ip: String): Long = {
+    try {
+      val ipInfo = ip.split("\\.")
+      if (ipInfo.length >= 3) {
+        (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+      } else 0
+    } catch {
+      case ex: Exception => 0
+    }
   }
 
 }
