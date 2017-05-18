@@ -6,22 +6,22 @@ package cn.whaley.datawarehouse.fact.whaley.util
   */
 object RecommendPositionUtils {
 
-  def getRecommendPosition(path: String,subPath:String):String = {
+  def getRecommendPosition(path: String, subPath: String): String = {
 
-    if(subPath == "" || subPath == null){
-      if(path == "home-movie-movie")        "guessyoulike"
-      else  null
-    }else  if(subPath == "guessyoulike")    "peoplealsolike"
-    else  subPath
+    if (subPath == "" || subPath == null) {
+      if (path == "home-movie-movie") "guessyoulike"
+      else null
+    } else if (subPath == "guessyoulike") "peoplealsolike"
+    else subPath
   }
 
-  def getRecommendIndex(locationIndex:String,subPath:String): Int = {
+  def getRecommendIndex(locationIndex: String, subPath: String): Int = {
 
-    if(locationIndex == ""|| locationIndex == null) -1
-    else if(subPath == "similar" && locationIndex.toInt > 72)  -2
-    else if(subPath == "peoplealsolike" && locationIndex.toInt > 5)  -2
-    else if(subPath == "guessyoulike" && locationIndex.toInt > 100)  -2
-    else  locationIndex.toInt +1
+    if (locationIndex == "" || locationIndex == null) -1
+    else if (subPath == "similar" && locationIndex.toInt > 72) -2
+    else if (subPath == "peoplealsolike" && locationIndex.toInt > 5) -2
+    else if (subPath == "guessyoulike" && locationIndex.toInt > 100) -2
+    else locationIndex.toInt + 1
 
   }
 

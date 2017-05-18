@@ -26,19 +26,6 @@ object ChannelLauncherEntranceUtils extends LogConfig {
     getPageEntranceCode(path, contentType, LOCATIONCODE)
   }
 
-  def getContentType(path: String, contentType: String): String = {
-    if (path == null || path.isEmpty) {
-      contentType
-    }else {
-      val tmp = path.split("-")
-      if (tmp.length >= 2) {
-        if(tmp(1) == "my_tv"){
-          contentType
-        } else tmp(1)
-      } else contentType
-    }
-  }
-
 
   def getPageEntranceCode(path: String, contentType: String, flag: String): String = {
     var result: String = null
@@ -53,7 +40,7 @@ object ChannelLauncherEntranceUtils extends LogConfig {
       if (tmp.length < 3) {
         result
       } else {
-        val tmpPage = getContentType(path, contentType)
+        val tmpPage = ContentTypeUtils.getContentType(path, contentType)
         tmpPage match {
           case CHANNEL_MOVIE | CHANNEL_KIDS | CHANNEL_SPORTS | CHANNEL_VIP => {
             page = tmp(1)
