@@ -65,7 +65,7 @@ object ListCategoryUtils extends LogConfig {
     */
   def getListCategoryMedusaETL(pathMain: String, index_input: Int): String = {
     var result: String = null
-    if (null == pathMain || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)) {
+    if (null == pathMain || pathMain.contains(UDFConstantDimension.HOME_SEARCH)) {
       result = null
     }
       /** 少儿kids */
