@@ -17,7 +17,9 @@ object RomVersionUtils {
     if(romVersion == null || romVersion.isEmpty){
       getRomVersionFromFirmwareVersion(firmwareVersion)
     }else{
-      romVersion
+      if(romVersion.contains("-")){
+        getRomVersionFromFirmwareVersion(romVersion)
+      }else romVersion
     }
   }
 

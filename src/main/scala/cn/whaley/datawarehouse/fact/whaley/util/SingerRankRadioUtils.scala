@@ -43,7 +43,9 @@ object SingerRankRadioUtils {
               case "rank" => {
                 if(tmp.length >= 4){
                   tmp(3) match {
-                    case "site_mvtop" => tmp(4)
+                    case "site_mvtop" => {
+                      if(tmp.length > 4) tmp(4) else null
+                    }
                     case _ => null
                   }
                 }else tmp(3)
