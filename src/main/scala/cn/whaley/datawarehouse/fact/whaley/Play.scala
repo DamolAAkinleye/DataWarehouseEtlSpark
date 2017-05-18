@@ -3,7 +3,7 @@ package cn.whaley.datawarehouse.fact.whaley
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
-import cn.whaley.datawarehouse.fact.whaley.util.{LauncherEntranceUtils, SubjectUtils}
+import cn.whaley.datawarehouse.fact.whaley.util._
 import org.apache.spark.sql.functions.udf
 
 /**
@@ -18,39 +18,229 @@ object Play extends FactEtlBase {
   factTime = null
 
   addColumns = List(
-    UserDefinedColumn("subject_code", udf(SubjectUtils.getSubjectCode: String => String), List("path")),
-    UserDefinedColumn("wui_version", udf(LauncherEntranceUtils.wuiVersionFromPlay: (String, String) => String),
+    UserDefinedColumn("udc_subject_code", udf(SubjectUtils.getSubjectCode: String => String), List("path")),
+    UserDefinedColumn("udc_wui_version", udf(LauncherEntranceUtils.wuiVersionFromPlay: (String, String) => String),
       List("romVersion", "firmwareVersion")),
-    UserDefinedColumn("launcher_access_location",
+    UserDefinedColumn("udc_launcher_access_location",
       udf(LauncherEntranceUtils.launcherAccessLocationFromPath: (String, String) => String),
       List("path", "linkValue")),
-    UserDefinedColumn("launcher_location_index",
+    UserDefinedColumn("udc_launcher_location_index",
       udf(LauncherEntranceUtils.launcherLocationIndexFromPlay: String => Int),
-      List("recommendLocation"))
-
+      List("recommendLocation")),
+    UserDefinedColumn("udc_recommend_position",
+      udf(RecommendPositionUtils.getRecommendPosition: (String, String) => String),
+      List("path", "pathSub")),
+    UserDefinedColumn("udc_recommend_index",
+      udf(RecommendPositionUtils.getRecommendIndex: (String, String) => Int),
+      List("locationIndex", "udc_recommend_position")),
+    UserDefinedColumn("udc_path_content_type",
+      udf(ContentTypeUtils.getContentType: (String, String) => String),
+      List("path", "contentType")),
+    UserDefinedColumn("udc_page_code",
+      udf(ChannelLauncherEntranceUtils.getPageEntrancePageCode: (String, String) => String),
+      List("path", "contentType")),
+    UserDefinedColumn("udc_page_area_code",
+      udf(ChannelLauncherEntranceUtils.getPageEntranceAreaCode: (String, String) => String),
+      List("path", "contentType")),
+    UserDefinedColumn("udc_page_location_code",
+      udf(ChannelLauncherEntranceUtils.getPageEntranceLocationCode: (String, String) => String),
+      List("path", "contentType")),
+    UserDefinedColumn("udc_page_location_index",
+      udf(ChannelLauncherEntranceUtils.getPageEntranceLocationIndex: (String, String) => Int),
+      List("locationIndex", "contentType")),
+    UserDefinedColumn("udc_last_category",
+      udf(ListCategoryUtils.getLastFirstCode: String => String),
+      List("path")),
+    UserDefinedColumn("udc_last_second_category",
+      udf(ListCategoryUtils.getLastSecondCode: String => String),
+      List("path")),
+    UserDefinedColumn("udc_search_from",
+      udf(SearchUtils.getSearchFrom: String => String),
+      List("path")),
+    UserDefinedColumn("udc_search_from_hot_word",
+      udf(SearchUtils.isHotSearchWord: String => Int),
+      List("hotSearchWord")),
+    UserDefinedColumn("udc_search_from_associational_word",
+      udf(SearchUtils.isAssociationalSearchWord: String => Int),
+      List("searchAssociationalWord")),
+    UserDefinedColumn("udc_search_result_index",
+      udf(SearchUtils.getSearchResultIndex: String => Int),
+      List("searchResultIndex")),
+    UserDefinedColumn("udc_singer_or_radio_sid",
+      udf(SingerRankRadioUtils.getRadioSingerFromPath: (String, String, String) => String),
+      List("path", "contentType", "omnibusSid")),
+    UserDefinedColumn("udc_mv_hot_key",
+      udf(SingerRankRadioUtils.getRankFromPath: (String, String) => String),
+      List("path", "contentType"))
   )
 
   columnsFromSource = List(
     ("duration", "duration"),
-    ("subject_code", "subject_code"),
-    ("wui_version", "wui_version"),
-    ("launcher_access_location", "launcher_access_location"),
-    ("launcher_location_index", "launcher_location_index")
+    ("program_duration", "videoDuration"),
+    ("trailer_duration", "trailerDuration"),
+    ("user_id", "userId"),
+    ("product_sn", "productSN"),
+    ("end_event", "event"),
+    ("start_time", "cast(startTime as timestamp)"),
+    ("end_time", "cast(endTime as timestamp)"),
+    ("program_content_type", "contentType"),
+    ("search_keyword", "searchText"),
+    ("search_rec_keyword", "case when hotSearchWord is null or " +
+      "trim(hotSearchWord) = '' then searchAssociationalWord else hotSearchWord end "),
+    ("voice_search", "case when path like '%voicesearch%' then 'true' else 'false' end"),
+    ("launcher_link_type", "linkType"),
+    ("launcher_link_value", "linkValue"),
+    ("position_type", "positionType"),
+//    ("trailer_process", "trailerProcess"),
+    ("trailer_mark", "trailerMark"),
+    ("current_resolution", "currentResolution"),
+    ("program_resolution", "resolution"),
+    ("current_vip_level", "currentVipLevel"),
+//    ("network_type", "networkType"),
+
+    ("path", "path"),
+    ("subject_code", "udc_subject_code"),
+    ("wui_version", "udc_wui_version"),
+    ("launcher_access_location", "udc_launcher_access_location"),
+    ("launcher_location_index", "udc_launcher_location_index"),
+    ("recommend_position", "udc_recommend_position"),
+    ("recommend_index", "udc_recommend_index"),
+    ("path_content_type", "udc_path_content_type"),
+    ("page_code", "udc_page_code"),
+    ("page_area_code", "udc_page_area_code"),
+    ("page_location_code", "udc_page_location_code"),
+    ("page_location_index", "udc_page_location_index"),
+    ("last_category", "udc_last_category"),
+    ("last_second_category", "udc_last_second_category"),
+    ("search_from", "udc_search_from"),
+    ("search_from_hot_word", "udc_search_from_hot_word"),
+    ("search_from_associational_word", "udc_search_from_associational_word"),
+    ("retrieval", "retrieval"),
+    ("search_tab", "searchTab"),
+    ("search_result_index", "udc_search_result_index"),
+    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
+    ("mv_hot_key", "udc_mv_hot_key")
+
   )
 
   dimensionColumns = List(
+    //用户
+    new DimensionColumn("dim_whaley_product_sn",
+      List(DimensionJoinCondition(Map("productSN" -> "product_sn"))),
+      List(("product_sn_sk", "product_sn_sk"), ("web_location_sk", "user_web_location_sk"))),
+
+    //剧头
+    new DimensionColumn("dim_whaley_program",
+      List(DimensionJoinCondition(Map("videoSid" -> "sid"))), "program_sk"),
+
+    //剧集
+    new DimensionColumn("dim_whaley_program",
+      List(DimensionJoinCondition(Map("episodeSid" -> "sid"))), "program_sk", "episode_program_sk"),
+
+    //账号
+    new DimensionColumn("dim_whaley_account",
+      List(DimensionJoinCondition(Map("accountId" -> "account_id"))), "account_sk"),
+
+    //专题
     new DimensionColumn("dim_whaley_subject",
-      List(DimensionJoinCondition(Map("subject_code" -> "subject_code"))), "subject_sk"),
+      List(DimensionJoinCondition(Map("udc_subject_code" -> "subject_code"))), "subject_sk"),
+
+    //首页入口
     new DimensionColumn("dim_whaley_launcher_entrance",
       List(DimensionJoinCondition(
-        Map("wui_version" -> "launcher_version",
-          "launcher_access_location" -> "access_location_code",
-          "launcher_location_index" -> "launcher_location_index")),
+        Map("udc_wui_version" -> "launcher_version",
+          "udc_launcher_access_location" -> "access_location_code",
+          "udc_launcher_location_index" -> "launcher_location_index")),
         DimensionJoinCondition(
-          Map("wui_version" -> "launcher_version",
-            "launcher_access_location" -> "access_location_code"),
+          Map("udc_wui_version" -> "launcher_version",
+            "udc_launcher_access_location" -> "access_location_code"),
           "launcher_location_index = -1")
-      ), "launcher_entrance_sk")
+      ), "launcher_entrance_sk"),
+
+    //智能推荐
+    new DimensionColumn("dim_whaley_recommend_position",
+      List(
+        //1.首页推荐
+        DimensionJoinCondition(
+          Map("udc_launcher_location_index" -> "recommend_slot_index"),
+          "recommend_algorithm='未知' and recommend_position='portalrecommend'", null, s"udc_recommend_position is null"
+        ),
+        //2.其他推荐
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "udc_path_content_type" -> "recommend_position_type",
+            "udc_recommend_index" -> "recommend_slot_index"
+          ),
+          "recommend_algorithm='未知'", null, null
+        ),
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "contentType" -> "recommend_position_type",
+            "udc_recommend_index" -> "recommend_slot_index"
+          ),
+          "recommend_algorithm='未知'", null, null
+        )
+      ),
+      "recommend_position_sk"),
+
+    //频道页入口
+    new DimensionColumn("dim_whaley_page_entrance",
+      List(DimensionJoinCondition(
+        Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
+          "udc_page_location_code" -> "location_code", "udc_page_location_index" -> "location_index")
+      ),
+        DimensionJoinCondition(
+          Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
+            "udc_page_location_index" -> "location_index"))
+      ), "page_entrance_sk"),
+    //站点树
+    new DimensionColumn("dim_whaley_source_site",
+      List(DimensionJoinCondition(
+        Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
+      )), "source_site_sk"),
+    //筛选
+    new DimensionColumn("dim_whaley_retrieval",
+      List(DimensionJoinCondition(
+        Map("retrieval" -> "retrieval_key", "udc_path_content_type" -> "content_type")
+      )), "retrieval_sk"),
+    //搜索
+    new DimensionColumn("dim_whaley_search",
+      List(DimensionJoinCondition(
+        Map("searchTab" -> "search_tab", "udc_search_from" -> "search_from",
+          "udc_search_from_hot_word" -> "search_from_hot_word",
+          "udc_search_from_associational_word" -> "search_from_associational_word",
+          "udc_search_result_index" -> "search_result_index")
+      ),
+        DimensionJoinCondition(
+          Map("searchTab" -> "search_tab",
+            "udc_search_from_hot_word" -> "search_from_hot_word",
+            "udc_search_from_associational_word" -> "search_from_associational_word",
+            "udc_search_result_index" -> "search_result_index"),
+          "search_from = 'unknown'", null, "udc_search_from is not null"
+        )), "search_sk"),
+    //体育比赛
+    new DimensionColumn("dim_whaley_sports_match",
+      List(DimensionJoinCondition(Map("matchSid" -> "match_sid"))), "match_sk"),
+
+    //音乐精选集
+    new DimensionColumn("dim_whaley_mv_topic",
+      List(DimensionJoinCondition(Map("omnibusSid" -> "mv_topic_sid"))), "mv_topic_sk"),
+
+    //明星
+    new DimensionColumn("dim_whaley_cast",
+      List(DimensionJoinCondition(Map("starSid" -> "cast_sid"))), "cast_sk"),
+
+    //歌手
+    new DimensionColumn("dim_whaley_singer",
+      List(DimensionJoinCondition(Map("udc_singer_or_radio_sid" -> "singer_sid"))), "singer_sk"),
+
+    //电台
+    new DimensionColumn("dim_whaley_radio",
+      List(DimensionJoinCondition(Map("udc_singer_or_radio_sid" -> "radio_sid"))), "radio_sk"),
+
+    //榜单
+    new DimensionColumn("dim_whaley_mv_hot_list",
+      List(DimensionJoinCondition(Map("udc_mv_hot_key" -> "mv_hot_rank_id"))), "mv_hot_sk")
   )
 
 }

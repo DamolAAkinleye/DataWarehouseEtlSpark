@@ -24,7 +24,7 @@ object Cast extends DimensionBase {
     "cast_sid" -> "sid",
     "cast_name" -> "name",
     "cast_name_pinyin" -> "namePinyin",
-//    "cast_other_name" -> "case when name1 is null or name1.trim = '' then name else name1 end",
+//    "cast_other_name" -> "case when name1 is null or trim(name1) = '' then name else name1 end",
     "gender" -> "sex"
   )
 
