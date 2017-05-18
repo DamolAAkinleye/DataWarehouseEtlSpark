@@ -15,6 +15,7 @@ object Program extends DimensionBase {
   columns.primaryKeys = List("sid")
   columns.trackingColumns = List()
   columns.allColumns = List("sid",
+    "program_id",
     "title",
     "content_type",
     "content_type_name",
@@ -44,7 +45,7 @@ object Program extends DimensionBase {
 
     sourceDf.registerTempTable("mtv_basecontent")
 
-    sqlContext.sql("select sid, id, display_name as title, content_type,  duration, " +
+    sqlContext.sql("select sid, id as program_id, display_name as title, content_type,  duration, " +
       "video_type, episode as episode_index, area, year, videoLengthType as video_length_type, " +
       "create_time, publish_time, douban_id, source, " +
       "language_code, supply_type, tags," +
@@ -61,7 +62,6 @@ object Program extends DimensionBase {
 
     sqlContext.sql("SELECT a.*, b.name as content_type_name " +
       " from program_table a left join content_type b on a.content_type = b.code " +
-      " where a.sid is not null and a.sid <> ''" +
-      " ORDER BY a.id")
+      " where a.sid is not null and a.sid <> ''")
   }
 }
