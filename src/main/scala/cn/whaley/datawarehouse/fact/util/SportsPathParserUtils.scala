@@ -10,7 +10,7 @@ object SportsPathParserUtils {
 
   private val SPORTS_HOME_REGEX = ("(.*)sports\\*(recommend|newsHomePage|welfareHomePage|horizontal)(.*)").r
   private val SPORTS_HOME_LIST_CATEGORY_REGEX = ("(.*)sports\\*(collect|League)\\*([0-9a-zA-Z_]+)(.*)").r
-  private val SPORTS_LIST_CATEGORY_REGEX = ("([a-zA-Z0-9_]+)\\*([\\u4e00-\\u9fa5A-Z0-9]+)").r
+  private val SPORTS_LIST_CATEGORY_REGEX = ("([a-zA-Z0-9_]+)\\*([\\u4e00-\\u9fa5A-Z0-9a-z]+)").r
 
 
 

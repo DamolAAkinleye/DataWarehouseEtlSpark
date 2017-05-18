@@ -57,6 +57,19 @@ object ListCategoryUtils extends LogConfig {
     result
   }
 
+  /** 解析列表页四级入口，针对sports */
+  def getListFourthCategory(pathMain: String, path: String, flag: String): String = {
+    var result: String = null
+    if (pathMain==null || !pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) return result
+    flag match {
+      case MEDUSA => {
+        result = getListCategoryMedusaETL(pathMain, 4)
+      }
+      case MORETV => result = null
+    }
+    result
+  }
+
   /**
     * 获取列表页入口信息
     * 第一步，过滤掉包含search字段的pathMain
@@ -244,11 +257,17 @@ object ListCategoryUtils extends LogConfig {
             "('kids_site','mv_site')",
           null,s" mainCategory in ('$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
-      //获得体育列表维度sk ，[有一级，二级,三级维度]
+        //获得体育列表维度sk ，[有一级，二级,三级,四级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code","fourthCategory"->"fourth_category"),
+          s"site_content_type in ('$CHANNEL_SPORTS')",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is not null"
+        ),
+        //获得体育列表维度sk ，[只有一级，二级,三级维度]
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
-          s"site_content_type in ('$CHANNEL_SPORTS') and main_category_code in ('sportRoot')",
-          null,s" mainCategory in ('$CHANNEL_SPORTS')"
+          s"site_content_type in ('$CHANNEL_SPORTS')",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is null"
         )
       ),
       "source_site_sk")
