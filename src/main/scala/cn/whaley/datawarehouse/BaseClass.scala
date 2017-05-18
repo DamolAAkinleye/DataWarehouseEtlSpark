@@ -183,7 +183,7 @@ trait BaseClass {
           //源表与维度表join
           val afterJoinDf = notJoinDf.as("a").join(
             dimensionDf.as("b"),
-            jc.columnPairs.map(s => sourceFilterDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
+            jc.columnPairs.map(s => notJoinDf(s._1) === dimensionDf(s._2)).reduceLeft(_ && _)
               && (expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME is null and b.dim_invalid_time is null") ||
               expr(s"a.$COLUMN_NAME_FOR_SOURCE_TIME >= b.dim_valid_time and " +
                 s"(a.$COLUMN_NAME_FOR_SOURCE_TIME < b.dim_invalid_time or b.dim_invalid_time is null)")),
