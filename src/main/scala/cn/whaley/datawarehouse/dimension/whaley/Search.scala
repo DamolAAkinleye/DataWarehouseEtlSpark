@@ -20,14 +20,16 @@ object Search extends DimensionBase {
 
   columns.skName = "search_sk"
 
-  columns.primaryKeys = List("search_from", "search_tab", "search_from_hot_word", "search_result_index")
+  columns.primaryKeys = List("search_key")
 
   columns.trackingColumns = List()
 
   columns.allColumns = List(
+    "search_key",
     "search_from",
     "search_tab",
     "search_from_hot_word",
+    "search_from_associational_word",
     "search_result_index")
 
 
@@ -37,14 +39,24 @@ object Search extends DimensionBase {
 
 
   override def filterSource(sourceDf: DataFrame): DataFrame = {
-    val searchFromDf = sourceDf.where("content = 'search_from'").select("value")
-      .withColumnRenamed("value", "search_from").withColumn("fake_id", lit(1))
-    val searchTabDf = sourceDf.where("content = 'search_tab'").select("value")
-      .withColumnRenamed("value", "search_tab").withColumn("fake_id", lit(1))
+    val searchFromDf = sourceDf.where("content = 'search_from'").select("value", "column_index")
+      .withColumnRenamed("value", "search_from")
+      .withColumnRenamed("column_index", "search_from_column_index")
+      .withColumn("fake_id", lit(1))
+
+    val searchTabDf = sourceDf.where("content = 'search_tab'").select("value", "column_index")
+      .withColumnRenamed("value", "search_tab")
+      .withColumnRenamed("column_index", "search_tab_column_index")
+      .withColumn("fake_id", lit(1))
 
     val searchFromHotWordDf = sqlContext.createDataFrame(
       (0 to 1).map(s => Row.fromSeq(List(s))),
       StructType(Array(StructField("search_from_hot_word", IntegerType)))
+    ).withColumn("fake_id", lit(1))
+
+    val searchFromAssociationalWordDf = sqlContext.createDataFrame(
+      (0 to 1).map(s => Row.fromSeq(List(s))),
+      StructType(Array(StructField("search_from_associational_word", IntegerType)))
     ).withColumn("fake_id", lit(1))
 
     //搜索结果索引列，其中0表示未知或者超过100
@@ -55,6 +67,10 @@ object Search extends DimensionBase {
 
     searchFromDf.join(searchTabDf, List("fake_id"), "leftouter")
       .join(searchFromHotWordDf, List("fake_id"), "leftouter")
+      .join(searchFromAssociationalWordDf, List("fake_id"), "leftouter")
       .join(searchResultIndexDf, List("fake_id"), "leftouter")
+      .withColumn("search_key",
+        expr("concat(search_from_column_index, '_', search_tab_column_index, '_', search_from_hot_word, '_', " +
+          " search_from_associational_word, '_', search_result_index)"))
   }
 }
