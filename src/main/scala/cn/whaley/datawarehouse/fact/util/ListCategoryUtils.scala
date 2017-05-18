@@ -224,6 +224,13 @@ object ListCategoryUtils extends LogConfig {
             "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
           null,s" flag='$MORETV' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
+        //moretv日志里的少儿维度，三级入口需要使用code关联
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
+          s"site_content_type in ('$CHANNEL_KIDS') and main_category_code in " +
+            "('kids_site')",
+          null,s" flag='$MORETV' and mainCategory in ('$CHANNEL_KIDS')"
+        ),
           //获得少儿和音乐的列表维度sk ，[有一级，二级,三级维度]
           DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
