@@ -57,6 +57,19 @@ object ListCategoryUtils extends LogConfig {
     result
   }
 
+  /** 解析列表页四级入口，针对sports */
+  def getListFourthCategory(pathMain: String, path: String, flag: String): String = {
+    var result: String = null
+    if (pathMain==null || !pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) return result
+    flag match {
+      case MEDUSA => {
+        result = getListCategoryMedusaETL(pathMain, 4)
+      }
+      case MORETV => result = null
+    }
+    result
+  }
+
   /**
     * 获取列表页入口信息
     * 第一步，过滤掉包含search字段的pathMain
@@ -65,7 +78,7 @@ object ListCategoryUtils extends LogConfig {
     */
   def getListCategoryMedusaETL(pathMain: String, index_input: Int): String = {
     var result: String = null
-    if (null == pathMain || pathMain.contains(UDFConstantDimension.MV_RECOMMEND_HOME_PAGE) || pathMain.contains(UDFConstantDimension.HOME_SEARCH)) {
+    if (null == pathMain || pathMain.contains(UDFConstantDimension.HOME_SEARCH)) {
       result = null
     }
       /** 少儿kids */
@@ -212,10 +225,10 @@ object ListCategoryUtils extends LogConfig {
       List(
         //获得MEDUSA中除了少儿，体育和音乐的列表维度sk，[只有一级，二级维度]
         DimensionJoinCondition(
-        Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category"),
-        "site_content_type is not null and main_category_code in " +
-          "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
-        null,s" flag='$MEDUSA' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category"),
+          "site_content_type is not null and main_category_code in " +
+            "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
+          null,s" flag='$MEDUSA' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
         //获得MORETV中除了少儿，体育和音乐的列表维度sk ，[只有一级，二级维度]
         DimensionJoinCondition(
@@ -224,26 +237,38 @@ object ListCategoryUtils extends LogConfig {
             "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
           null,s" flag='$MORETV' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
-          //获得少儿和音乐的列表维度sk ，[有一级，二级,三级维度]
-          DimensionJoinCondition(
-          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
-          s"site_content_type in ('$CHANNEL_KIDS','$CHANNEL_MV') and main_category_code in " +
-            "('kids_site','mv_site')",
-          null,s" mainCategory in ('$CHANNEL_KIDS','$CHANNEL_MV')"
-          ),
-
         //获得音乐的列表维度sk ，热门歌手，精选集，电台，排行榜只到二级维度 [只有有一级，二级维度]
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code"),
           s"site_content_type in ('$CHANNEL_MV') and main_category_code in ('mv_site') and second_category_code in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject')" ,
           null,s" mainCategory in ('$CHANNEL_MV') and secondCategory in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject') "
         ),
-        //获得体育列表维度sk ，[有一级，二级,三级维度]
-          DimensionJoinCondition(
+        //moretv日志里的少儿维度，三级入口需要使用code关联, [有一级，二级,三级维度]
+        DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
-          s"site_content_type in ('$CHANNEL_SPORTS') and main_category_code in ('sportRoot')",
-        null,s" mainCategory in ('$CHANNEL_SPORTS')"
-      )
+          s"site_content_type in ('$CHANNEL_KIDS') and main_category_code in " +
+            "('kids_site')",
+          null,s" flag='$MORETV' and mainCategory in ('$CHANNEL_KIDS')"
+        ),
+        //获得少儿和音乐的列表维度sk ，[有一级，二级,三级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
+          s"site_content_type in ('$CHANNEL_KIDS','$CHANNEL_MV') and main_category_code in " +
+            "('kids_site','mv_site')",
+          null,s" mainCategory in ('$CHANNEL_KIDS','$CHANNEL_MV')"
+        ),
+        //获得体育列表维度sk ，[有一级，二级,三级,四级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code","fourthCategory"->"fourth_category"),
+          s"site_content_type in ('$CHANNEL_SPORTS')",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is not null"
+        ),
+        //获得体育列表维度sk ，[只有一级，二级,三级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
+          s"site_content_type in ('$CHANNEL_SPORTS')",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is null"
+        )
       ),
       "source_site_sk")
   }

@@ -133,6 +133,20 @@ class ListCategoryUtilsTest {
       ("home*my_tv*xiqu-xiqu*吕剧", "", MEDUSA, "xiqu", "吕剧", null)
     )
 
+    val fourthCategoryCase = List(
+      ("home*my_tv*4-sports*League*qipai-league*围棋", "", MEDUSA, "sports", "leagueEntry", "qipai", "围棋"),
+      ("home*my_tv*5-sports*League*dzjj-league*穿越火线", "", MEDUSA, "sports", "leagueEntry", "dzjj", "穿越火线"),
+      ("home*my_tv*7-sports*League*dj", "", MEDUSA, "sports", "leagueEntry", "dj", null),
+      ("home*my_tv*7-sports*League*ouguan-league*热点新闻", "", MEDUSA, "sports", "leagueEntry", "ouguan", "热点新闻"),
+      ("home*classification*3-sports*recommend*sports86", "", MEDUSA, "sports", "horizontal", "recommend", null),
+      ("home*classification*3-sports*horizontal*collect-sportcollection*比赛", "", MEDUSA, "sports", "collect", "sportcollection", "比赛"),
+      ("home*my_tv*6-sports*collect*collect-sportcollection*视频", "", MEDUSA, "sports", "collect", "collect", "视频"),
+      ("home*classification*3-sports*League*dzjj-league*LPL", "", MEDUSA, "sports", "leagueEntry", "dzjj", "LPL"),
+      ("home*classification*3-sports*League*jiewu-league*Breaking", "", MEDUSA, "sports", "leagueEntry", "jiewu", "Breaking"),
+      ("home*my_tv*4-sports*newsHomePage*tvn8xzu9wytu", "", MEDUSA, "sports", "horizontal", "newsHomePage", null),
+      ("home*my_tv*xiqu-xiqu*吕剧", "", MEDUSA, "xiqu", "吕剧", null, null)
+    )
+
     val testCaseList = moretvTestCaseList ++ medusaTestCaseList
     testCaseList.foreach(f = w => {
       if (w._1 == "") path_message = w._2 else path_message = w._1
@@ -143,6 +157,25 @@ class ListCategoryUtilsTest {
         assertEquals(w._4, main_category)
         assertEquals(w._5, second_category)
         assertEquals(w._6, third_category)
+      } catch {
+        case e: AssertionError =>
+          println("fail test case: " + path_message)
+          throw e
+      }
+
+    })
+
+    fourthCategoryCase.foreach(f = w => {
+      if (w._1 == "") path_message = w._2 else path_message = w._1
+      val main_category = ListCategoryUtils.getListMainCategory(w._1, w._2, w._3)
+      val second_category = ListCategoryUtils.getListSecondCategory(w._1, w._2, w._3)
+      val third_category = ListCategoryUtils.getListThirdCategory(w._1, w._2, w._3)
+      val fourth_category = ListCategoryUtils.getListFourthCategory(w._1, w._2, w._3)
+      try {
+        assertEquals(w._4, main_category)
+        assertEquals(w._5, second_category)
+        assertEquals(w._6, third_category)
+        assertEquals(w._7, fourth_category)
       } catch {
         case e: AssertionError =>
           println("fail test case: " + path_message)
