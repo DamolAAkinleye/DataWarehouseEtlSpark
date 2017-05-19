@@ -14,7 +14,7 @@ import org.apache.spark.sql.DataFrame
   * 数据输出：各区域来源维度
   */
 object AreaSourceAgg extends DimensionBase {
-  columns.skName = "area_source_Agg_sk"
+  columns.skName = "area_source_agg_sk"
   columns.primaryKeys = List("source_code","module_code","sub_module_code")
   columns.trackingColumns = List()
   columns.allColumns = List(
