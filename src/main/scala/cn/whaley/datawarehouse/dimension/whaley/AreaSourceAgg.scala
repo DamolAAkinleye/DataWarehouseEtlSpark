@@ -35,7 +35,7 @@ object AreaSourceAgg extends DimensionBase {
     val sourceSiteDF = DataExtractUtils.readFromParquet(sqlContext,LogPath.DIM_WHALEY_SOURCE_SITE)
                    .filter("dim_invalid_time is null")
                    .selectExpr("'source_site' as source_code",
-                     "'首页各区域' as source_name",
+                     "'站点树' as source_name",
                      "last_second_code as module_code",
                      "last_second_name as module_name",
                      "last_first_code as sub_module_code",
@@ -49,7 +49,7 @@ object AreaSourceAgg extends DimensionBase {
     val launcherEntranceDF = DataExtractUtils.readFromParquet(sqlContext,LogPath.DIM_WHALEY_LAUNCHER_ENTRANCE)
       .filter("dim_invalid_time is null")
       .selectExpr("'launcher_entrance' as source_code",
-        "'首页各区域' as source_name",
+        "'首页入口各区域' as source_name",
         "access_area_code as module_code",
         "access_area_name as module_name",
         "access_location_code as sub_module_code",
@@ -61,7 +61,7 @@ object AreaSourceAgg extends DimensionBase {
       */
     val channelEntranceDF = DataExtractUtils.readFromParquet(sqlContext,LogPath.DIM_WHALEY_PAGE_ENTRANCE)
       .filter("dim_invalid_time is null")
-      .selectExpr("'channelEntrance' as source_code",
+      .selectExpr("'channel_entrance' as source_code",
         "'频道首页各区域' as source_name",
         "page_code as module_code",
         "page_name as module_name",
@@ -75,7 +75,7 @@ object AreaSourceAgg extends DimensionBase {
     /**
       * 语音
       */
-    val arr = Array("voiceSearch-语音搜索-voiceSearch-语音搜索-voiceSearch-语音搜索")
+    val arr = Array("voice_search-语音搜索-voice_search-语音搜索-voice_search-语音搜索")
     val voiceSearchDF  = sc.parallelize(arr).map(f=>{
       val source_code = f.split("-")(0)
       val source_name = f.split("-")(1)
