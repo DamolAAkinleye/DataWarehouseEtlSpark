@@ -6,6 +6,11 @@ package cn.whaley.datawarehouse.common
 case class DimensionColumn(dimensionName: String,
 
                            /**
+                             * 维度别名，不能重复
+                             */
+                           dimensionNameAs: String,
+
+                           /**
                              * list内的是或关系
                              */
                            joinColumnList: List[DimensionJoinCondition],
@@ -31,13 +36,21 @@ case class DimensionColumn(dimensionName: String,
   def this(dimensionName: String,
            joinColumnList: List[DimensionJoinCondition],
            dimensionSkName: String) =
-    this(dimensionName, joinColumnList,dimensionSkName,dimensionSkName, List((dimensionSkName, dimensionSkName)))
+    this(dimensionName, dimensionName, joinColumnList,dimensionSkName,dimensionSkName, List((dimensionSkName, dimensionSkName)))
 
   def this(dimensionName: String,
            joinColumnList: List[DimensionJoinCondition],
            dimensionSkName: String,
            factSkColumnName: String) =
-    this(dimensionName, joinColumnList,dimensionSkName, factSkColumnName, List((dimensionSkName, factSkColumnName)))
+    this(dimensionName, dimensionName, joinColumnList,dimensionSkName, factSkColumnName, List((dimensionSkName, factSkColumnName)))
+
+
+  def this(dimensionName: String,
+           dimensionNameAs: String,
+           joinColumnList: List[DimensionJoinCondition],
+           dimensionSkName: String,
+           factSkColumnName: String) =
+    this(dimensionName, dimensionNameAs, joinColumnList,dimensionSkName, factSkColumnName, List((dimensionSkName, factSkColumnName)))
 
   /**
     * 构造函数
@@ -49,5 +62,5 @@ case class DimensionColumn(dimensionName: String,
   def this(dimensionName: String,
            joinColumnList: List[DimensionJoinCondition],
            dimensionColumnName: List[(String, String)]) =
-    this(dimensionName, joinColumnList, dimensionColumnName.head._1,dimensionColumnName.head._2, dimensionColumnName)
+    this(dimensionName, dimensionName, joinColumnList, dimensionColumnName.head._1,dimensionColumnName.head._2, dimensionColumnName)
 }

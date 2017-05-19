@@ -4,6 +4,7 @@ import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, 
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.fact.whaley.util._
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.udf
 
 /**
@@ -71,7 +72,9 @@ object Play extends FactEtlBase {
       List("path", "contentType", "omnibusSid")),
     UserDefinedColumn("udc_mv_hot_key",
       udf(SingerRankRadioUtils.getRankFromPath: (String, String) => String),
-      List("path", "contentType"))
+      List("path", "contentType")),
+    UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("datetime")),
+    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime"))
   )
 
   columnsFromSource = List(
@@ -84,6 +87,11 @@ object Play extends FactEtlBase {
     ("start_time", "cast(startTime as timestamp)"),
     ("end_time", "cast(endTime as timestamp)"),
     ("program_content_type", "contentType"),
+    ("play_content_type",
+      "case when trim(contentType) = 'reservation' then 'reservation'" +
+        "when dim_whaley_subject.subject_content_type is not null then dim_whaley_subject.subject_content_type " +
+        "when dim_whaley_program.content_type is not null then dim_whaley_program.content_type " +
+        "when trim(contentType) = '' then null else contentType end"),
     ("search_keyword", "searchText"),
     ("search_rec_keyword", "case when hotSearchWord is null or " +
       "trim(hotSearchWord) = '' then searchAssociationalWord else hotSearchWord end "),
@@ -96,32 +104,37 @@ object Play extends FactEtlBase {
     ("current_resolution", "currentResolution"),
     ("program_resolution", "resolution"),
     ("current_vip_level", "currentVipLevel"),
+    ("product_line", "case when productLine is null or trim(productLine) = '' then 'helios' else productLine end"),
 //    ("network_type", "networkType"),
 
-    ("path", "path"),
-    ("subject_code", "udc_subject_code"),
-    ("wui_version", "udc_wui_version"),
-    ("launcher_access_location", "udc_launcher_access_location"),
-    ("launcher_location_index", "udc_launcher_location_index"),
-    ("recommend_position", "udc_recommend_position"),
-    ("recommend_index", "udc_recommend_index"),
-    ("path_content_type", "udc_path_content_type"),
-    ("page_code", "udc_page_code"),
-    ("page_area_code", "udc_page_area_code"),
-    ("page_location_code", "udc_page_location_code"),
-    ("page_location_index", "udc_page_location_index"),
-    ("last_category", "udc_last_category"),
-    ("last_second_category", "udc_last_second_category"),
-    ("search_from", "udc_search_from"),
-    ("search_from_hot_word", "udc_search_from_hot_word"),
-    ("search_from_associational_word", "udc_search_from_associational_word"),
-    ("retrieval", "retrieval"),
-    ("search_tab", "searchTab"),
-    ("search_result_index", "udc_search_result_index"),
-    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
-    ("mv_hot_key", "udc_mv_hot_key")
+//    ("path", "path"),
+//    ("subject_code", "udc_subject_code"),
+//    ("wui_version", "udc_wui_version"),
+//    ("launcher_access_location", "udc_launcher_access_location"),
+//    ("launcher_location_index", "udc_launcher_location_index"),
+//    ("recommend_position", "udc_recommend_position"),
+//    ("recommend_index", "udc_recommend_index"),
+//    ("path_content_type", "udc_path_content_type"),
+//    ("page_code", "udc_page_code"),
+//    ("page_area_code", "udc_page_area_code"),
+//    ("page_location_code", "udc_page_location_code"),
+//    ("page_location_index", "udc_page_location_index"),
+//    ("last_category", "udc_last_category"),
+//    ("last_second_category", "udc_last_second_category"),
+//    ("search_from", "udc_search_from"),
+//    ("search_from_hot_word", "udc_search_from_hot_word"),
+//    ("search_from_associational_word", "udc_search_from_associational_word"),
+//    ("retrieval", "retrieval"),
+//    ("search_tab", "searchTab"),
+//    ("search_result_index", "udc_search_result_index"),
+//    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
+//    ("mv_hot_key", "udc_mv_hot_key"),
+    ("dim_date", "dim_date"),
+    ("dim_time", "dim_time")
 
   )
+
+  dimensionsNeedInFact = List("dim_whaley_program", "dim_whaley_subject")
 
   dimensionColumns = List(
     //用户
@@ -134,7 +147,7 @@ object Play extends FactEtlBase {
       List(DimensionJoinCondition(Map("videoSid" -> "sid"))), "program_sk"),
 
     //剧集
-    new DimensionColumn("dim_whaley_program",
+    new DimensionColumn("dim_whaley_program", "dim_whaley_program_eposide",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))), "program_sk", "episode_program_sk"),
 
     //账号
@@ -240,7 +253,54 @@ object Play extends FactEtlBase {
 
     //榜单
     new DimensionColumn("dim_whaley_mv_hot_list",
-      List(DimensionJoinCondition(Map("udc_mv_hot_key" -> "mv_hot_rank_id"))), "mv_hot_sk")
+      List(DimensionJoinCondition(Map("udc_mv_hot_key" -> "mv_hot_rank_id"))), "mv_hot_sk"),
+
+    //节目聚合维度
+    new DimensionColumn("dim_whaley_link_type",
+      List(
+        DimensionJoinCondition(Map("matchSid" -> "link_value_code"), "link_type_code = 16"),
+        DimensionJoinCondition(Map("omnibusSid" -> "link_value_code"), "link_type_code = 11"),
+        DimensionJoinCondition(Map("udc_subject_code" -> "link_value_code"), "link_type_code = 4"),
+        DimensionJoinCondition(Map("udc_singer_or_radio_sid" -> "link_value_code"), "link_type_code in (36, 37) "),
+        DimensionJoinCondition(Map("udc_mv_hot_key" -> "link_value_code"), "link_type_code = 19")
+      ), "link_type_sk")
   )
+
+  override def filterRows(sourceDf: DataFrame): DataFrame = {
+    sourceDf.where("playStatus != 'failure' and playStatus is not null")
+  }
+
+  def getIpKey(ip: String): Long = {
+    try {
+      val ipInfo = ip.split("\\.")
+      if (ipInfo.length >= 3) {
+        (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+      } else 0
+    } catch {
+      case ex: Exception => 0
+    }
+  }
+
+  def getDimDate(dateTime: String): String = {
+    try {
+      val dateTimeInfo = dateTime.split(" ")
+      if (dateTimeInfo.length >= 2) {
+        dateTimeInfo(0)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getDimTime(dateTime: String): String = {
+    try {
+      val dateTimeInfo = dateTime.split(" ")
+      if (dateTimeInfo.length >= 2) {
+        dateTimeInfo(1)
+      } else ""
+    } catch {
+      case ex: Exception => ""
+    }
+  }
 
 }

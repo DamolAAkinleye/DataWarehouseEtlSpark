@@ -121,10 +121,10 @@ abstract class FactEtlBase extends BaseClass {
     // 关联用到的维度
     if (dimensionColumns != null && dimensionsNeedInFact != null) {
       dimensionColumns.foreach(c => {
-        if (dimensionsNeedInFact.contains(c.dimensionName)) {
+        if (dimensionsNeedInFact.contains(c.dimensionNameAs)) {
           val dimensionDf = sqlContext.read.parquet(DIMENSION_HDFS_BASE_PATH + File.separator + c.dimensionName)
-          df = df.join(dimensionDf.as(c.dimensionName),
-            expr("source." + c.factSkColumnName + " = " + c.dimensionName + "." + c.dimensionSkName),
+          df = df.join(dimensionDf.as(c.dimensionNameAs),
+            expr("source." + c.factSkColumnName + " = " + c.dimensionNameAs + "." + c.dimensionSkName),
             "leftouter")
         }
       })
