@@ -1,3 +1,3 @@
 type=command
-dependencies=fact_whaley_MembershipProcess,fact_whaley_OnOff
+dependencies=fact_whaley_MembershipProcess,fact_whaley_OnOff,fact_whaley_play
 command=echo "fact whaley parquet is end ..."
