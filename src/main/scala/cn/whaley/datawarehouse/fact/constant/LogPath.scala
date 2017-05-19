@@ -12,8 +12,11 @@ object LogPath {
   val HELIOS_OFF = s"/log/whaley/parquet/$DATE_ESCAPE/off"
   val HELIOS_PLAY = s"/log/whaley/parquet/$DATE_ESCAPE/play"
   val HELIOS_DETAIL = s"/log/whaley/parquet/$DATE_ESCAPE/detail"
-
-
-
+  //微鲸站点树维度表
+  val DIM_WHALEY_SOURCE_SITE = s"/data_warehouse/dw_dimensions/dim_whaley_source_site"
+  //首页入口维度表
+  val DIM_WHALEY_LAUNCHER_ENTRANCE = s"/data_warehouse/dw_dimensions/dim_whaley_launcher_entrance"
+  //各频道入口维度表
+  val DIM_WHALEY_PAGE_ENTRANCE = s"/data_warehouse/dw_dimensions/dim_whaley_page_entrance"
 
 }

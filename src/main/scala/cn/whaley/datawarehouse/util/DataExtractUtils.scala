@@ -17,5 +17,9 @@ object DataExtractUtils {
     val sourceDf = sqlContext.read.parquet(filePath)
     sourceDf
   }
+  def readFromParquet(sqlContext: SQLContext, sourceParquetPath: String): DataFrame = {
+    val sourceDf = sqlContext.read.parquet(sourceParquetPath)
+    sourceDf
+  }
 
 }
