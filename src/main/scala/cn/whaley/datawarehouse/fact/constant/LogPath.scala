@@ -19,4 +19,11 @@ object LogPath {
   //各频道入口维度表
   val DIM_WHALEY_PAGE_ENTRANCE = s"/data_warehouse/dw_dimensions/dim_whaley_page_entrance"
 
+  val DIM_WHALEY_SUBJECT = s"/data_warehouse/dw_dimensions/dim_whaley_subject"
+  val DIM_WHALEY_MV_TOPIC = s"/data_warehouse/dw_dimensions/dim_whaley_mv_topic"
+  val DIM_WHALEY_MV_HOT_LIST = s"/data_warehouse/dw_dimensions/dim_whaley_mv_hot_list"
+  val DIM_WHALEY_SINGER = s"/data_warehouse/dw_dimensions/dim_whaley_singer"
+  val DIM_WHALEY_RADIO = s"/data_warehouse/dw_dimensions/dim_whaley_radio"
+  val DIM_WHALEY_SPOTRS_MATCH = s"/data_warehouse/dw_dimensions/dim_whaley_sports_match"
+
 }
