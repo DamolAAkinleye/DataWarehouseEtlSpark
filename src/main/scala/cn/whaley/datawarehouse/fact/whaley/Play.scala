@@ -16,7 +16,7 @@ object Play extends FactEtlBase {
 
   parquetPath = LogPath.HELIOS_PLAY
 
-  factTime = null
+  partition = 200
 
   addColumns = List(
     UserDefinedColumn("udc_subject_code", udf(SubjectUtils.getSubjectCode: String => String), List("path")),
@@ -99,36 +99,39 @@ object Play extends FactEtlBase {
     ("launcher_link_type", "linkType"),
     ("launcher_link_value", "linkValue"),
     ("position_type", "positionType"),
-//    ("trailer_process", "trailerProcess"),
+    //    ("trailer_process", "trailerProcess"),
     ("trailer_mark", "trailerMark"),
     ("current_resolution", "currentResolution"),
     ("program_resolution", "resolution"),
     ("current_vip_level", "currentVipLevel"),
     ("product_line", "case when productLine is null or trim(productLine) = '' then 'helios' else productLine end"),
-//    ("network_type", "networkType"),
+    ("rom_version", "romVersion"),
+    ("firmware_version", "firmwareVersion"),
 
-//    ("path", "path"),
-//    ("subject_code", "udc_subject_code"),
-//    ("wui_version", "udc_wui_version"),
-//    ("launcher_access_location", "udc_launcher_access_location"),
-//    ("launcher_location_index", "udc_launcher_location_index"),
-//    ("recommend_position", "udc_recommend_position"),
-//    ("recommend_index", "udc_recommend_index"),
-//    ("path_content_type", "udc_path_content_type"),
-//    ("page_code", "udc_page_code"),
-//    ("page_area_code", "udc_page_area_code"),
-//    ("page_location_code", "udc_page_location_code"),
-//    ("page_location_index", "udc_page_location_index"),
-//    ("last_category", "udc_last_category"),
-//    ("last_second_category", "udc_last_second_category"),
-//    ("search_from", "udc_search_from"),
-//    ("search_from_hot_word", "udc_search_from_hot_word"),
-//    ("search_from_associational_word", "udc_search_from_associational_word"),
-//    ("retrieval", "retrieval"),
-//    ("search_tab", "searchTab"),
-//    ("search_result_index", "udc_search_result_index"),
-//    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
-//    ("mv_hot_key", "udc_mv_hot_key"),
+    //    ("network_type", "networkType"),
+
+    //    ("path", "path"),
+    //    ("subject_code", "udc_subject_code"),
+    //    ("wui_version", "udc_wui_version"),
+    //    ("launcher_access_location", "udc_launcher_access_location"),
+    //    ("launcher_location_index", "udc_launcher_location_index"),
+    //    ("recommend_position", "udc_recommend_position"),
+    //    ("recommend_index", "udc_recommend_index"),
+    //    ("path_content_type", "udc_path_content_type"),
+    //    ("page_code", "udc_page_code"),
+    //    ("page_area_code", "udc_page_area_code"),
+    //    ("page_location_code", "udc_page_location_code"),
+    //    ("page_location_index", "udc_page_location_index"),
+    //    ("last_category", "udc_last_category"),
+    //    ("last_second_category", "udc_last_second_category"),
+    //    ("search_from", "udc_search_from"),
+    //    ("search_from_hot_word", "udc_search_from_hot_word"),
+    //    ("search_from_associational_word", "udc_search_from_associational_word"),
+    //    ("retrieval", "retrieval"),
+    //    ("search_tab", "searchTab"),
+    //    ("search_result_index", "udc_search_result_index"),
+    //    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
+    //    ("mv_hot_key", "udc_mv_hot_key"),
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
 
@@ -263,7 +266,19 @@ object Play extends FactEtlBase {
         DimensionJoinCondition(Map("udc_subject_code" -> "link_value_code"), "link_type_code = 4"),
         DimensionJoinCondition(Map("udc_singer_or_radio_sid" -> "link_value_code"), "link_type_code in (36, 37) "),
         DimensionJoinCondition(Map("udc_mv_hot_key" -> "link_value_code"), "link_type_code = 19")
-      ), "link_type_sk")
+      ), "link_type_sk"),
+
+    //路径聚合维度
+    new DimensionColumn("dim_whaley_area_source_agg",
+      List(
+        DimensionJoinCondition(Map(), "source_code = 'voice_search'", null,  "path like '%voicesearch%'"),
+        DimensionJoinCondition(Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
+           "source_code = 'source_site'"),
+        DimensionJoinCondition(Map("udc_page_code" -> "module_code", "udc_page_area_code" -> "sub_module_code"),
+          "source_code = 'channel_entrance'"),
+        DimensionJoinCondition(Map("udc_launcher_access_location" -> "sub_module_code"),
+          "source_code = 'launcher_entrance'")
+      ), "area_source_agg_sk")
   )
 
   override def filterRows(sourceDf: DataFrame): DataFrame = {
