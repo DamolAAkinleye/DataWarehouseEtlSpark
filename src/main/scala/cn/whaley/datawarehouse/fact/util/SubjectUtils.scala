@@ -10,35 +10,9 @@ import cn.whaley.datawarehouse.global.LogConfig
   */
 object SubjectUtils extends LogConfig{
 
-/**-------------------------------------- block 1--------------------------------------*/
   /**
     * 从路径中获取专题code
     */
-  def getSubjectCodeByPathETLOld(pathSpecial:String, path: String, flag: String)= {
-    var result: String = null
-    if (flag != null && pathSpecial != null) {
-      flag match {
-        case "medusa" => {
-          if ("subject".equalsIgnoreCase(PathParserUtils.getPathMainInfo(pathSpecial, 1, 1))) {
-            val subjectCode = getSubjectCode(pathSpecial)
-            if (!" ".equalsIgnoreCase(subjectCode)) {
-              result = subjectCode
-            }
-          }
-        }
-        case "moretv" => {
-          val info = getSubjectCodeAndPath(path)
-          if (!info.isEmpty) {
-            val subjectCode = info(0)
-            result = subjectCode._1
-          }
-        }
-        case _ =>
-      }
-    }
-    result
-  }
-
   def getSubjectCodeByPathETL(pathSpecial:String, path: String, flag: String)= {
     var result: String = null
     flag match {
@@ -59,27 +33,12 @@ object SubjectUtils extends LogConfig{
 
     result
   }
-/**-------------------------------------- block 1 end--------------------------------------*/
 
-/**-------------------------------------- block 2--------------------------------------*/
-
-  //private val regex="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
-  //在正确性上需要加上kid，现在保证正确性去掉kid正则.或者以后使用([a-z]+)([0-9]+)正则表达式
-  private val regex_etl="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
-  // private val regex_etl="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv|kid)([0-9]+)""".r
+  private val regex_etl="""([a-zA-Z]+)([0-9]+)""".r
+  //private val regex_etl="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv)([0-9]+)""".r
+  //private val regex_etl="""(movie|tv|hot|kids|zongyi|comic|jilu|sports|xiqu|mv|kid)([0-9]+)""".r
   private val regexSubjectName="""subject-([a-zA-Z0-9-\u4e00-\u9fa5]+)""".r
-  // 获取 专题code
-  def getSubjectCodeOld(subject:String) = {
-    regex_etl findFirstMatchIn subject match {
-      // 如果匹配成功，说明subject包含了专题code，直接返回专题code
-      case Some(m) => {
-        m.group(1)+m.group(2)
-      }
-      // 没有匹配成功，说明subject为专题名称，不包含专题code，因此直接返回专题名称
-      case None => " "
-    }
-  }
-
+  // 获取专题code
   def getSubjectCode(subject:String) = {
     var subjectCode: String = null
     if (subject != null){
@@ -104,9 +63,7 @@ object SubjectUtils extends LogConfig{
       case None => null
     }
   }
-/**-------------------------------------- block 2--------------------------------------*/
 
-/**-------------------------------------- block 3--------------------------------------*/
   /**
     * 从路径中获取专题名称,对于medusa日志，可以从pathSpecial解析出subjectName；对于moretv日志，日志里面不存在subjectName打点
     *
@@ -115,12 +72,11 @@ object SubjectUtils extends LogConfig{
     *         Example:
     *
     *         {{{
-    *                              sqlContext.sql("
-    *                              select pathSpecial,subjectName,subjectCode
-    *                              from log_data
-    *                              where flag='medusa' and pathSpecial is not null and size(split(pathSpecial,'-'))=2").show(100,false)
+    *                sqlContext.sql("
+    *                select pathSpecial,subjectName,subjectCode
+    *                from log_data
+    *                where flag='medusa' and pathSpecial is not null and size(split(pathSpecial,'-'))=2").show(100,false)
     *         }}}
-
     **/
 
   def getSubjectNameByPathETL(pathSpecial: String): String = {
@@ -149,58 +105,42 @@ object SubjectUtils extends LogConfig{
     }
     result
   }
-/**-------------------------------------- block 3 end--------------------------------------*/
 
-
-
-
-/**-------------------------------------- block 4 --------------------------------------*/
-/** 通过专题subject_code and subject_name获得subject_sk  */
-def getSubjectSK() :DimensionColumn = {
-  new DimensionColumn("dim_medusa_subject",
-    List(DimensionJoinCondition(
-      Map("subjectCode" -> "subject_code"),
-      null,null,null
-    ),
-      DimensionJoinCondition(
-        Map("subjectName" -> "subject_name"),
+  /** 通过专题subject_code and subject_name获得subject_sk  */
+  def getSubjectSK() :DimensionColumn = {
+    new DimensionColumn("dim_medusa_subject",
+      List(DimensionJoinCondition(
+        Map("subjectCode" -> "subject_code"),
         null,null,null
-      )
-    ),
-    "subject_sk")
-}
-
-/**-------------------------------------- block 4 end--------------------------------------*/
-
-
-
-/**-------------------------------------- block --------------------------------------*/
+      ),
+        DimensionJoinCondition(
+          Map("subjectName" -> "subject_name"),
+          null,null,null
+        )
+      ),
+      "subject_sk")
+  }
 
   //匹配首页上的专题
   val regexSubjectA = "home-(hotrecommend)(-\\d+-\\d+)?-(hot\\d+|movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|sports\\d+|mv\\d+|xiqu\\d+)".r
   //匹配首页上的专题套专题
   val regexSubjectA2 = ("home-(hotrecommend)(-\\d+-\\d+)?-(hot\\d+|movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|sports\\d+|mv\\d+|xiqu\\d+)-"
     + "(actor|hot\\d+|movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|sports\\d+|mv\\d+|xiqu\\d+)").r
-
   //匹配在三级页面的专题
   val regexSubjectB = "home-(movie|zongyi|tv|comic|kids|jilu|hot|sports|mv|xiqu)-(\\w+)-(movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|hot\\d+|sports\\d+|mv\\d+|xiqu\\d+)".r
   //匹配在三级页面的专题套专题
   val regexSubjectB2  = ("home-(movie|zongyi|tv|comic|kids|jilu|hot|mv|xiqu)-(\\w+)-(movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|hot\\d+|mv\\d+|xiqu\\d+)-"
     + "(actor|movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|hot\\d+|mv\\d+|xiqu\\d+)").r
-
   //匹配第三方跳转的专题
   val regexSubjectC = "(thirdparty_\\d{1})[\\w\\-]+-(movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|hot\\d+|sports\\d+|mv\\d+|xiqu\\d+)".r
-
   //匹配少儿毛推荐的专题
   val regexSubjectD = "home-kids_home-(\\w+)-(kids\\d+)".r
   //匹配少儿三级页面中的专题
   val regexSubjectE = "home-kids_home-(\\w+)-(\\w+)-(kids\\d+)".r
-
   //匹配历史收藏中的专题
   val regexSubjectF = "home-(history)-[\\w\\-]+-(movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|jilu\\d+|hot\\d+|sports\\d+|mv\\d+|xiqu\\d+)".r
   //匹配历史收藏中的专题套专题
   val regexSubjectF2 = "home-(history)-[\\w\\-]+-(movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|jilu\\d+|hot\\d+|sports\\d+|mv\\d+|xiqu\\d+)-(actor|movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|jilu\\d+|hot\\d+|sports\\d+|mv\\d+|xiqu\\d+)".r
-
   //暂时不清楚是匹配哪种情况，暂且保留此匹配项
   val regexSubjectG = "home-(movie|zongyi|tv|comic|kids|jilu|hot)-(movie\\d+|zongyi\\d+|tv\\d+|comic\\d+|kids\\d+|jilu\\d+|hot\\d+|sports\\d+)".r
 
@@ -245,6 +185,5 @@ def getSubjectSK() :DimensionColumn = {
     getSubjectCodeAndPath(path).map(x => (x,userId))
   }
 
-/**-------------------------------------- block end--------------------------------------*/
 
 }

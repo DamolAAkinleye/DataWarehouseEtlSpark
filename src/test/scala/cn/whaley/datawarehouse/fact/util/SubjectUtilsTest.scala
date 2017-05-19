@@ -67,6 +67,7 @@ class SubjectUtilsTest {
       ("subject-周润发-movie397", "", MEDUSA, "movie397", "周润发"),
       ("subject-老戏骨之陈宝国-tv103", "", MEDUSA, "tv103", "老戏骨之陈宝国"),
       ("subject-快乐开学-kids82", "", MEDUSA, "kids82", "快乐开学"),
+      ("subject-暑假大冒险侦探世界-kid19", "", MEDUSA, "kid19", "暑假大冒险侦探世界"),
       ("subject-那些年我们追过的美番-comic51", "", MEDUSA, "comic51", "那些年我们追过的美番"),
       ("subject-做个灵活的胖子-sports125", "", MEDUSA, "sports125", "做个灵活的胖子"),
       ("subject-爆笑集锦 - 歌坛无敌车祸现场-mv022", "", MEDUSA, "mv022", "爆笑集锦 - 歌坛无敌车祸现场"),

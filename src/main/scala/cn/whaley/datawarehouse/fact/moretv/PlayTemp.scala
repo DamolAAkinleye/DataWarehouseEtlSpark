@@ -48,18 +48,19 @@ object PlayTemp extends FactEtlBase with  LogConfig{
 //    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime")),
 //    UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
 //    UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version")),
-    UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
-    UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial"))
-//    UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-//    UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
-//    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+//    UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
+//    UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
+    UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("fourthCategory", udf(ListCategoryUtils.getListFourthCategory: (String,String,String) => String), List("pathMain", "path", "flag"))
 //    UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("filterContentType", udf(FilterCategoryUtils.getFilterCategoryContentType: (String,String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("filterCategorySecond", udf(FilterCategoryUtils.getFilterCategorySecond: (String,String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("filterCategoryThird", udf(FilterCategoryUtils.getFilterCategoryThird: (String,String,String) => String), List("pathMain", "path", "flag")),
-//    UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag"))
+//    UserDefinedColumn("filterCategoryFourth", udf(FilterCategoryUtils.getFilterCategoryFourth: (String,String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("recommendSourceType", udf(RecommendUtils.getRecommendSourceType: (String,String,String) => String), List("pathSub", "path", "flag")),
 //    UserDefinedColumn("recommendLogType", udf(RecommendUtils.getRecommendLogType: (String,String,String) => String), List("pathSub", "path", "flag")),
 //    UserDefinedColumn("previousSid", udf(RecommendUtils.getPreviousSid: (String) => String), List("pathSub")),
@@ -67,7 +68,7 @@ object PlayTemp extends FactEtlBase with  LogConfig{
 //    UserDefinedColumn("recommendSlotIndex", udf(RecommendUtils.getRecommendSlotIndex: (String) => String), List("pathMain")),
 //    UserDefinedColumn("searchFrom", udf(SearchUtils.getSearchFrom: (String,String,String) => String),List("pathMain", "path", "flag")),
 //    UserDefinedColumn("searchKeyword", udf(SearchUtils.getSearchKeyword: (String,String,String) => String),List("pathMain", "path", "flag")),
-//    UserDefinedColumn("searchFromHotWord", udf(SearchUtils.isSearchFromHotWord: String => Int),List("extraPath"))
+//    UserDefinedColumn("searchFromHotWord", udf(SearchUtils.isSearchFromHotWord: String => Int),List("extraPath")),
 //    UserDefinedColumn("pageEntrancePageCode", udf(PageEntrancePathParseUtils.getPageEntrancePageCode: (String, String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("pageEntranceAreaCode", udf(PageEntrancePathParseUtils.getPageEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
 //    UserDefinedColumn("pageEntranceLocationCode", udf(PageEntrancePathParseUtils.getPageEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag"))
@@ -78,16 +79,16 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     * */
   dimensionColumns = List(
     /** 获得列表页sk source_site_sk */
-//    ListCategoryUtils.getSourceSiteSK(),
+    ListCategoryUtils.getSourceSiteSK()
 
     /** 获得专题 subject_sk */
-    SubjectUtils.getSubjectSK()
+//    SubjectUtils.getSubjectSK(),
 
     /** 获得筛选sk */
 //    FilterCategoryUtils.getRetrievalSK(),
 
     /** 获得推荐来源sk */
-//    RecommendUtils.getRecommendPositionSK(),
+//    RecommendUtils.getRecommendPositionSK()
 
     /** 获得搜索来源sk */
 //    SearchUtils.getSearchSK(),
@@ -133,7 +134,7 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     /** 获得app版本维度app_version_sk */
 //    new DimensionColumn("dim_app_version",
 //      List(DimensionJoinCondition(
-//        Map("app_series" -> "app_series", "app_version" -> "version"))
+//        Map("apkSeries" -> "app_series", "apkVersion" -> "version"))
 //      ),
 //      "app_version_sk"),
 
@@ -174,11 +175,12 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     * step 4,保留哪些列，以及别名声明
     * */
   columnsFromSource = List(
-    ("subjectName", "subjectName"),
-    ("subjectCode", "subjectCode"),
-//    ("mainCategory", "mainCategory"),
-//    ("secondCategory", "secondCategory"),
-//    ("thirdCategory", "thirdCategory"),
+//    ("subjectName", "subjectName"),
+//    ("subjectCode", "subjectCode"),
+    ("mainCategory", "mainCategory"),
+    ("secondCategory", "secondCategory"),
+    ("thirdCategory", "thirdCategory"),
+    ("fourthCategory", "fourthCategory"),
 //    ("launcherAreaCode", "launcherAreaCode"),
 //    ("launcherLocationCode", "launcherLocationCode"),
 //    ("filterContentType", "filterContentType"),
@@ -201,6 +203,18 @@ object PlayTemp extends FactEtlBase with  LogConfig{
     ("path", "path"),
     ("pathSpecial", "pathSpecial"),
     ("pathSub", "pathSub")
+//    ("topRankSid", "topRankSid"),
+//    ("ipKey", "ipKey"),
+//    ("userId", "userId"),
+//    ("productModel", "productModel"),
+//    ("promotionChannel", "promotionChannel"),
+//    ("apkSeries", "apkSeries"),
+//    ("apkVersion", "apkVersion"),
+//    ("videoSid", "videoSid"),
+//    ("accountId", "accountId"),
+//    ("omnibusSid", "omnibusSid"),
+//    ("singerSid", "singerSid"),
+//    ("station", "station")
 //    ("searchFrom", "searchFrom"),
 //    ("resultIndex", "resultIndex"),
 //    ("tabName", "tabName"),
