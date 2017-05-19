@@ -13,7 +13,7 @@ import cn.whaley.datawarehouse.global.SourceType._
  */
 object LinkType extends DimensionBase {
 
-  dimensionName = "dim_whaley_linktype"
+  dimensionName = "dim_whaley_link_type"
 
   columns.skName = "link_type_sk"
 
