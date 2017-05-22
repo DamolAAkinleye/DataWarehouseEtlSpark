@@ -4,7 +4,6 @@ import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, 
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.fact.whaley.util._
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.udf
 
 /**
@@ -78,7 +77,6 @@ object DetailView extends FactEtlBase{
       "case when dim_whaley_subject.subject_content_type is not null then dim_whaley_subject.subject_content_type " +
         "when dim_whaley_program.content_type is not null then dim_whaley_program.content_type " +
         "when trim(contentType) = '' then null else contentType end"),
-    ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false'  end"),
     ("search_keyword", "searchText"),
     ("search_rec_keyword", "case when hotSearchWord is null or " +
       "trim(hotSearchWord) = '' then searchAssociationalWord else hotSearchWord end "),
@@ -147,29 +145,7 @@ object DetailView extends FactEtlBase{
           "launcher_location_index = -1")
       ), "launcher_entrance_sk"),
 
-    //智能推荐
-    new DimensionColumn("dim_whaley_recommend_position",
-      List(
-        //1.首页推荐
-        DimensionJoinCondition(
-          Map("udc_launcher_location_index" -> "recommend_slot_index"),
-          "recommend_algorithm='未知' and recommend_position='portalrecommend'", null, s"udc_recommend_position is null"
-        ),
-        //2.其他推荐
-        DimensionJoinCondition(
-          Map("udc_recommend_position" -> "recommend_position",
-            "udc_path_content_type" -> "recommend_position_type"
-          ),
-          "recommend_algorithm='未知' and recommend_slot_index = -1", null, null
-        ),
-        DimensionJoinCondition(
-          Map("udc_recommend_position" -> "recommend_position",
-            "contentType" -> "recommend_position_type"
-          ),
-          "recommend_algorithm='未知' and recommend_slot_index = -1", null, null
-        )
-      ),
-      "recommend_position_sk"),
+
 
     //频道页入口
     new DimensionColumn("dim_whaley_page_entrance",
@@ -208,7 +184,29 @@ object DetailView extends FactEtlBase{
             "udc_search_result_index" -> "search_result_index"),
           "search_from = 'unknown'", null, "udc_search_from is not null"
         )), "search_sk"),
-
+    //智能推荐
+    new DimensionColumn("dim_whaley_recommend_position",
+      List(
+        //1.首页推荐
+        DimensionJoinCondition(
+          Map("udc_launcher_location_index" -> "recommend_slot_index"),
+          "recommend_algorithm='未知' and recommend_position='portalrecommend'", null, s"udc_recommend_position is null"
+        ),
+        //2.其他推荐
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "udc_path_content_type" -> "recommend_position_type"
+          ),
+          "recommend_algorithm='未知' and recommend_slot_index = -1", null, null
+        ),
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "contentType" -> "recommend_position_type"
+          ),
+          "recommend_algorithm='未知' and recommend_slot_index = -1", null, null
+        )
+      ),
+      "recommend_position_sk"),
     //路径聚合维度
     new DimensionColumn("dim_whaley_area_source_agg",
       List(

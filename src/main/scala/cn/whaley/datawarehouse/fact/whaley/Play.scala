@@ -173,31 +173,6 @@ object Play extends FactEtlBase {
           "launcher_location_index = -1")
       ), "launcher_entrance_sk"),
 
-    //智能推荐
-    new DimensionColumn("dim_whaley_recommend_position",
-      List(
-        //1.首页推荐
-        DimensionJoinCondition(
-          Map("udc_launcher_location_index" -> "recommend_slot_index"),
-          "recommend_algorithm='未知' and recommend_position='portalrecommend'", null, s"udc_recommend_position is null"
-        ),
-        //2.其他推荐
-        DimensionJoinCondition(
-          Map("udc_recommend_position" -> "recommend_position",
-            "udc_path_content_type" -> "recommend_position_type",
-            "udc_recommend_index" -> "recommend_slot_index"
-          ),
-          "recommend_algorithm='未知'", null, null
-        ),
-        DimensionJoinCondition(
-          Map("udc_recommend_position" -> "recommend_position",
-            "contentType" -> "recommend_position_type",
-            "udc_recommend_index" -> "recommend_slot_index"
-          ),
-          "recommend_algorithm='未知'", null, null
-        )
-      ),
-      "recommend_position_sk"),
 
     //频道页入口
     new DimensionColumn("dim_whaley_page_entrance",
@@ -240,6 +215,33 @@ object Play extends FactEtlBase {
             "udc_search_result_index" -> "search_result_index"),
           "search_from = 'unknown'", null, "udc_search_from is not null"
         )), "search_sk"),
+
+    //智能推荐
+    new DimensionColumn("dim_whaley_recommend_position",
+      List(
+        //1.首页推荐
+        DimensionJoinCondition(
+          Map("udc_launcher_location_index" -> "recommend_slot_index"),
+          "recommend_algorithm='未知' and recommend_position='portalrecommend'", null, s"udc_recommend_position is null"
+        ),
+        //2.其他推荐
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "udc_path_content_type" -> "recommend_position_type",
+            "udc_recommend_index" -> "recommend_slot_index"
+          ),
+          "recommend_algorithm='未知'", null, null
+        ),
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "contentType" -> "recommend_position_type",
+            "udc_recommend_index" -> "recommend_slot_index"
+          ),
+          "recommend_algorithm='未知'", null, null
+        )
+      ),
+      "recommend_position_sk"),
+
     //体育比赛
     new DimensionColumn("dim_whaley_sports_match",
       List(DimensionJoinCondition(Map("matchSid" -> "match_sid"))), "match_sk"),
