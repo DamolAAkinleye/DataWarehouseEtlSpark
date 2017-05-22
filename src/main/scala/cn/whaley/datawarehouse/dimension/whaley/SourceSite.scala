@@ -78,8 +78,8 @@ object SourceSite extends DimensionBase {
       "a.name AS second_category, a.code AS second_category_code, " +
       "null AS third_category, null AS third_category_code, " +
       "null AS fourth_category, null AS fourth_category_code, " +
-      " a.contentType AS last_second_code , " +
-      " a.contentType AS last_second_name , " +
+      " b.contentType AS last_second_code , " +
+      " b.contentType AS last_second_name , " +
       " a.code AS last_first_code , " +
       " a.name AS last_first_name  " +
       " FROM mtv_program_site AS a " +
