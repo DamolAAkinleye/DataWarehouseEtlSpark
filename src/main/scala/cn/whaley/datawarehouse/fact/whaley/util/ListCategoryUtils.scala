@@ -81,7 +81,6 @@ object ListCategoryUtils {
 
             case _ =>{
               //少儿其他  站点树取第4位
-              if(paths.length>=4){
                 //需要处理
                 kids_type match{
                   //前台code和后台code映射
@@ -97,10 +96,17 @@ object ListCategoryUtils {
                   //观看历史:home-kids-collection-history_collect
                   //收藏追看:home-kids-collection-episode_collect
                   //专题收藏:home-kids-collection-subject_collect-kids73
-                  case "collection" => categoryCodes(1)="collection"
+                  case "collection" => categoryCodes(1)="kids_collect"
                   case _ =>  categoryCodes(1)= kids_type
                 }
-                categoryCodes(2)= paths(3)
+              if(paths.length >= 4){
+                if(paths.length >= 5 && paths(3) == "kids" && paths(4) == "english"){
+                  categoryCodes(2) = "kids-english"
+                } else {
+                  categoryCodes(2) = paths(3)
+                }
+              } else {
+                categoryCodes(2) = null
               }
 
             }

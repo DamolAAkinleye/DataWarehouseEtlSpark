@@ -91,6 +91,7 @@ object Play extends FactEtlBase {
       "case when dim_whaley_subject.subject_content_type is not null then dim_whaley_subject.subject_content_type " +
         "when dim_whaley_program.content_type is not null then dim_whaley_program.content_type " +
         "when trim(contentType) = '' then null else contentType end"),
+    ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false' end"),
     ("search_keyword", "searchText"),
     ("search_rec_keyword", "case when hotSearchWord is null or " +
       "trim(hotSearchWord) = '' then searchAssociationalWord else hotSearchWord end "),
@@ -107,30 +108,30 @@ object Play extends FactEtlBase {
     ("rom_version", "romVersion"),
     ("firmware_version", "firmwareVersion"),
 
-//        ("network_type", "networkType"),
+    //        ("network_type", "networkType"),
 
-        ("path", "path"),
-        ("subject_code", "udc_subject_code"),
-        ("wui_version", "udc_wui_version"),
-        ("launcher_access_location", "udc_launcher_access_location"),
-        ("launcher_location_index", "udc_launcher_location_index"),
-        ("recommend_position", "udc_recommend_position"),
-        ("recommend_index", "udc_recommend_index"),
-        ("path_content_type", "udc_path_content_type"),
-        ("page_code", "udc_page_code"),
-        ("page_area_code", "udc_page_area_code"),
-        ("page_location_code", "udc_page_location_code"),
-        ("page_location_index", "udc_page_location_index"),
-        ("last_category", "udc_last_category"),
-        ("last_second_category", "udc_last_second_category"),
-        ("search_from", "udc_search_from"),
-        ("search_from_hot_word", "udc_search_from_hot_word"),
-        ("search_from_associational_word", "udc_search_from_associational_word"),
-        ("retrieval", "retrieval"),
-        ("search_tab", "searchTab"),
-        ("search_result_index", "udc_search_result_index"),
-        ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
-        ("mv_hot_key", "udc_mv_hot_key"),
+    ("path", "path"),
+    ("subject_code", "udc_subject_code"),
+    ("wui_version", "udc_wui_version"),
+    ("launcher_access_location", "udc_launcher_access_location"),
+    ("launcher_location_index", "udc_launcher_location_index"),
+    ("recommend_position", "udc_recommend_position"),
+    ("recommend_index", "udc_recommend_index"),
+    ("path_content_type", "udc_path_content_type"),
+    ("page_code", "udc_page_code"),
+    ("page_area_code", "udc_page_area_code"),
+    ("page_location_code", "udc_page_location_code"),
+    ("page_location_index", "udc_page_location_index"),
+    ("last_category", "udc_last_category"),
+    ("last_second_category", "udc_last_second_category"),
+    ("search_from", "udc_search_from"),
+    ("search_from_hot_word", "udc_search_from_hot_word"),
+    ("search_from_associational_word", "udc_search_from_associational_word"),
+    ("retrieval", "retrieval"),
+    ("search_tab", "searchTab"),
+    ("search_result_index", "udc_search_result_index"),
+    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
+    ("mv_hot_key", "udc_mv_hot_key"),
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
 
@@ -210,9 +211,15 @@ object Play extends FactEtlBase {
       ), "page_entrance_sk"),
     //站点树
     new DimensionColumn("dim_whaley_source_site",
-      List(DimensionJoinCondition(
-        Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
-      )), "source_site_sk"),
+      List(
+        DimensionJoinCondition(
+          Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
+        ),
+        DimensionJoinCondition(
+          Map("udc_last_second_category" -> "last_first_code"),
+          null, null, "udc_last_category is null"
+        )
+      ), "source_site_sk"),
     //筛选
     new DimensionColumn("dim_whaley_retrieval",
       List(DimensionJoinCondition(
@@ -270,9 +277,14 @@ object Play extends FactEtlBase {
     //路径聚合维度
     new DimensionColumn("dim_whaley_area_source_agg",
       List(
-        DimensionJoinCondition(Map(), "source_code = 'voice_search'", null,  "path like '%voicesearch%'"),
-        DimensionJoinCondition(Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
-           "source_code = 'source_site'"),
+        DimensionJoinCondition(Map(), "source_code = 'voice_search'", null, "path like '%voicesearch%'"),
+        DimensionJoinCondition(
+          Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
+          "source_code = 'source_site'"),
+        DimensionJoinCondition(
+          Map("udc_last_second_category" -> "sub_module_code"),
+          "source_code = 'source_site'", null, "udc_last_category is null"
+        ),
         DimensionJoinCondition(Map("udc_page_code" -> "module_code", "udc_page_area_code" -> "sub_module_code"),
           "source_code = 'channel_entrance'"),
         DimensionJoinCondition(Map("udc_launcher_access_location" -> "sub_module_code"),
