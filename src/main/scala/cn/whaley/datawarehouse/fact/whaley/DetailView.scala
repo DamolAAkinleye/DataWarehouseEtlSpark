@@ -78,6 +78,7 @@ object DetailView extends FactEtlBase{
       "case when dim_whaley_subject.subject_content_type is not null then dim_whaley_subject.subject_content_type " +
         "when dim_whaley_program.content_type is not null then dim_whaley_program.content_type " +
         "when trim(contentType) = '' then null else contentType end"),
+    ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false'"),
     ("search_keyword", "searchText"),
     ("search_rec_keyword", "case when hotSearchWord is null or " +
       "trim(hotSearchWord) = '' then searchAssociationalWord else hotSearchWord end "),
