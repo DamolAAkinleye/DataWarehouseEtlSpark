@@ -86,7 +86,7 @@ object DetailView extends FactEtlBase{
 
     //        ("network_type", "networkType"),
 
-    ("path", "path"),
+//    ("path", "path"),
 //    ("subject_code", "udc_subject_code"),
 //    ("wui_version", "udc_wui_version"),
 //    ("launcher_access_location", "udc_launcher_access_location"),
@@ -161,9 +161,15 @@ object DetailView extends FactEtlBase{
       ), "page_entrance_sk"),
     //站点树
     new DimensionColumn("dim_whaley_source_site",
-      List(DimensionJoinCondition(
-        Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
-      )), "source_site_sk"),
+      List(
+        DimensionJoinCondition(
+          Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
+        ),
+        DimensionJoinCondition(
+          Map("udc_last_second_category" -> "last_first_code"),
+          null, null, "udc_last_category is null"
+        )
+      ), "source_site_sk"),
     //筛选
     new DimensionColumn("dim_whaley_retrieval",
       List(DimensionJoinCondition(
@@ -210,9 +216,14 @@ object DetailView extends FactEtlBase{
     //路径聚合维度
     new DimensionColumn("dim_whaley_area_source_agg",
       List(
-        DimensionJoinCondition(Map(), "source_code = 'voice_search'", null,  "path like '%voicesearch%'"),
-        DimensionJoinCondition(Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
+        DimensionJoinCondition(Map(), "source_code = 'voice_search'", null, "path like '%voicesearch%'"),
+        DimensionJoinCondition(
+          Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
           "source_code = 'source_site'"),
+        DimensionJoinCondition(
+          Map("udc_last_second_category" -> "sub_module_code"),
+          "source_code = 'source_site'", null, "udc_last_category is null"
+        ),
         DimensionJoinCondition(Map("udc_page_code" -> "module_code", "udc_page_area_code" -> "sub_module_code"),
           "source_code = 'channel_entrance'"),
         DimensionJoinCondition(Map("udc_launcher_access_location" -> "sub_module_code"),
