@@ -189,6 +189,7 @@ abstract class FactEtlBase extends BaseClass {
     val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + "00"
     val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
     val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + "00"
+    val onLineFactBackupParentDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date
     val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator +  date
     println("线上数据目录:" + onLineFactDir)
     println("线上数据备份目录:" + onLineFactBackupDir)
@@ -217,6 +218,7 @@ abstract class FactEtlBase extends BaseClass {
       if (isOnlineFileExist) {
         println("生成线上维度备份数据:" + onLineFactBackupDir)
         HdfsUtil.deleteHDFSFileOrPath(onLineFactBackupDir)
+        HdfsUtil.createDir(onLineFactBackupParentDir)
         val isSuccessBackup = HdfsUtil.rename(onLineFactDir, onLineFactBackupDir)
         println("备份数据状态:" + isSuccessBackup)
       }
