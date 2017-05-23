@@ -52,12 +52,12 @@ object PlayCombine extends BaseClass with LogConfig {
   val selfEndEvent = "selfend"
   val noEnd = "noEnd"
 
-  //多组时间段间隔阀值：30分钟
+/*  //多组时间段间隔阀值：30分钟
   val time_quantum_threshold = 1800
   //同一个用户播放同一个剧集的播放次数阀值
   val play_times_threshold = 5
   //两条日志之间的平均时间间隔阀值：5分钟
-  val avg_second_threshold = 300
+  val avg_second_threshold = 300*/
 
   /** 加载3.x play数据 */
   override def extract(params: Params): DataFrame = {
