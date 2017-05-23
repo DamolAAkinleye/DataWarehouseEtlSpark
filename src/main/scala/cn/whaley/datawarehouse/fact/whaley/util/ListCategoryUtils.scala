@@ -51,9 +51,13 @@ object ListCategoryUtils {
       contentType match {
         case "sports" => {
           //sports 站点树取第四位
-          if(paths.length>=4){
+          if(paths.length>=3){
             categoryCodes(1) = paths(2)
-            categoryCodes(2) = paths(3)
+            if(paths.length>=4) {
+              categoryCodes(2) = paths(3)
+            }else {
+              categoryCodes(2) = null
+            }
           }
         }
         case "mv"  =>{
