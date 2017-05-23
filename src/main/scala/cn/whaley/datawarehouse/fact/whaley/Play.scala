@@ -79,8 +79,8 @@ object Play extends FactEtlBase {
 
   columnsFromSource = List(
     ("duration", "duration"),
-    ("program_duration", "cast(videoDuration to bigint)"),
-    ("trailer_duration", "cast(trailerDuration to bigint)"),
+    ("program_duration", "cast(videoDuration as bigint)"),
+    ("trailer_duration", "cast(trailerDuration as bigint)"),
     ("user_id", "userId"),
     ("product_sn", "productSN"),
     ("end_event", "event"),
