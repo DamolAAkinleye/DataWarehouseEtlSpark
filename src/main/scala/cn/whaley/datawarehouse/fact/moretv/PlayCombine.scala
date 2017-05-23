@@ -42,6 +42,9 @@ import scala.collection.mutable.ArrayBuffer
 object PlayCombine extends BaseClass with LogConfig {
   val topicName = "combine"
   val baseOutputPath = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicName
+  val topicNameCombine = "combineTmp"
+  val baseOutputPathCombine = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicNameCombine
+
   val fact_table_name = "log_data"
   val INDEX_NAME = "record_index"
   val startPlayEvent = "startplay"
@@ -49,12 +52,12 @@ object PlayCombine extends BaseClass with LogConfig {
   val selfEndEvent = "selfend"
   val noEnd = "noEnd"
 
-  //多组时间段间隔阀值：30分钟
+/*  //多组时间段间隔阀值：30分钟
   val time_quantum_threshold = 1800
   //同一个用户播放同一个剧集的播放次数阀值
   val play_times_threshold = 5
   //两条日志之间的平均时间间隔阀值：5分钟
-  val avg_second_threshold = 300
+  val avg_second_threshold = 300*/
 
   /** 加载3.x play数据 */
   override def extract(params: Params): DataFrame = {
@@ -96,7 +99,7 @@ object PlayCombine extends BaseClass with LogConfig {
     * // 线上替换为 on concat_ws('_',a.userId,a.episodeSid,a.videoSid,a.pathMain,a.realIP)=b.key
     *
     * 测试用
-    * 合并后的记录存入arrayBuffer[Row]作为表b,orderbyTable作为表a
+    * 合并后的记录存入arrayBuffer[Row]作为表b,orderByTable作为表a
     * 筛选出
     * select a.*,b.event as end_event,b.datetime as finalDatetime
     * from a join b on
@@ -122,6 +125,7 @@ object PlayCombine extends BaseClass with LogConfig {
           |order by concat_ws('_',userId,episodeSid,videoSid,pathMain,realIP),datetime,event
        """.stripMargin
     val orderByDF = sqlContext.sql(sqlStr)
+    orderByDF.registerTempTable("orderByTable")
     println("-------orderByDF count:" + orderByDF.count())
     println("-----orderByDF schema:" + orderByDF.schema.fieldNames.foreach(println))
 
@@ -213,7 +217,12 @@ object PlayCombine extends BaseClass with LogConfig {
               var k = j + 1
 
               if (!(k < length)) {
-                //todo 处理 i,j key相同，并且event都是startplay的情况
+                //处理 i,j key相同，并且event都是startplay的情况
+                val row = Row(ikey, iDateTime, noEnd, iIndex)
+                arrayBuffer.+=(row)
+                //jRow的event肯定也是userExitEvent或selfEndEvent,否则会和iRow合并，所以也将jRow存入arrayBuffer
+                val rowJ = Row(jKey, jDateTime, noEnd, jIndex)
+                arrayBuffer.+=(rowJ)
                 i = k
                 break
               }
@@ -281,56 +290,18 @@ object PlayCombine extends BaseClass with LogConfig {
     }
 
     println("arrayBuffer size:" + arrayBuffer.size)
-    val rdd = sc.parallelize(arrayBuffer, 1000)
+    val rdd = sc.parallelize(arrayBuffer, 2000)
     println("orderByDF.schema.fields:" + orderByDF.schema.fields.foreach(e => println(e.name)))
-    val filterDF = sqlContext.createDataFrame(rdd, StructType(orderByDF.schema.fields))
-    filterDF.registerTempTable("filterTable")
-    writeToHDFS(filterDF, baseOutputPath)
+    val combineDF = sqlContext.createDataFrame(rdd, StructType(orderByDF.schema.fields))
+    combineDF.registerTempTable("combineTable")
+    writeToHDFS(combineDF, baseOutputPathCombine)
     val df = sqlContext.sql(
-      """select a.*
-        | from       orderbyTable   a
-        | left join  filterTable    b on
-        |    a.key=b.key            and
-        |    a.datetime=b.datetime
-        |where b.key is null
+      s"""select a.*,b.event as end_event
+          | from   orderByTable  a join
+          |        combineTable  b on
+          |           a.${INDEX_NAME}=b.${INDEX_NAME}
       """.stripMargin)
     df
-  }
-
-
-  def saveRowToArray(array: Array[Row], i: Int, j: Int, arrayBuffer: ArrayBuffer[Row]) {
-    val check_play_times_threshold = j - i
-    val endRow = array.apply(j - 1)
-    val endTimestampValue = endRow.getLong(2)
-
-    val startRow = array.apply(i)
-    val startTimestampValue = startRow.getLong(2)
-
-    val check_avg_second_threshold = (endTimestampValue - startTimestampValue) / check_play_times_threshold
-    if (check_play_times_threshold > play_times_threshold && check_avg_second_threshold < avg_second_threshold) {
-
-      for (h <- i until j) {
-        arrayBuffer.+=(array.apply(h))
-      }
-    }
-  }
-
-  //将数组中i到j之间[左闭右开区间]的数值存入另一个list,用来做过滤
-  def saveRecordToArray(array: Array[Row], i: Int, j: Int, arrayBuffer: ArrayBuffer[Row]) {
-    val check_play_times_threshold = j - i
-    val endRow = array.apply(j - 1)
-    val endTimestampValue = endRow.getLong(2)
-
-    val startRow = array.apply(i)
-    val startTimestampValue = startRow.getLong(2)
-
-    val check_avg_second_threshold = (endTimestampValue - startTimestampValue) / check_play_times_threshold
-    if (check_play_times_threshold > play_times_threshold && check_avg_second_threshold < avg_second_threshold) {
-
-      for (h <- i until j) {
-        arrayBuffer.+=(array.apply(h))
-      }
-    }
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
