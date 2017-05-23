@@ -122,8 +122,8 @@ object PlayCombine extends BaseClass with LogConfig {
       val keyToIndexMap = scala.collection.mutable.HashMap.empty[String, scala.collection.mutable.Set[Int]]
       var i: Int = 0
       while (i < length) {
+        val iTuple = list(i)
         breakable {
-          val iTuple = list(i)
           if (null == iTuple) {
             i = i + 1
             break
@@ -196,7 +196,7 @@ object PlayCombine extends BaseClass with LogConfig {
                       //防止重复匹配的情况,例如i与k已经匹配，如果接下来的j也与k匹配，那么跳过k，寻找新的匹配h
                       k = k + 1
                     } else {
-                      keyToIndexMap.get(ikey).get.+(k)
+                      keyToIndexMap.put(ikey, set.+(k))
                       arrayBuffer.+=(row)
                       i = j
                       break
