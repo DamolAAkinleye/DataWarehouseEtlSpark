@@ -36,7 +36,7 @@ import scala.collection.mutable.ArrayBuffer
   * 3.如果有开始行为又有结束行为，datetime使用开始行为的datetime      ok
   * 4.如果有开始行为，有结束行为，但是开始行为和结束行为之间的时间差大于三个小时，是分开作为两条日志，还是合并成一条日志，先做分析？
   * 6.例如load入20170505那一天日志，但是datetime是20170503 23:59:30,是否需要调整datetime? no,load入20170505,输出20170505
-  * 7.realIP可能在一个session里开始和结束不同，需要做统计？
+  * 7.realIP可能在一个session里开始和结束不同，需要做统计
   *
   */
 object PlayCombine extends BaseClass with LogConfig {
@@ -44,6 +44,11 @@ object PlayCombine extends BaseClass with LogConfig {
   val baseOutputPath = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicName
   val topicNameCombine = "combineTmp"
   val baseOutputPathCombine = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicNameCombine
+  val short = "short"
+  val baseOutputPathShort = FACT_HDFS_BASE_PATH_CHECK + File.separator + short
+  val fact = "fact"
+  val baseOutputPathFact = FACT_HDFS_BASE_PATH_CHECK + File.separator + fact
+
 
   val fact_table_name = "log_data"
   val INDEX_NAME = "record_index"
@@ -51,13 +56,8 @@ object PlayCombine extends BaseClass with LogConfig {
   val userExitEvent = "userexit"
   val selfEndEvent = "selfend"
   val noEnd = "noEnd"
-
-/*  //多组时间段间隔阀值：30分钟
-  val time_quantum_threshold = 1800
-  //同一个用户播放同一个剧集的播放次数阀值
-  val play_times_threshold = 5
-  //两条日志之间的平均时间间隔阀值：5分钟
-  val avg_second_threshold = 300*/
+  val shortDataFrameTable="shortDataFrameTable"
+  val combineTable="combineTable"
 
   /** 加载3.x play数据 */
   override def extract(params: Params): DataFrame = {
@@ -117,189 +117,142 @@ object PlayCombine extends BaseClass with LogConfig {
     factDataFrameWithIndex.cache()
     println("factDataFrameWithIndex.count():" + factDataFrameWithIndex.count())
     factDataFrameWithIndex.repartition(2000).registerTempTable(fact_table_name)
+    writeToHDFS(factDataFrameWithIndex,baseOutputPathFact)
 
     //获得key
-    val sqlStr =
-      s"""select concat_ws('_',userId,episodeSid,videoSid,pathMain,realIP) as key,datetime,event,${INDEX_NAME}
+    val sqlString =
+      s"""select concat_ws('_',userId,episodeSid,videoSid,pathMain,realIP) as key,duration,datetime,event,${INDEX_NAME}
           |from $fact_table_name
-          |order by concat_ws('_',userId,episodeSid,videoSid,pathMain,realIP),datetime,event
        """.stripMargin
-    val orderByDF = sqlContext.sql(sqlStr)
-    orderByDF.registerTempTable("orderByTable")
-    println("-------orderByDF count:" + orderByDF.count())
-    println("-----orderByDF schema:" + orderByDF.schema.fieldNames.foreach(println))
-
-    val array = orderByDF.collect()
-    val length = array.length
-    println("array size:" + length)
-
-    //存储合并后的日志记录
-    val arrayBuffer = ArrayBuffer.empty[Row]
-    /** keyToIndexMap有两个作用:
-      * 1.自动跳过已经匹配上的,event为userExit or selfEnd记录
-      * 2.负责标记已经匹配过的记录，防止重复匹配的情况,例如i与k已经匹配，如果接下来的j也与k匹配，那么跳过k，寻找新的匹配h
-      * */
-    val keyToIndexMap = scala.collection.mutable.HashMap.empty[String, scala.collection.mutable.Set[Int]]
-
+    val shortDataFrame = sqlContext.sql(sqlString)
+    writeToHDFS(shortDataFrame, baseOutputPathShort)
+    shortDataFrame.registerTempTable(shortDataFrameTable)
+    //(key,(duration,datetime,event,record_index))
+    val rdd1 = shortDataFrame.map(row => (row.getString(0),(row.getLong(1),row.getString(2),row.getString(3),row.getLong(4)))).groupByKey()
     import scala.util.control.Breaks._
-    var i: Int = 0
-    while (i < length) {
-      val iRow = array.apply(i)
-      val ikey = iRow.getString(0)
-      val iDateTime = iRow.getString(1)
-      val iEvent = iRow.getString(2)
-      val iIndex = iRow.getString(3)
+    /**
+      * (key,Iterable(tuple))
+      * */
+    val rddCombine=rdd1.map(x => {
+      val ikey = x._1
+      val tupleIterable=x._2
+      //order by datetime
+      val list=tupleIterable.toList.sortBy(_._2)
+      val length=list.length
+      //存储合并后的日志记录
+      val arrayBuffer = ArrayBuffer.empty[Row]
+      var i: Int = 0
+      while (i < length) {
+        /** keyToIndexMap有两个作用:
+          * 1.自动跳过已经匹配上的,event为userExit or selfEnd记录
+          * 2.负责标记已经匹配过的记录，防止重复匹配的情况,例如i与k已经匹配，如果接下来的j也与k匹配，那么跳过k，寻找新的匹配h
+          * */
+       val keyToIndexMap = scala.collection.mutable.HashMap.empty[String, scala.collection.mutable.Set[Int]]
 
-      // create map to save match record which event is userExit or selfEnd,so we can skip this record which already matched.
-      breakable {
-        if (keyToIndexMap.contains(ikey)) {
-          val ikeySet = keyToIndexMap.get(ikey).get
-          if (ikeySet.contains(i)) {
-            //skip this index which event is userExit or selfEnd,and already combine with previous record which event is startplay
-            i = i + 1
+        // create map to save match record which event is userExit or selfEnd,so we can skip this record which already matched.
+        breakable {
+          val iTuple= list(i)
+          if(null==iTuple){
+            i=i+1
+            break
           }
-        }
+          val iDuration= iTuple._1
+          val iDateTime= iTuple._2
+          val iEvent= if(null==iTuple._3) "" else iTuple._3
+          val iIndex= iTuple._4
 
-        //if iEvent is userExit or selfEnd,save record to arrayBuffer directly[单独处理]
-        if (iEvent.equalsIgnoreCase(userExitEvent) || iEvent.equalsIgnoreCase(selfEndEvent)) {
-          val row = Row(ikey, iDateTime, iEvent, iIndex)
-          arrayBuffer.+=(row)
-          i = i + 1
-          break
-        }
-
-
-        val j = i + 1
-        if (j < length) {
-          val jRow = array.apply(j)
-          val jKey = jRow.getString(0)
-          val jDateTime = jRow.getString(1)
-          val jEvent = jRow.getString(2)
-          val jIndex = jRow.getString(3)
-          //1级判断:如果iKey不同于jKey
-          if (!ikey.equalsIgnoreCase(jKey)) {
-            //移除keyToIndexMap中的记录
-            if (keyToIndexMap.contains(ikey)) {
-              keyToIndexMap.remove(ikey)
+          if (keyToIndexMap.contains(ikey)) {
+            val ikeySet = keyToIndexMap.get(ikey).get
+            if (ikeySet.contains(i)) {
+              //skip this index which event is userExit or selfEnd,and already combine with previous record which event is startplay
+              i = i + 1
             }
-            //在前面已经单独处理event类型为userExitEvent或selfEndEvent类型的记录,event肯定是startplay类型
-            val row = Row(ikey, iDateTime, noEnd, iIndex)
+          }
+
+          //if iEvent is userExit or selfEnd,save record to arrayBuffer directly[单独处理]
+          if (iEvent.equalsIgnoreCase(userExitEvent) || iEvent.equalsIgnoreCase(selfEndEvent)) {
+            val row = Row(ikey,iDuration, iDateTime, noEnd, iIndex)
             arrayBuffer.+=(row)
+            i = i + 1
+            break
+          }
+          val j = i + 1
+          if (j < length) {
+            val jTuple = list(j)
+            val jDuration= jTuple._1
+            val jDateTime= jTuple._2
+            val jEvent= jTuple._3
+            val jIndex= jTuple._4
 
-            /*if (iEvent.equalsIgnoreCase(startPlayEvent)) {
-              val row = Row(ikey, iDateTime, noEnd, iIndex)
-              arrayBuffer.+=(row)
-            } else if (iEvent.equalsIgnoreCase(userExitEvent) || iEvent.equalsIgnoreCase(selfEndEvent)) {
-              val row = Row(ikey, iDateTime, iEvent, iIndex)
-              arrayBuffer.+=(row)
-            }*/
-            i = j
-            //break
-          } else {
-            //1级判断: 如果iKey等于jKey
-            //2级判断: 如果iKey等于jKey,并且iEvent为userExit或者selfEnd
-            /* if (iEvent.equalsIgnoreCase(userExitEvent) || iEvent.equalsIgnoreCase(selfEndEvent)) {
-               val row = Row(ikey, iDateTime, iEvent, iIndex)
-               arrayBuffer.+=(row)
-               i = j
-               break
-             } else*/
-            // if (iEvent.equalsIgnoreCase(startPlayEvent)) {
-
-            if (jEvent.equalsIgnoreCase(userExitEvent) || jEvent.equalsIgnoreCase(selfEndEvent)) {
-              //发现可以合并的记录，进行合并
-              val row = Row(ikey, iDateTime, jEvent, iIndex)
-              arrayBuffer.+=(row)
-              i = j + 1
-              //break
-            } else {
-              //find kRow where event is userExit or selfEnd
-              var k = j + 1
-
-              if (!(k < length)) {
-                //处理 i,j key相同，并且event都是startplay的情况
-                val row = Row(ikey, iDateTime, noEnd, iIndex)
+              if (jEvent.equalsIgnoreCase(userExitEvent) || jEvent.equalsIgnoreCase(selfEndEvent)) {
+                //发现可以合并的记录，进行合并
+                val row = Row(ikey,jDuration,iDateTime, jEvent, iIndex)
                 arrayBuffer.+=(row)
-                //jRow的event肯定也是userExitEvent或selfEndEvent,否则会和iRow合并，所以也将jRow存入arrayBuffer
-                val rowJ = Row(jKey, jDateTime, noEnd, jIndex)
-                arrayBuffer.+=(rowJ)
-                i = k
-                break
-              }
+                i = j + 1
+              } else {
+                //find kRow where event is userExit or selfEnd
+                var k = j + 1
 
-              while (k < length) {
-                val kRow = array.apply(k)
-                val kKey = kRow.getString(0)
-                val kEvent = kRow.getString(2)
-                if (!ikey.equalsIgnoreCase(kKey)) {
-                  //如果发现j后的所有key都和iKey不一致
-                  //清除keyToIndexMap中的ikey
-                  if (keyToIndexMap.contains(ikey)) {
-                    keyToIndexMap.remove(ikey)
-                  }
-                  //在前面已经单独处理event类型为userExitEvent或selfEndEvent类型的记录,event肯定是startplay类型
-                  val row = Row(ikey, iDateTime, noEnd, iIndex)
-                  arrayBuffer.+=(row)
+                if (!(k < length)) {
+                  //处理 i,j key相同，并且event都是startplay的情况
+                  val rowI = Row(ikey,iDuration,iDateTime, noEnd, iIndex)
+                  arrayBuffer.+=(rowI)
                   //jRow的event肯定也是userExitEvent或selfEndEvent,否则会和iRow合并，所以也将jRow存入arrayBuffer
-                  val rowJ = Row(jKey, jDateTime, noEnd, jIndex)
+                  val rowJ = Row(ikey,jDuration,jDateTime, noEnd, jIndex)
                   arrayBuffer.+=(rowJ)
-                  i = j + 1
+                  i = k
                   break
-                } else {
-                  //key equal,then check event
-                  /* if (kEvent.equalsIgnoreCase(startPlayEvent)) {
-                     //continue find kRow which key equal iKey and event is userExit or selfEnd
-                   } else */
-                  if (kEvent.equalsIgnoreCase(userExitEvent) || kEvent.equalsIgnoreCase(selfEndEvent)) {
-                    val row = Row(ikey, iDateTime, kEvent, iIndex)
-                    //save k to set for skip this array index
-                    if (keyToIndexMap.contains(ikey)) {
-                      val set = keyToIndexMap.get(ikey).get
-                      if (set.contains(k)) {
-                        //防止重复匹配的情况,例如i与k已经匹配，如果接下来的j也与k匹配，那么跳过k，寻找新的匹配h
-                        k = k + 1
+                }
+
+                while (k < length) {
+                  val kTuple = list(k)
+                  val kDuration= kTuple._1
+                  val kEvent= kTuple._3
+
+                    if (kEvent.equalsIgnoreCase(userExitEvent) || kEvent.equalsIgnoreCase(selfEndEvent)) {
+                      val row = Row(ikey, kDuration,iDateTime, kEvent, iIndex)
+                      //save k to set for skip this array index
+                      if (keyToIndexMap.contains(ikey)) {
+                        val set = keyToIndexMap.get(ikey).get
+                        if (set.contains(k)) {
+                          //防止重复匹配的情况,例如i与k已经匹配，如果接下来的j也与k匹配，那么跳过k，寻找新的匹配h
+                          k = k + 1
+                        } else {
+                          keyToIndexMap.get(ikey).get.+(k)
+                          arrayBuffer.+=(row)
+                          i = j
+                          break
+                        }
                       } else {
-                        keyToIndexMap.get(ikey).get.+(k)
+                        val mutableSet = scala.collection.mutable.Set(k)
+                        keyToIndexMap.put(ikey, mutableSet)
                         arrayBuffer.+=(row)
                         i = j
                         break
                       }
-                    } else {
-                      val mutableSet = scala.collection.mutable.Set(k)
-                      keyToIndexMap.put(ikey, mutableSet)
-                      arrayBuffer.+=(row)
-                      i = j
-                      break
                     }
-
-
-                  }
+                  k = k + 1
                 }
-                k = k + 1
               }
-            }
-            //}
+          } else {
+            //处理iRecord为最后一条记录的情况,event肯定是startplay类型[在前面已经单独处理event类型为userExitEvent或selfEndEvent类型的记录]
+            val row = Row(ikey,iDuration, iDateTime, noEnd, iIndex)
+            arrayBuffer.+=(row)
           }
-        } else {
-          //处理iRecord为最后一条记录的情况,event肯定是startplay类型[在前面已经单独处理event类型为userExitEvent或selfEndEvent类型的记录]
-          val row = Row(ikey, iDateTime, noEnd, iIndex)
-          arrayBuffer.+=(row)
+          i = i + 1
         }
-        i = i + 1
       }
-    }
+      arrayBuffer.toList
+    }).flatMap(x=>x)
 
-    println("arrayBuffer size:" + arrayBuffer.size)
-    val rdd = sc.parallelize(arrayBuffer, 2000)
-    println("orderByDF.schema.fields:" + orderByDF.schema.fields.foreach(e => println(e.name)))
-    val combineDF = sqlContext.createDataFrame(rdd, StructType(orderByDF.schema.fields))
-    combineDF.registerTempTable("combineTable")
+    println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
+    val combineDF = sqlContext.createDataFrame(rddCombine, StructType(shortDataFrame.schema.fields))
+    combineDF.registerTempTable(combineTable)
     writeToHDFS(combineDF, baseOutputPathCombine)
     val df = sqlContext.sql(
-      s"""select a.*,b.event as end_event
-          | from   orderByTable  a join
-          |        combineTable  b on
-          |           a.${INDEX_NAME}=b.${INDEX_NAME}
+      s"""select a.*,b.event as end_event,b.datetime as fDatetime,b.duration as fDuration
+          | from   $shortDataFrameTable  a join
+          |        $combineTable         b on a.${INDEX_NAME}=b.${INDEX_NAME}
       """.stripMargin)
     df
   }
