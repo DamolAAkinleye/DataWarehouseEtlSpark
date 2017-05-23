@@ -18,7 +18,7 @@ object SingerRankRadioUtils {
             val subpath = tmp(2)
             subpath match {
               case "recommend" => {
-                if(omnibusSid != null) tmp(2) else null
+                if(omnibusSid == null || omnibusSid.isEmpty) tmp(2) else null
               }
               case "site_hotsinger" => tmp(3)
               case _ => null
