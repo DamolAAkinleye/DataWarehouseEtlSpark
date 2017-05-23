@@ -47,7 +47,9 @@ object SourceSite extends DimensionBase {
 
     //cms 表中获取
     //最大包含四级目录，从包含4级目录的站点树开始
-    val df4 = sqlContext.sql("SELECT concat_ws('-',a.code,b.code,c.code,d.contentType) source_site_id, d.contentType site_content_type, " +
+    val df4 = sqlContext.sql("SELECT a.id, " +
+      "concat_ws('-',a.code,b.code,c.code,d.contentType) source_site_id, " +
+      "d.contentType site_content_type, " +
       //      "d.name AS main_category, d.code AS main_category_code, " +
       "c.name AS second_category, c.code AS second_category_code, " +
       "b.name AS third_category, b.code AS third_category_code," +
@@ -62,7 +64,9 @@ object SourceSite extends DimensionBase {
       " INNER JOIN mtv_program_site AS d ON ( c.parentId = d.id and d.status = 1) " +
       " WHERE d.parentId IN (0, 1)")
 
-    val df3 = sqlContext.sql("SELECT concat_ws('-',a.code,b.code,c.contentType) source_site_id, c.contentType site_content_type," +
+    val df3 = sqlContext.sql("SELECT a.id," +
+      "concat_ws('-',a.code,b.code,c.contentType) source_site_id, " +
+      "c.contentType site_content_type," +
       "b.name AS second_category, b.code AS second_category_code, " +
       "a.name AS third_category, a.code AS third_category_code," +
       "null AS fourth_category, null AS fourth_category_code ," +
@@ -75,7 +79,9 @@ object SourceSite extends DimensionBase {
       " INNER JOIN mtv_program_site AS c ON ( b.parentId = c.id and c.status = 1)" +
       " WHERE c.parentId IN (0,1)")
 
-    val df2 = sqlContext.sql("SELECT concat_ws('-',a.code,b.contentType) as source_site_id, b.contentType AS site_content_type, " +
+    val df2 = sqlContext.sql("SELECT a.id," +
+      "concat_ws('-',a.code,b.contentType) as source_site_id," +
+      "b.contentType AS site_content_type, " +
       "a.name AS second_category, a.code AS second_category_code, " +
       "null AS third_category, null AS third_category_code, " +
       "null AS fourth_category, null AS fourth_category_code, " +
@@ -88,7 +94,7 @@ object SourceSite extends DimensionBase {
       " WHERE b.parentId IN (0,1)")
 
     val arr = Array("source_site_id")
-    df4.unionAll(df3).unionAll(df2).unionAll(df1).orderBy("source_site_id", "site_content_type", "second_category_code", "third_category_code", "fourth_category_code", "last_second_code", "last_first_code").dropDuplicates(arr)
+    df4.unionAll(df3).unionAll(df2).unionAll(df1).orderBy(col("id").desc).dropDuplicates(arr)
 
   }
 
