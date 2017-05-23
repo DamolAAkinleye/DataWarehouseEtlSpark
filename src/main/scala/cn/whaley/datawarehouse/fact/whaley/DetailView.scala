@@ -168,6 +168,10 @@ object DetailView extends FactEtlBase{
         DimensionJoinCondition(
           Map("udc_last_second_category" -> "last_first_code"),
           null, null, "udc_last_category is null"
+        ),
+        DimensionJoinCondition( //关联源数据中体育第二层错误的
+          Map("udc_last_second_category" -> "last_first_code"),
+          "site_content_type = 'sports'"
         )
       ), "source_site_sk"),
     //筛选
