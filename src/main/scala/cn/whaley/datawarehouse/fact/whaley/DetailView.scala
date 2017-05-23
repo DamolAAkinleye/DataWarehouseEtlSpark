@@ -4,7 +4,6 @@ import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, 
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.fact.whaley.util._
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.udf
 
 /**
@@ -78,7 +77,6 @@ object DetailView extends FactEtlBase{
       "case when dim_whaley_subject.subject_content_type is not null then dim_whaley_subject.subject_content_type " +
         "when dim_whaley_program.content_type is not null then dim_whaley_program.content_type " +
         "when trim(contentType) = '' then null else contentType end"),
-    ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false'  end"),
     ("search_keyword", "searchText"),
     ("search_rec_keyword", "case when hotSearchWord is null or " +
       "trim(hotSearchWord) = '' then searchAssociationalWord else hotSearchWord end "),
@@ -88,7 +86,7 @@ object DetailView extends FactEtlBase{
 
     //        ("network_type", "networkType"),
 
-    ("path", "path"),
+//    ("path", "path"),
 //    ("subject_code", "udc_subject_code"),
 //    ("wui_version", "udc_wui_version"),
 //    ("launcher_access_location", "udc_launcher_access_location"),
@@ -147,6 +145,51 @@ object DetailView extends FactEtlBase{
           "launcher_location_index = -1")
       ), "launcher_entrance_sk"),
 
+
+
+    //频道页入口
+    new DimensionColumn("dim_whaley_page_entrance",
+      List(DimensionJoinCondition(
+        Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
+          "udc_page_location_code" -> "location_code"),
+        "location_index = -1"
+      ),
+        DimensionJoinCondition(
+          Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code"),
+          "location_index = -1"
+        )
+      ), "page_entrance_sk"),
+    //站点树
+    new DimensionColumn("dim_whaley_source_site",
+      List(
+        DimensionJoinCondition(
+          Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
+        ),
+        DimensionJoinCondition(
+          Map("udc_last_second_category" -> "last_first_code"),
+          null, null, "udc_last_category is null"
+        )
+      ), "source_site_sk"),
+    //筛选
+    new DimensionColumn("dim_whaley_retrieval",
+      List(DimensionJoinCondition(
+        Map("retrieval" -> "retrieval_key", "udc_path_content_type" -> "content_type")
+      )), "retrieval_sk"),
+    //搜索
+    new DimensionColumn("dim_whaley_search",
+      List(DimensionJoinCondition(
+        Map("searchTab" -> "search_tab", "udc_search_from" -> "search_from",
+          "udc_search_from_hot_word" -> "search_from_hot_word",
+          "udc_search_from_associational_word" -> "search_from_associational_word",
+          "udc_search_result_index" -> "search_result_index")
+      ),
+        DimensionJoinCondition(
+          Map("searchTab" -> "search_tab",
+            "udc_search_from_hot_word" -> "search_from_hot_word",
+            "udc_search_from_associational_word" -> "search_from_associational_word",
+            "udc_search_result_index" -> "search_result_index"),
+          "search_from = 'unknown'", null, "udc_search_from is not null"
+        )), "search_sk"),
     //智能推荐
     new DimensionColumn("dim_whaley_recommend_position",
       List(
@@ -170,51 +213,17 @@ object DetailView extends FactEtlBase{
         )
       ),
       "recommend_position_sk"),
-
-    //频道页入口
-    new DimensionColumn("dim_whaley_page_entrance",
-      List(DimensionJoinCondition(
-        Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
-          "udc_page_location_code" -> "location_code"),
-        "location_index = -1"
-      ),
-        DimensionJoinCondition(
-          Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code"),
-          "location_index = -1"
-        )
-      ), "page_entrance_sk"),
-    //站点树
-    new DimensionColumn("dim_whaley_source_site",
-      List(DimensionJoinCondition(
-        Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
-      )), "source_site_sk"),
-    //筛选
-    new DimensionColumn("dim_whaley_retrieval",
-      List(DimensionJoinCondition(
-        Map("retrieval" -> "retrieval_key", "udc_path_content_type" -> "content_type")
-      )), "retrieval_sk"),
-    //搜索
-    new DimensionColumn("dim_whaley_search",
-      List(DimensionJoinCondition(
-        Map("searchTab" -> "search_tab", "udc_search_from" -> "search_from",
-          "udc_search_from_hot_word" -> "search_from_hot_word",
-          "udc_search_from_associational_word" -> "search_from_associational_word",
-          "udc_search_result_index" -> "search_result_index")
-      ),
-        DimensionJoinCondition(
-          Map("searchTab" -> "search_tab",
-            "udc_search_from_hot_word" -> "search_from_hot_word",
-            "udc_search_from_associational_word" -> "search_from_associational_word",
-            "udc_search_result_index" -> "search_result_index"),
-          "search_from = 'unknown'", null, "udc_search_from is not null"
-        )), "search_sk"),
-
     //路径聚合维度
     new DimensionColumn("dim_whaley_area_source_agg",
       List(
-        DimensionJoinCondition(Map(), "source_code = 'voice_search'", null,  "path like '%voicesearch%'"),
-        DimensionJoinCondition(Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
+        DimensionJoinCondition(Map(), "source_code = 'voice_search'", null, "path like '%voicesearch%'"),
+        DimensionJoinCondition(
+          Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
           "source_code = 'source_site'"),
+        DimensionJoinCondition(
+          Map("udc_last_second_category" -> "sub_module_code"),
+          "source_code = 'source_site'", null, "udc_last_category is null"
+        ),
         DimensionJoinCondition(Map("udc_page_code" -> "module_code", "udc_page_area_code" -> "sub_module_code"),
           "source_code = 'channel_entrance'"),
         DimensionJoinCondition(Map("udc_launcher_access_location" -> "sub_module_code"),

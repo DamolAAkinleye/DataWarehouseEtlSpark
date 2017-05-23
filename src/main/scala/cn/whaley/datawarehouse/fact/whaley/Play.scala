@@ -110,28 +110,28 @@ object Play extends FactEtlBase {
 
     //        ("network_type", "networkType"),
 
-    ("path", "path"),
-    ("subject_code", "udc_subject_code"),
-    ("wui_version", "udc_wui_version"),
-    ("launcher_access_location", "udc_launcher_access_location"),
-    ("launcher_location_index", "udc_launcher_location_index"),
-    ("recommend_position", "udc_recommend_position"),
-    ("recommend_index", "udc_recommend_index"),
-    ("path_content_type", "udc_path_content_type"),
-    ("page_code", "udc_page_code"),
-    ("page_area_code", "udc_page_area_code"),
-    ("page_location_code", "udc_page_location_code"),
-    ("page_location_index", "udc_page_location_index"),
-    ("last_category", "udc_last_category"),
-    ("last_second_category", "udc_last_second_category"),
-    ("search_from", "udc_search_from"),
-    ("search_from_hot_word", "udc_search_from_hot_word"),
-    ("search_from_associational_word", "udc_search_from_associational_word"),
-    ("retrieval", "retrieval"),
-    ("search_tab", "searchTab"),
-    ("search_result_index", "udc_search_result_index"),
-    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
-    ("mv_hot_key", "udc_mv_hot_key"),
+//    ("path", "path"),
+//    ("subject_code", "udc_subject_code"),
+//    ("wui_version", "udc_wui_version"),
+//    ("launcher_access_location", "udc_launcher_access_location"),
+//    ("launcher_location_index", "udc_launcher_location_index"),
+//    ("recommend_position", "udc_recommend_position"),
+//    ("recommend_index", "udc_recommend_index"),
+//    ("path_content_type", "udc_path_content_type"),
+//    ("page_code", "udc_page_code"),
+//    ("page_area_code", "udc_page_area_code"),
+//    ("page_location_code", "udc_page_location_code"),
+//    ("page_location_index", "udc_page_location_index"),
+//    ("last_category", "udc_last_category"),
+//    ("last_second_category", "udc_last_second_category"),
+//    ("search_from", "udc_search_from"),
+//    ("search_from_hot_word", "udc_search_from_hot_word"),
+//    ("search_from_associational_word", "udc_search_from_associational_word"),
+//    ("retrieval", "retrieval"),
+//    ("search_tab", "searchTab"),
+//    ("search_result_index", "udc_search_result_index"),
+//    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
+//    ("mv_hot_key", "udc_mv_hot_key"),
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
 
@@ -173,31 +173,6 @@ object Play extends FactEtlBase {
           "launcher_location_index = -1")
       ), "launcher_entrance_sk"),
 
-    //智能推荐
-    new DimensionColumn("dim_whaley_recommend_position",
-      List(
-        //1.首页推荐
-        DimensionJoinCondition(
-          Map("udc_launcher_location_index" -> "recommend_slot_index"),
-          "recommend_algorithm='未知' and recommend_position='portalrecommend'", null, s"udc_recommend_position is null"
-        ),
-        //2.其他推荐
-        DimensionJoinCondition(
-          Map("udc_recommend_position" -> "recommend_position",
-            "udc_path_content_type" -> "recommend_position_type",
-            "udc_recommend_index" -> "recommend_slot_index"
-          ),
-          "recommend_algorithm='未知'", null, null
-        ),
-        DimensionJoinCondition(
-          Map("udc_recommend_position" -> "recommend_position",
-            "contentType" -> "recommend_position_type",
-            "udc_recommend_index" -> "recommend_slot_index"
-          ),
-          "recommend_algorithm='未知'", null, null
-        )
-      ),
-      "recommend_position_sk"),
 
     //频道页入口
     new DimensionColumn("dim_whaley_page_entrance",
@@ -240,6 +215,33 @@ object Play extends FactEtlBase {
             "udc_search_result_index" -> "search_result_index"),
           "search_from = 'unknown'", null, "udc_search_from is not null"
         )), "search_sk"),
+
+    //智能推荐
+    new DimensionColumn("dim_whaley_recommend_position",
+      List(
+        //1.首页推荐
+        DimensionJoinCondition(
+          Map("udc_launcher_location_index" -> "recommend_slot_index"),
+          "recommend_algorithm='未知' and recommend_position='portalrecommend'", null, s"udc_recommend_position is null"
+        ),
+        //2.其他推荐
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "udc_path_content_type" -> "recommend_position_type",
+            "udc_recommend_index" -> "recommend_slot_index"
+          ),
+          "recommend_algorithm='未知'", null, null
+        ),
+        DimensionJoinCondition(
+          Map("udc_recommend_position" -> "recommend_position",
+            "contentType" -> "recommend_position_type",
+            "udc_recommend_index" -> "recommend_slot_index"
+          ),
+          "recommend_algorithm='未知'", null, null
+        )
+      ),
+      "recommend_position_sk"),
+
     //体育比赛
     new DimensionColumn("dim_whaley_sports_match",
       List(DimensionJoinCondition(Map("matchSid" -> "match_sid"))), "match_sk"),
