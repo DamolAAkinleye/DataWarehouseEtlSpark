@@ -42,6 +42,7 @@ object SourceSite extends DimensionBase {
 
     sourceDf.filter("status = 1").filter("trim(name) != '站点树' ")
       .withColumn("contentType", expr("case when id = 1101 then 'sports' else contentType end"))
+      .withColumn("contentType", expr("case when id = 1361 then 'sports' else contentType end"))
       .registerTempTable("mtv_program_site")
 
     //cms 表中获取
@@ -50,7 +51,7 @@ object SourceSite extends DimensionBase {
       //      "d.name AS main_category, d.code AS main_category_code, " +
       "c.name AS second_category, c.code AS second_category_code, " +
       "b.name AS third_category, b.code AS third_category_code," +
-      "a.name AS fourth_category, case when trim(a.templateCode)!= '' then concat_ws('_',a.code,a.templateCode) else a.code end fourth_category_code, " +
+      "a.name AS fourth_category, case when (trim(a.templateCode)!= '' and a.contentType='sports') then concat_ws('_',a.code,a.templateCode) else a.code end fourth_category_code, " +
       " b.code AS last_second_code , " +
       " b.name AS last_second_name , " +
       "case when (trim(a.templateCode)!= '' and a.contentType='sports') then concat_ws('_',a.code,a.templateCode) else a.code end last_first_code , " +
