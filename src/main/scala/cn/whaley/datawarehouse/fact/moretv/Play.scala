@@ -134,22 +134,21 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得首页入口 launcher_entrance_sk */
     EntranceTypeUtils.getLauncherEntranceSK(),
 
-    /** 获得用户ip对应的地域维度user_web_location_sk */
-
-    /** 获得音乐榜单维度mv_hot_sk */
-    new DimensionColumn("dim_medusa_mv_hot_list",
-      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_rank_id"))),
-      "mv_hot_sk"),
 
     /** 获得访问ip对应的地域维度user_web_location_sk */
     new DimensionColumn("dim_web_location",
       List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))),
-      "web_location_sk","user_web_location_sk"),
+      "web_location_sk","access_web_location_sk"),
 
     /** 获得用户维度user_sk */
     new DimensionColumn("dim_medusa_terminal_user",
       List(DimensionJoinCondition(Map("userId" -> "user_id"))),
-      "user_sk"),
+      List(("user_sk","user_sk"), ("web_location_sk", "user_web_location_sk"))),
+
+    /** 获得用户登录维度user_login_sk */
+    new DimensionColumn("dim_medusa_terminal_user_login",
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
+      "user_login_sk"),
 
     /** 获得设备型号维度product_model_sk */
     new DimensionColumn("dim_medusa_product_model",
@@ -160,11 +159,6 @@ object Play extends FactEtlBase with  LogConfig{
     new DimensionColumn("dim_medusa_promotion",
       List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
       "promotion_sk"),
-
-    /** 获得用户登录维度user_login_sk */
-    new DimensionColumn("dim_medusa_terminal_user_login",
-      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
-      "user_login_sk"),
 
     /** 获得app版本维度app_version_sk */
     new DimensionColumn("dim_app_version",
@@ -179,7 +173,7 @@ object Play extends FactEtlBase with  LogConfig{
       "program_sk"),
 
     /** 获得剧集节目维度episode_program_sk*/
-    new DimensionColumn("dim_medusa_program",
+    new DimensionColumn("dim_medusa_program", "dim_medusa_program_episode",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
       "program_sk","episode_program_sk"),
 
@@ -201,13 +195,21 @@ object Play extends FactEtlBase with  LogConfig{
     /** 获得电台维度mv_radio_sk*/
     new DimensionColumn("dim_medusa_mv_radio",
       List(DimensionJoinCondition(Map("station" -> "mv_radio_title"))),
-      "mv_radio_sk")
+      "mv_radio_sk"),
+
+    /** 获得音乐榜单维度mv_hot_sk */
+    new DimensionColumn("dim_medusa_mv_hot_list",
+      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_rank_id"))),
+      "mv_hot_sk")
   )
 
 
   /**
     * step 5,保留哪些列，以及别名声明
     * */
+
+  dimensionsNeedInFact = List("dim_medusa_subject", "dim_medusa_program")
+
   columnsFromSource = List(
     //作为测试字段,验证维度解析是否正确，上线后删除
     ("subjectName", "subjectName"),
@@ -252,7 +254,11 @@ object Play extends FactEtlBase with  LogConfig{
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
     ("program_sid", "videoSid"),
-    ("program_content_type", "contentType"),//need,for 预告片类型
+    ("play_content_type",
+      "case when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
+        "when dim_medusa_program.content_type is not null then dim_medusa_program.content_type " +
+        "when trim(contentType) = '' then null else contentType end"),
+    ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false' end"),
     ("search_keyword", "searchKeyword"),
     ("product_model", "productModel"),
     ("auto_clarity", "tencentAutoClarity"),

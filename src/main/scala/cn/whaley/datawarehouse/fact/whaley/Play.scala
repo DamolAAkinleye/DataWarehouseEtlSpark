@@ -110,7 +110,7 @@ object Play extends FactEtlBase {
 
     //        ("network_type", "networkType"),
 
-    ("path", "path"),
+//    ("path", "path"),
 //    ("subject_code", "udc_subject_code"),
 //    ("wui_version", "udc_wui_version"),
 //    ("launcher_access_location", "udc_launcher_access_location"),
@@ -122,8 +122,8 @@ object Play extends FactEtlBase {
 //    ("page_area_code", "udc_page_area_code"),
 //    ("page_location_code", "udc_page_location_code"),
 //    ("page_location_index", "udc_page_location_index"),
-    ("last_category", "udc_last_category"),
-    ("last_second_category", "udc_last_second_category"),
+//    ("last_category", "udc_last_category"),
+//    ("last_second_category", "udc_last_second_category"),
 //    ("search_from", "udc_search_from"),
 //    ("search_from_hot_word", "udc_search_from_hot_word"),
 //    ("search_from_associational_word", "udc_search_from_associational_word"),
@@ -150,7 +150,7 @@ object Play extends FactEtlBase {
       List(DimensionJoinCondition(Map("videoSid" -> "sid"))), "program_sk"),
 
     //剧集
-    new DimensionColumn("dim_whaley_program", "dim_whaley_program_eposide",
+    new DimensionColumn("dim_whaley_program", "dim_whaley_program_episode",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))), "program_sk", "episode_program_sk"),
 
     //账号
