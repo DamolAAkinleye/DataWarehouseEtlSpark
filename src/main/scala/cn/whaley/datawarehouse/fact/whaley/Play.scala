@@ -79,8 +79,8 @@ object Play extends FactEtlBase {
 
   columnsFromSource = List(
     ("duration", "duration"),
-    ("program_duration", "videoDuration"),
-    ("trailer_duration", "trailerDuration"),
+    ("program_duration", "cast(videoDuration to bigint)"),
+    ("trailer_duration", "cast(trailerDuration to bigint)"),
     ("user_id", "userId"),
     ("product_sn", "productSN"),
     ("end_event", "event"),
@@ -190,9 +190,13 @@ object Play extends FactEtlBase {
         DimensionJoinCondition(
           Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
         ),
-        DimensionJoinCondition(
+        DimensionJoinCondition( //关联源数据中只包含一层站点树的情况
           Map("udc_last_second_category" -> "last_first_code"),
           null, null, "udc_last_category is null"
+        ),
+        DimensionJoinCondition( //关联源数据中体育第二层错误的
+          Map("udc_last_second_category" -> "last_first_code"),
+          "site_content_type = 'sports'"
         )
       ), "source_site_sk"),
     //筛选
@@ -279,11 +283,12 @@ object Play extends FactEtlBase {
     //路径聚合维度
     new DimensionColumn("dim_whaley_area_source_agg",
       List(
+        //语言搜索
         DimensionJoinCondition(Map(), "source_code = 'voice_search'", null, "path like '%voicesearch%'"),
         DimensionJoinCondition(
           Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
           "source_code = 'source_site'"),
-        DimensionJoinCondition(
+        DimensionJoinCondition( //关联源数据中只包含一层站点树的情况
           Map("udc_last_second_category" -> "sub_module_code"),
           "source_code = 'source_site'", null, "udc_last_category is null"
         ),
