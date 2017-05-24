@@ -250,10 +250,12 @@ object Play extends FactEtlBase with  LogConfig{
     ("program_duration", "programDuration"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
     ("user_id", "userId"),
+    ("mac", "mac"),
     ("event", "event"),//no end_event,need to merge play
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
     ("program_sid", "videoSid"),
+    ("content_type", "contentType"),
     ("play_content_type",
       "case when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
         "when dim_medusa_program.content_type is not null then dim_medusa_program.content_type " +
