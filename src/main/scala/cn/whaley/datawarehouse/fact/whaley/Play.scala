@@ -16,7 +16,7 @@ object Play extends FactEtlBase {
 
   parquetPath = LogPath.HELIOS_PLAY
 
-  partition = 200
+  partition = 300
 
   addColumns = List(
     UserDefinedColumn("udc_subject_code", udf(SubjectUtils.getSubjectCode: String => String), List("path")),
