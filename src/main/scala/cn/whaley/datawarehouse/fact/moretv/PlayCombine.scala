@@ -160,8 +160,6 @@ object PlayCombine extends BaseClass with LogConfig {
               val row = Row(ikey, jDuration, iDateTime, jEvent+"_combine"+i, iIndex)
               saveToArrayBuffer(row,arrayBuffer,keySet,i)
               keySet.add(j)
-              //keySet.add(i)
-              //keySet.add(j)
               i = j + 1
               break
             } else {
@@ -171,15 +169,11 @@ object PlayCombine extends BaseClass with LogConfig {
               if (!(k < length)) {
                 //处理 i,j key相同，并且event都是startplay的情况
                 val rowI = Row(ikey, iDuration, iDateTime, iEvent+"ki"+i, iIndex)
-                //arrayBuffer.+=(rowI)
                 saveToArrayBuffer(rowI,arrayBuffer,keySet,i)
 
                 //jRow的event肯定也是startplay,否则会和iRow合并，所以也将jRow存入arrayBuffer
                 val rowJ = Row(ikey, jDuration, jDateTime, jEvent+"kj"+i, jIndex)
                 saveToArrayBuffer(rowJ,arrayBuffer,keySet,j)
-                //arrayBuffer.+=(rowJ)
-                //keySet.add(i)
-                //keySet.add(j)
                 i = k
                 break
               }
@@ -187,9 +181,7 @@ object PlayCombine extends BaseClass with LogConfig {
               while (k < length) {
                 val kTuple = list(k)
                 val kDuration = kTuple._1
-                val kDateTime = kTuple._2
                 val kEvent = kTuple._3
-                val kIndex = kTuple._4
 
                 //处理寻找到k的event为结束的情况
                 if (kEvent.equalsIgnoreCase(userExitEvent) || kEvent.equalsIgnoreCase(selfEndEvent)) {
@@ -202,18 +194,14 @@ object PlayCombine extends BaseClass with LogConfig {
                 }else if (k == length - 1 && kEvent.equalsIgnoreCase(startPlayEvent)) {
                   //处理 i,j....k1,kn的event都是startplay的情况
                   for(h<-i to k){
-                    val rowH = Row(ikey, iDuration, iDateTime, iEvent+"_k"+h, h)
+                    val hTuple=list(h)
+                    val hDuration = hTuple._1
+                    val hDateTime = hTuple._2
+                    val hEvent = hTuple._3
+                    val hIndex = hTuple._4
+                    val rowH = Row(ikey, hDuration, hDateTime, hEvent+"_h"+h, hIndex)
                     saveToArrayBuffer(rowH,arrayBuffer,keySet,h)
                   }
-                /*  val rowI = Row(ikey, iDuration, iDateTime, iEvent+"_ik3", iIndex)
-                  saveToArrayBuffer(rowI,arrayBuffer,keySet,i)
-
-                  //jRow的event肯定也是userExitEvent或selfEndEvent,否则会和iRow合并，所以也将jRow存入arrayBuffer
-                  val rowJ = Row(ikey, jDuration, jDateTime, jEvent+"_jk3", jIndex)
-                  arrayBuffer.+=(rowJ)
-                  //kRow的event肯定也是userExitEvent或selfEndEvent,否则会和iRow合并，所以也将kRow存入arrayBuffer
-                  val rowK = Row(ikey, kDuration, kDateTime, kEvent+"_kk3", kIndex)
-                  arrayBuffer.+=(rowK)*/
                   i = k + 1
                   break
                 }
