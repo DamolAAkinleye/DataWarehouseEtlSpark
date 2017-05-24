@@ -119,6 +119,14 @@ object PlayCombine extends BaseClass with LogConfig {
       //负责标记已经匹配过的记录，防止重复匹配的情况,例如i1与k已经匹配，如果接下来的i2也与k匹配，那么跳过k，寻找新的匹配h
       val keySet= new util.HashSet[Int]
       var i: Int = 0
+
+      def saveToArrayBuffer(row:Row,arrayBuffer: ArrayBuffer[Row],set: util.HashSet[Int],index:Int): Unit ={
+        if(!set.contains(index)){
+          arrayBuffer.+=(row)
+          set.add(index)
+        }
+      }
+
       while (i < length) {
         val iTuple = list(i)
         breakable {
@@ -225,12 +233,7 @@ object PlayCombine extends BaseClass with LogConfig {
       arrayBuffer.toList
     }).flatMap(x => x)
 
-    def saveToArrayBuffer(row:Row,arrayBuffer: ArrayBuffer[Row],set: util.HashSet[Int],index:Int): Unit ={
-      if(!set.contains(index)){
-        arrayBuffer.+=(row)
-        set.add(index)
-      }
-    }
+
 
     println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
     val combineDF = sqlContext.createDataFrame(rddCombine, StructType(shortDataFrame.schema.fields))
