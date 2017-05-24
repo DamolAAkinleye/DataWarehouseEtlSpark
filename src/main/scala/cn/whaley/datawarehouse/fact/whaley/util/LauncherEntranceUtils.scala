@@ -19,7 +19,7 @@ object LauncherEntranceUtils{
       val startIndex = wui.indexOf(".")
       if(startIndex > 0){
         val wuiVersion = wui.substring(0,startIndex)
-        val tmp = wui.split("-")
+        val tmp = wui.split('.')
         if(tmp.length == 4 || wuiVersion =="02"){
           "02"
         } else if(wuiVersion == "00" || wuiVersion == "01") {
