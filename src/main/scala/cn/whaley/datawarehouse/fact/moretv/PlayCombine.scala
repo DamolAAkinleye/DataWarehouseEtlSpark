@@ -58,7 +58,7 @@ object PlayCombine extends BaseClass with LogConfig {
   val selfEndEvent = "selfend"
   val noEnd = "noEnd"
   val shortDataFrameTable = "shortDataFrameTable"
-  val combineTable = "combineTmpTable"
+  val combineTmpTable = "combineTmpTable"
 
   /** 加载3.x play数据 */
   override def extract(params: Params): DataFrame = {
@@ -70,7 +70,7 @@ object PlayCombine extends BaseClass with LogConfig {
         if (medusaFlag) {
           val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String, String](), MEDUSA, LogTypes.PLAY, startDate)
           println("medusaDf.count():" + medusaDf.count())
-          medusaDf
+          medusaDf.repartition(1000)
         } else {
           throw new RuntimeException(s" $medusa_input_dir not exist")
         }
@@ -106,7 +106,7 @@ object PlayCombine extends BaseClass with LogConfig {
     /**
       * (key,Iterable(tuple))
       **/
-    val rddCombine = rdd1.map(x => {
+    val rddCombineTmp = rdd1.map(x => {
       val ikey = x._1
       val tupleIterable = x._2
       //order by datetime
@@ -143,8 +143,7 @@ object PlayCombine extends BaseClass with LogConfig {
           //if iEvent is userExit or selfEnd,save record to arrayBuffer directly
           if (iEvent.equalsIgnoreCase(userExitEvent) || iEvent.equalsIgnoreCase(selfEndEvent)) {
             val row = Row(ikey, iDuration, iDateTime, iEvent+"_iFirst"+i, iIndex)
-            arrayBuffer.+=(row)
-            keySet.add(i)
+            saveToArrayBuffer(row,arrayBuffer,keySet,i)
             i = i + 1
             break
           }
@@ -236,13 +235,13 @@ object PlayCombine extends BaseClass with LogConfig {
 
 
     println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
-    val combineDF = sqlContext.createDataFrame(rddCombine, StructType(shortDataFrame.schema.fields))
-    combineDF.registerTempTable(combineTable)
-    writeToHDFS(combineDF, baseOutputPathCombineTmp)
+    val combineDFTmp = sqlContext.createDataFrame(rddCombineTmp, StructType(shortDataFrame.schema.fields))
+    combineDFTmp.registerTempTable(combineTmpTable)
+    writeToHDFS(combineDFTmp, baseOutputPathCombineTmp)
     val df = sqlContext.sql(
       s"""select a.*,b.event as end_event,b.datetime as fDatetime,b.duration as fDuration
-          | from   $shortDataFrameTable  a join
-          |        $combineTable         b on a.${INDEX_NAME}=b.${INDEX_NAME}
+          | from   $shortDataFrameTable     a join
+          |        $combineTmpTable         b on a.${INDEX_NAME}=b.${INDEX_NAME}
       """.stripMargin)
     df
   }
