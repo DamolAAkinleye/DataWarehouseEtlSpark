@@ -80,6 +80,13 @@ object PlayCombine extends BaseClass with LogConfig {
     }
   }
 
+  def saveToArrayBuffer(row:Row,arrayBuffer: ArrayBuffer[Row],set: scala.collection.mutable.Set[Int],index:Int): Unit ={
+    if(!set.contains(index)){
+      arrayBuffer.+=(row)
+      set.add(index)
+    }
+  }
+
   /** 合并操作
     * todo 1.细化，特殊情况，在同一秒有许多开始结束日志，如果根据datetime时间排序,判断是先遇到开始还是结束有随机性，多长时间上传一次日志
     *      2.order by datetime,event
@@ -117,16 +124,8 @@ object PlayCombine extends BaseClass with LogConfig {
       //存储合并后的日志记录
       val arrayBuffer = ArrayBuffer.empty[Row]
       //负责标记已经匹配过的记录，防止重复匹配的情况,例如i1与k已经匹配，如果接下来的i2也与k匹配，那么跳过k，寻找新的匹配h
-      val keySet= new util.HashSet[Int]
+      val keySet= scala.collection.mutable.Set[Int]()
       var i: Int = 0
-
-      def saveToArrayBuffer(row:Row,arrayBuffer: ArrayBuffer[Row],set: util.HashSet[Int],index:Int): Unit ={
-        if(!set.contains(index)){
-          arrayBuffer.+=(row)
-          set.add(index)
-        }
-      }
-
       while (i < length) {
         val iTuple = list(i)
         breakable {
