@@ -61,7 +61,7 @@ object LauncherEntranceUtils{
       if(recommendLocation.contains("-")){   //剔除01版本中的大小推荐位信息
         val tmp = recommendLocation.split("-")
         tmp(0).toInt + 1
-      }else recommendLocation.toInt + 1
+      }else {recommendLocation.toInt + 1}
     }
   }
 
@@ -77,7 +77,7 @@ object LauncherEntranceUtils{
     if(secondPath == "top"){
       linkValue
     }else if(secondPath == "hot11"){
-      "recommend"
+      "recommendation"
     }else secondPath
   }
 
