@@ -1,7 +1,6 @@
 package cn.whaley.datawarehouse.fact.moretv
 
 import java.io.File
-import java.util
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.fact.constant.Constants._
