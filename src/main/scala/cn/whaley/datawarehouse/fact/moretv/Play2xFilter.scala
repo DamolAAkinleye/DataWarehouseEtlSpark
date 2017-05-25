@@ -1,8 +1,6 @@
 package cn.whaley.datawarehouse.fact.moretv
 
-import java.io.File
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.fact.constant.Constants._
 import cn.whaley.datawarehouse.global.{LogTypes, LogConfig}
 import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
 import cn.whaley.sdk.dataexchangeio.DataIO
@@ -14,8 +12,8 @@ import scala.collection.mutable.{ArrayBuffer}
   * Created by michael on 2017/5/18.
   * 整体思路：剔除单个用户在短时间内连续上抛同一个视频的播放日志的信息
   *具体方案：
-           获取同一个用户播放同一个视频（episodeSid）的有序播放时间戳信息列表A，对A中的时间信息根据时间间隔阈值x分割获得多组时间段，计算每段时间内的上抛日志量n以及两条日志之间的平均时间间隔t。
-           过滤参数值：x=30分钟；n=5；t=5分钟
+  * 获取同一个用户播放同一个视频（episodeSid）的有序播放时间戳信息列表A，对A中的时间信息根据时间间隔阈值x分割获得多组时间段，计算每段时间内的上抛日志量n以及两条日志之间的平均时间间隔t。
+  * 过滤参数值：x=30分钟；n=5；t=5分钟
   *case1:
   *  A...B...C分段，时间间隔30分钟，A到C为超过三分钟，然后拿A到B之间的时间段做check？
   *    错，确认后，分别检测AB,BC时间段间隔是否超过30分钟，如果BC时间间隔超过30分钟,对A...B之间的记录做check
@@ -23,10 +21,10 @@ import scala.collection.mutable.{ArrayBuffer}
   *
   */
 object Play2xFilter extends BaseClass with LogConfig {
-  val topicName = "x2"
-  val baseOutputPath = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicName
-  val topicNameFilter = "x2filter"
-  val baseOutputPathFilter = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicNameFilter
+  //val topicName = "x2"
+  //val baseOutputPath = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicName
+  //val topicNameFilter = "x2filter"
+  //val baseOutputPathFilter = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicNameFilter
 
   val fact_table_name = "log_data"
 
@@ -128,15 +126,15 @@ object Play2xFilter extends BaseClass with LogConfig {
     println("orderByDF.schema.fields:" + orderByDF.schema.fields.foreach(e => println(e.name)))
     val filterDF = sqlContext.createDataFrame(rdd, StructType(orderByDF.schema.fields))
     filterDF.registerTempTable("filterTable")
-    writeToHDFS(filterDF, baseOutputPathFilter)
+    //writeToHDFS(filterDF, baseOutputPathFilter)
     val df = sqlContext.sql(
-      """select a.*
-        | from       orderbyTable   a
-        | left join  filterTable    b on
-        |    a.key=b.key            and
+      s"""select a.*
+        | from       $fact_table_name   a
+        | left join  filterTable        b on
+        |    concat_ws('_',a.userId,a.episodeSid)=b.key  and
         |    a.datetime=b.datetime
         |where b.key is null
-      """.stripMargin)
+      """.stripMargin).withColumnRenamed("duration","fDuration").withColumnRenamed("event","end_event").withColumnRenamed("datetime","fDatetime")
     df
   }
 
@@ -159,11 +157,12 @@ object Play2xFilter extends BaseClass with LogConfig {
   }
 
   override def load(params: Params, df: DataFrame): Unit = {
-    println(s"load df to $baseOutputPath")
+    val date = params.paramMap("date").toString
+    val baseOutputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.MEDUSA_PLAY_2X_FILTER_RESULT,date)
     val isBaseOutputPathExist = HdfsUtil.IsDirExist(baseOutputPath)
     if (isBaseOutputPathExist) {
       HdfsUtil.deleteHDFSFileOrPath(baseOutputPath)
-      println(s"删除 $topicName 的基础目录: $baseOutputPath")
+      println(s"删除目录: $baseOutputPath")
     }
     println("过滤后记录条数:" + df.count())
     println("过滤后结果输出目录为：" + baseOutputPath)
