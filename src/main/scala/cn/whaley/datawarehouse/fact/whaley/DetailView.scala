@@ -83,6 +83,7 @@ object DetailView extends FactEtlBase{
     ("voice_search", "case when path like '%voicesearch%' then 'true' else 'false' end"),
     ("launcher_link_type", "linkType"),
     ("launcher_link_value", "linkValue"),
+    ("product_line", "case when productLine is null or trim(productLine) = '' then 'helios' else productLine end"),
 
     //        ("network_type", "networkType"),
 
