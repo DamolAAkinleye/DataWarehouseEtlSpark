@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.util
+package cn.whaley.datawarehouse.fact.moretv.util
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 

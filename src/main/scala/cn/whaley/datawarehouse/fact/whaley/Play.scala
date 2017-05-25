@@ -16,7 +16,7 @@ object Play extends FactEtlBase {
 
   parquetPath = LogPath.HELIOS_PLAY
 
-  partition = 200
+  partition = 300
 
   addColumns = List(
     UserDefinedColumn("udc_subject_code", udf(SubjectUtils.getSubjectCode: String => String), List("path")),
@@ -79,8 +79,8 @@ object Play extends FactEtlBase {
 
   columnsFromSource = List(
     ("duration", "duration"),
-    ("program_duration", "videoDuration"),
-    ("trailer_duration", "trailerDuration"),
+    ("program_duration", "cast(videoDuration as bigint)"),
+    ("trailer_duration", "cast(trailerDuration as bigint)"),
     ("user_id", "userId"),
     ("product_sn", "productSN"),
     ("end_event", "event"),
@@ -110,28 +110,28 @@ object Play extends FactEtlBase {
 
     //        ("network_type", "networkType"),
 
-    ("path", "path"),
-    ("subject_code", "udc_subject_code"),
-    ("wui_version", "udc_wui_version"),
-    ("launcher_access_location", "udc_launcher_access_location"),
-    ("launcher_location_index", "udc_launcher_location_index"),
-    ("recommend_position", "udc_recommend_position"),
-    ("recommend_index", "udc_recommend_index"),
-    ("path_content_type", "udc_path_content_type"),
-    ("page_code", "udc_page_code"),
-    ("page_area_code", "udc_page_area_code"),
-    ("page_location_code", "udc_page_location_code"),
-    ("page_location_index", "udc_page_location_index"),
-    ("last_category", "udc_last_category"),
-    ("last_second_category", "udc_last_second_category"),
-    ("search_from", "udc_search_from"),
-    ("search_from_hot_word", "udc_search_from_hot_word"),
-    ("search_from_associational_word", "udc_search_from_associational_word"),
-    ("retrieval", "retrieval"),
-    ("search_tab", "searchTab"),
-    ("search_result_index", "udc_search_result_index"),
-    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
-    ("mv_hot_key", "udc_mv_hot_key"),
+//    ("path", "path"),
+//    ("subject_code", "udc_subject_code"),
+//    ("wui_version", "udc_wui_version"),
+//    ("launcher_access_location", "udc_launcher_access_location"),
+//    ("launcher_location_index", "udc_launcher_location_index"),
+//    ("recommend_position", "udc_recommend_position"),
+//    ("recommend_index", "udc_recommend_index"),
+//    ("path_content_type", "udc_path_content_type"),
+//    ("page_code", "udc_page_code"),
+//    ("page_area_code", "udc_page_area_code"),
+//    ("page_location_code", "udc_page_location_code"),
+//    ("page_location_index", "udc_page_location_index"),
+//    ("last_category", "udc_last_category"),
+//    ("last_second_category", "udc_last_second_category"),
+//    ("search_from", "udc_search_from"),
+//    ("search_from_hot_word", "udc_search_from_hot_word"),
+//    ("search_from_associational_word", "udc_search_from_associational_word"),
+//    ("retrieval", "retrieval"),
+//    ("search_tab", "searchTab"),
+//    ("search_result_index", "udc_search_result_index"),
+//    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
+//    ("mv_hot_key", "udc_mv_hot_key"),
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
 
@@ -150,7 +150,7 @@ object Play extends FactEtlBase {
       List(DimensionJoinCondition(Map("videoSid" -> "sid"))), "program_sk"),
 
     //剧集
-    new DimensionColumn("dim_whaley_program", "dim_whaley_program_eposide",
+    new DimensionColumn("dim_whaley_program", "dim_whaley_program_episode",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))), "program_sk", "episode_program_sk"),
 
     //账号
@@ -172,6 +172,53 @@ object Play extends FactEtlBase {
             "udc_launcher_access_location" -> "access_location_code"),
           "launcher_location_index = -1")
       ), "launcher_entrance_sk"),
+
+
+    //频道页入口
+    new DimensionColumn("dim_whaley_page_entrance",
+      List(DimensionJoinCondition(
+        Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
+          "udc_page_location_code" -> "location_code", "udc_page_location_index" -> "location_index")
+      ),
+        DimensionJoinCondition(
+          Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
+            "udc_page_location_index" -> "location_index"))
+      ), "page_entrance_sk"),
+    //站点树
+    new DimensionColumn("dim_whaley_source_site",
+      List(
+        DimensionJoinCondition(
+          Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
+        ),
+        DimensionJoinCondition( //关联源数据中只包含一层站点树的情况
+          Map("udc_last_second_category" -> "last_first_code"),
+          null, null, "udc_last_category is null"
+        ),
+        DimensionJoinCondition( //关联源数据中体育第二层错误的
+          Map("udc_last_second_category" -> "last_first_code"),
+          "site_content_type = 'sports'"
+        )
+      ), "source_site_sk"),
+    //筛选
+    new DimensionColumn("dim_whaley_retrieval",
+      List(DimensionJoinCondition(
+        Map("retrieval" -> "retrieval_key", "udc_path_content_type" -> "content_type")
+      )), "retrieval_sk"),
+    //搜索
+    new DimensionColumn("dim_whaley_search",
+      List(DimensionJoinCondition(
+        Map("searchTab" -> "search_tab", "udc_search_from" -> "search_from",
+          "udc_search_from_hot_word" -> "search_from_hot_word",
+          "udc_search_from_associational_word" -> "search_from_associational_word",
+          "udc_search_result_index" -> "search_result_index")
+      ),
+        DimensionJoinCondition(
+          Map("searchTab" -> "search_tab",
+            "udc_search_from_hot_word" -> "search_from_hot_word",
+            "udc_search_from_associational_word" -> "search_from_associational_word",
+            "udc_search_result_index" -> "search_result_index"),
+          "search_from = 'unknown'", null, "udc_search_from is not null"
+        )), "search_sk"),
 
     //智能推荐
     new DimensionColumn("dim_whaley_recommend_position",
@@ -199,47 +246,6 @@ object Play extends FactEtlBase {
       ),
       "recommend_position_sk"),
 
-    //频道页入口
-    new DimensionColumn("dim_whaley_page_entrance",
-      List(DimensionJoinCondition(
-        Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
-          "udc_page_location_code" -> "location_code", "udc_page_location_index" -> "location_index")
-      ),
-        DimensionJoinCondition(
-          Map("udc_page_code" -> "page_code", "udc_page_area_code" -> "area_code",
-            "udc_page_location_index" -> "location_index"))
-      ), "page_entrance_sk"),
-    //站点树
-    new DimensionColumn("dim_whaley_source_site",
-      List(
-        DimensionJoinCondition(
-          Map("udc_last_category" -> "last_first_code", "udc_last_second_category" -> "last_second_code")
-        ),
-        DimensionJoinCondition(
-          Map("udc_last_second_category" -> "last_first_code"),
-          null, null, "udc_last_category is null"
-        )
-      ), "source_site_sk"),
-    //筛选
-    new DimensionColumn("dim_whaley_retrieval",
-      List(DimensionJoinCondition(
-        Map("retrieval" -> "retrieval_key", "udc_path_content_type" -> "content_type")
-      )), "retrieval_sk"),
-    //搜索
-    new DimensionColumn("dim_whaley_search",
-      List(DimensionJoinCondition(
-        Map("searchTab" -> "search_tab", "udc_search_from" -> "search_from",
-          "udc_search_from_hot_word" -> "search_from_hot_word",
-          "udc_search_from_associational_word" -> "search_from_associational_word",
-          "udc_search_result_index" -> "search_result_index")
-      ),
-        DimensionJoinCondition(
-          Map("searchTab" -> "search_tab",
-            "udc_search_from_hot_word" -> "search_from_hot_word",
-            "udc_search_from_associational_word" -> "search_from_associational_word",
-            "udc_search_result_index" -> "search_result_index"),
-          "search_from = 'unknown'", null, "udc_search_from is not null"
-        )), "search_sk"),
     //体育比赛
     new DimensionColumn("dim_whaley_sports_match",
       List(DimensionJoinCondition(Map("matchSid" -> "match_sid"))), "match_sk"),
@@ -277,11 +283,12 @@ object Play extends FactEtlBase {
     //路径聚合维度
     new DimensionColumn("dim_whaley_area_source_agg",
       List(
+        //语言搜索
         DimensionJoinCondition(Map(), "source_code = 'voice_search'", null, "path like '%voicesearch%'"),
         DimensionJoinCondition(
           Map("udc_last_category" -> "sub_module_code", "udc_last_second_category" -> "module_code"),
           "source_code = 'source_site'"),
-        DimensionJoinCondition(
+        DimensionJoinCondition( //关联源数据中只包含一层站点树的情况
           Map("udc_last_second_category" -> "sub_module_code"),
           "source_code = 'source_site'", null, "udc_last_category is null"
         ),

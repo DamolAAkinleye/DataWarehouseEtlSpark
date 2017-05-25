@@ -19,7 +19,7 @@ object LauncherEntranceUtils{
       val startIndex = wui.indexOf(".")
       if(startIndex > 0){
         val wuiVersion = wui.substring(0,startIndex)
-        val tmp = wui.split("-")
+        val tmp = wui.split('.')
         if(tmp.length == 4 || wuiVersion =="02"){
           "02"
         } else if(wuiVersion == "00" || wuiVersion == "01") {
@@ -61,7 +61,7 @@ object LauncherEntranceUtils{
       if(recommendLocation.contains("-")){   //剔除01版本中的大小推荐位信息
         val tmp = recommendLocation.split("-")
         tmp(0).toInt + 1
-      }else recommendLocation.toInt + 1
+      }else {recommendLocation.toInt + 1}
     }
   }
 
@@ -77,7 +77,7 @@ object LauncherEntranceUtils{
     if(secondPath == "top"){
       linkValue
     }else if(secondPath == "hot11"){
-      "recommend"
+      "recommendation"
     }else secondPath
   }
 

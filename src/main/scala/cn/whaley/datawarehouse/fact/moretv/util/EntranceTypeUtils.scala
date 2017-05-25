@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.util
+package cn.whaley.datawarehouse.fact.moretv.util
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.global.LogConfig
@@ -17,7 +17,7 @@ object EntranceTypeUtils extends LogConfig {
     */
   private val MEDUSA_ENTRANCE_REGEX = ("home\\*(classification|foundation|my_tv)\\*[0-9-]{0,2}([a-z_]*)").r
   private val MEDUSA_ENTRANCE_REGEX_WITHOUT_LOCATION_CODE = ("(live|recommendation|search|setting)").r
-  private val MORETV_ENTRANCE_REGEX = ("home-(TVlive|live|search)").r
+  private val MORETV_ENTRANCE_REGEX = ("home-(TVlive|live|search|history|hotrecommend)").r
 
   private def getEntranceCodeByPathETL(path: String, flag: String, code: String): String = {
     var result: String = null
@@ -49,6 +49,9 @@ object EntranceTypeUtils extends LogConfig {
               launcher_area_code = p.group(1)
               if(launcher_area_code.equalsIgnoreCase("TVlive")){
                 launcher_area_code="live"
+              }
+              if(launcher_area_code.equalsIgnoreCase("hotrecommend")){
+                launcher_area_code="recommendation"
               }
             }
             case None =>

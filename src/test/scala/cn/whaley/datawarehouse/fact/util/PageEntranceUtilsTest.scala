@@ -1,5 +1,6 @@
 package cn.whaley.datawarehouse.fact.util
 
+import cn.whaley.datawarehouse.fact.moretv.util.PageEntrancePathParseUtils
 import org.junit.Assert._
 import org.junit.{Before, Test}
 
