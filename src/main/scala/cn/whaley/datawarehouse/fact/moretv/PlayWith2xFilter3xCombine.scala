@@ -248,11 +248,10 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
 
 
 //--------在fact_medusa_play表中展示的字段---------
-    ("duration", "FDuration"),
+    ("duration", "fDuration"),
     ("program_duration", "programDuration"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
     ("user_id", "userId"),
-    ("mac", "mac"),
     ("end_event", "end_event"),//no end_event,need to merge play
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
