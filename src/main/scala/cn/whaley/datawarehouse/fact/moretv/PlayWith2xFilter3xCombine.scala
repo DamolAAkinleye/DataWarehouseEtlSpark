@@ -4,7 +4,7 @@ import java.util.Calendar
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.util._
+import cn.whaley.datawarehouse.fact.moretv.util._
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
@@ -15,7 +15,7 @@ import org.apache.spark.sql.functions._
 /**
   * Created by michel on 17/4/24.
   */
-object PlayV2 extends FactEtlBase with  LogConfig{
+object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
   /** log type name */
   topicName = "fact_medusa_play"
   partition = 2000
@@ -26,13 +26,13 @@ object PlayV2 extends FactEtlBase with  LogConfig{
     * */
   override def readSource(startDate: String): DataFrame = {
     println("------- before readSource "+Calendar.getInstance().getTime)
-    val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, startDate)
-    val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, startDate)
+    val medusa_input_dir = DataIO.getDataFrameOps.getPath(MERGER, LogTypes.MEDUSA_PLAY_3X_COMBINE_RESULT, startDate)
+    val moretv_input_dir = DataIO.getDataFrameOps.getPath(MERGER, LogTypes.MEDUSA_PLAY_2X_FILTER_RESULT, startDate)
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
     val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     if (medusaFlag && moretvFlag) {
-      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).withColumn("flag",lit(MEDUSA))
-      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).withColumn("flag",lit(MORETV))
+      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MERGER, LogTypes.MEDUSA_PLAY_3X_COMBINE_RESULT, startDate).withColumn("flag",lit(MEDUSA))
+      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MERGER, LogTypes.MEDUSA_PLAY_2X_FILTER_RESULT, startDate).withColumn("flag",lit(MORETV))
       val medusaRDD=medusaDf.toJSON
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
@@ -246,7 +246,7 @@ object PlayV2 extends FactEtlBase with  LogConfig{
 
 
 //--------在fact_medusa_play表中展示的字段---------
-    ("duration", "fDuration"),
+    ("duration", "FDuration"),
     ("program_duration", "programDuration"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
     ("user_id", "userId"),
