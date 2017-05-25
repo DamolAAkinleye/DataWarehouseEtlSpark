@@ -50,7 +50,7 @@ object Play extends FactEtlBase with  LogConfig{
     println("------- before filterRows "+Calendar.getInstance().getTime)
     /** 用于过滤单个用户播放单个视频量过大的情况 */
     val playNumLimit=5000
-    println("sourceDf.count():"+sourceDf.count())
+//    println("sourceDf.count():"+sourceDf.count())
     sourceDf.registerTempTable("source_log")
     var sqlStr =
       s"""
@@ -70,8 +70,8 @@ object Play extends FactEtlBase with  LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
-    println("------- after filterRows "+Calendar.getInstance().getTime)
-    println("filterRows resultDF.count():"+resultDF.count())
+//    println("------- after filterRows "+Calendar.getInstance().getTime)
+//    println("filterRows resultDF.count():"+resultDF.count())
     resultDF
   }
 
@@ -252,7 +252,7 @@ object Play extends FactEtlBase with  LogConfig{
     ("program_duration", "programDuration"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
     ("user_id", "userId"),
-    ("mac", "mac"),
+//    ("mac", "mac"),
     ("event", "event"),//no end_event,need to merge play
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
