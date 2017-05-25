@@ -46,7 +46,7 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
   /**
     * step 2, filter data source record
     * */
-  override def filterRows(sourceDf: DataFrame): DataFrame = {
+  /*override def filterRows(sourceDf: DataFrame): DataFrame = {
     println("------- before filterRows "+Calendar.getInstance().getTime)
     /** 用于过滤单个用户播放单个视频量过大的情况 */
     val playNumLimit=5000
@@ -73,7 +73,7 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
     println("------- after filterRows "+Calendar.getInstance().getTime)
     println("filterRows resultDF.count():"+resultDF.count())
     resultDF
-  }
+  }*/
 
   /**
     * step 3, generate new columns
