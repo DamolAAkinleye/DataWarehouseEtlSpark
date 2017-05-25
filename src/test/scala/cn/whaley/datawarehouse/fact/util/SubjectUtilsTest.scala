@@ -1,5 +1,6 @@
 package cn.whaley.datawarehouse.fact.util
 
+import cn.whaley.datawarehouse.fact.moretv.util.SubjectUtils
 import org.junit.Assert.assertEquals
 import org.junit.{Before, Test}
 

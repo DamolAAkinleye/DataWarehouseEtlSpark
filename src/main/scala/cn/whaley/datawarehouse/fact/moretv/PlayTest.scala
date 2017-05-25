@@ -1,9 +1,10 @@
 package cn.whaley.datawarehouse.fact.moretv
 
 import java.util.Calendar
+
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.util._
+import cn.whaley.datawarehouse.fact.moretv.util._
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
