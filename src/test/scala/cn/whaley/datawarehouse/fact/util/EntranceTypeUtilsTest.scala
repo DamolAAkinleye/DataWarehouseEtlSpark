@@ -1,7 +1,8 @@
 package cn.whaley.datawarehouse.fact.util
 
+import cn.whaley.datawarehouse.fact.moretv.util.EntranceTypeUtils
 import org.junit.Assert._
-import org.junit.{Test, Before}
+import org.junit.{Before, Test}
 
 /**
   * Created by michael on 2017/5/4.
