@@ -84,4 +84,8 @@ object LogTypes {
   val USERAREAOUTDIR = "/log/medusa/userAreaInfo/"
 
   val MEDUSABOOTSTARTPAGE = "medusa-boot-startpage"
+
+  //for data warehouse
+  val MEDUSA_PLAY_2X_FILTER_RESULT = "medusaPlay2xFilterResult"
+  val MEDUSA_PLAY_3X_COMBINE_RESULT = "medusaPlay3xCombineResult"
 }

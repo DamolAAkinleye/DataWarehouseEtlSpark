@@ -14,40 +14,28 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by michael on 2017/5/19.
-  * CREATE EXTERNAL TABLE fact_medusa_play(
-  * duration                   INT        COMMENT '播放时长，单位秒',
-  * user_id                    STRING     COMMENT '用户id',
-  * end_event                  STRING     COMMENT '结束方式, 包括userexit、selfend',
-  * start_time                 TIMESTAMP  COMMENT '播放开始时间',
-  * end_time                   TIMESTAMP  COMMENT '播放结束时间'，
-  * dim_date                   STRING     COMMENT '日期维度',
-  * dim_time                   STRING     COMMENT '时间维度'
-  * )
-  * 其他信息：1.短视频，电影没有剧集id【episodeSid】
-  * 2.后期会上线sessionId
   *
+  * 业务作用：合并medusa 3.x play对一次播放开始和一次播放结束日志为一条记录
   *
-  * 如果有playId，用playId关联，
-  * 没有playId的话，使用userId,episodeSid,videoSid,pathMain,realIP 作为play session unique key
-  * 待确定：
-  * 【假设下面行为userId,episodeSid,videoSid,pathMain,realIP ，都相同】
-  * 1.如果只有开始行为，end_event默认是null            ok
-  * 2.如果只有开始行为，duration默认是0                ok
-  * 3.如果有开始行为又有结束行为，datetime使用开始行为的datetime      ok
-  * 4.如果有开始行为，有结束行为，但是开始行为和结束行为之间的时间差大于三个小时，是分开作为两条日志，还是合并成一条日志，先做分析？
-  * 6.例如load入20170505那一天日志，但是datetime是20170503 23:59:30,是否需要调整datetime? no,load入20170505,输出20170505
-  * 7.realIP可能在一个session里开始和结束不同，需要做统计
-  *
+  * 基本逻辑：
+  * 使用userId,episodeSid,videoSid,pathMain,realIP 作为play session unique key
+  * 对相同session unique key进行下面三个字段的判别，剩下的其他字段对于一个play session都一样
+  * datetime
+  * duration
+  * end_event
+  *  规则：
+  *  1.如果有开始行为又有结束行为，datetime使用开始行为的datetime
+  *  2.如果单个startplay自己合成一条记录,end_event类型为noEnd
   */
-object PlayCombineV2 extends BaseClass with LogConfig {
-  val topicName = "play3xCombineResultV3"
+object Play3xCombine extends BaseClass with LogConfig {
+/*  val topicName = "play3xCombineResultV3"
   val baseOutputPath = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicName
   val topicNameCombineTmp = "combineTmpV3"
   val baseOutputPathCombineTmp = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicNameCombineTmp
   val short = "shortV3"
   val baseOutputPathShort = FACT_HDFS_BASE_PATH_CHECK + File.separator + short
   val fact = "factV3"
-  val baseOutputPathFact = FACT_HDFS_BASE_PATH_CHECK + File.separator + fact
+  val baseOutputPathFact = FACT_HDFS_BASE_PATH_CHECK + File.separator + fact*/
 
   val fact_table_name = "log_data"
   val INDEX_NAME = "r_index"
@@ -88,7 +76,7 @@ object PlayCombineV2 extends BaseClass with LogConfig {
     factDataFrameWithIndex.cache()
     println("factDataFrameWithIndex.count():" + factDataFrameWithIndex.count())
     factDataFrameWithIndex.registerTempTable(fact_table_name)
-    writeToHDFS(factDataFrameWithIndex, baseOutputPathFact)
+    //writeToHDFS(factDataFrameWithIndex, baseOutputPathFact)
 
     //获得key
     val sqlString =
@@ -96,7 +84,7 @@ object PlayCombineV2 extends BaseClass with LogConfig {
           |from $fact_table_name
        """.stripMargin
     val shortDataFrame = sqlContext.sql(sqlString)
-    writeToHDFS(shortDataFrame, baseOutputPathShort)
+    //writeToHDFS(shortDataFrame, baseOutputPathShort)
     shortDataFrame.registerTempTable(shortDataFrameTable)
     //(key,list(duration,datetime,event,r_index))
     val rdd1 = shortDataFrame.map(row => (row.getString(0), (row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))).groupByKey()
@@ -140,7 +128,7 @@ object PlayCombineV2 extends BaseClass with LogConfig {
     println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
     val combineDFTmp = sqlContext.createDataFrame(rddCombineTmp, StructType(shortDataFrame.schema.fields))
     combineDFTmp.registerTempTable(combineTmpTable)
-    writeToHDFS(combineDFTmp, baseOutputPathCombineTmp)
+    //writeToHDFS(combineDFTmp, baseOutputPathCombineTmp)
     val df = sqlContext.sql(
       s"""select a.*,b.event as end_event,b.datetime as fDatetime,b.duration as fDuration
           | from   $fact_table_name         a join
@@ -157,8 +145,8 @@ object PlayCombineV2 extends BaseClass with LogConfig {
       HdfsUtil.deleteHDFSFileOrPath(baseOutputPath)
       println(s"删除目录: $baseOutputPath")
     }
-    println("过滤后记录条数:" + df.count())
-    println("过滤后结果输出目录为：" + baseOutputPath)
+    println("合并后记录条数:" + df.count())
+    println("合并后结果输出目录为：" + baseOutputPath)
     df.write.parquet(baseOutputPath)
   }
 
