@@ -67,8 +67,6 @@ object Play3xCombine extends BaseClass with LogConfig {
   }
 
   /** 合并操作
-    * todo 1.细化，特殊情况，在同一秒有许多开始结束日志，如果根据datetime时间排序,判断是先遇到开始还是结束有随机性，多长时间上传一次日志
-    *      2.order by datetime,event
     * */
   override def transform(params: Params, factDataFrame: DataFrame): DataFrame = {
     //进行索引编号
