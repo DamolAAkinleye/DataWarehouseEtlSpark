@@ -54,7 +54,7 @@ object Subject extends DimensionBase {
     val contentTypeDf = sqlContext.read.format("jdbc").options(contentTypeDb).load()
       .select($"code", $"name")
 
-    sourceDf.filter($"code".isNotNull && $"code".notEqual(""))
+    sourceDf.filter($"code".isNotNull && $"code".notEqual("") && $"status".notEqual(-1))
       .withColumn("codev", regexp_extract($"code", "[a-z]*", 0)).as("s")
 
       .join(contentTypeDf.as("c"), $"s.codev" === $"c.code", "left_outer")
