@@ -89,6 +89,7 @@ object Play3xCombineV4 extends BaseClass with LogConfig {
     val sqlString =
       s"""select concat_ws('_',userId,episodeSid,videoSid,pathMain,realIP) as key,duration,datetime,event,${INDEX_NAME},'' as start_event
           |from $fact_table_name
+          |where duration is not null
        """.stripMargin
     val shortDataFrame = sqlContext.sql(sqlString)
     //writeToHDFS(shortDataFrame, baseOutputPathShort)
