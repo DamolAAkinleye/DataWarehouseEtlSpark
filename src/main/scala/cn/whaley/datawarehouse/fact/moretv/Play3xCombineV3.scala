@@ -30,7 +30,7 @@ object Play3xCombineV3 extends BaseClass with LogConfig {
   val startPlayEvent = "startplay"
   val userExitEvent = "userexit"
   val selfEndEvent = "selfend"
-  val noEnd = "noEnd"
+  val noEnd = null
   val shortDataFrameTable = "shortDataFrameTable"
   val combineTmpTable = "combineTmpTable"
 
@@ -90,7 +90,7 @@ object Play3xCombineV3 extends BaseClass with LogConfig {
         breakable {
           if (i < endLength && j < endLength) {
             while (j < endLength) {
-              if (endList(j)._2 > startList(i)._2) {
+              if (endList(j)._2 >= startList(i)._2) {
                 val row = Row(ikey, endList(i)._1, startList(i)._2, endList(i)._3, endList(i)._4)
                 arrayBuffer.+=(row)
                 j = j + 1

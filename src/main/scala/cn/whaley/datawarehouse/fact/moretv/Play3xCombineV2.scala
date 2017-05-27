@@ -110,7 +110,7 @@ object Play3xCombineV2 extends BaseClass with LogConfig {
 
   override def load(params: Params, df: DataFrame): Unit = {
     val date = params.paramMap("date").toString
-    val baseOutputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusaPlay3xCombineResultV3",date)
+    val baseOutputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusaPlay3xCombineResultV2",date)
     val isBaseOutputPathExist = HdfsUtil.IsDirExist(baseOutputPath)
     if (isBaseOutputPathExist) {
       HdfsUtil.deleteHDFSFileOrPath(baseOutputPath)
