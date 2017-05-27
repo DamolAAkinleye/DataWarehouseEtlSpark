@@ -33,10 +33,16 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     if (medusaFlag && moretvFlag) {
       val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).withColumn("flag",lit(MEDUSA))
       val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).withColumn("flag",lit(MORETV))
+
       val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
-      val moretvDfFilter= Play2xFilterUtils.get2xFilterDataFrame(moretvDf,sqlContext,sc)
       val medusaRDD=medusaDfCombine.toJSON
+      println("medusaDfCombine.count"+medusaDfCombine.count())
+
+      val moretvDfFilter= Play2xFilterUtils.get2xFilterDataFrame(moretvDf,sqlContext,sc)
+      println("moretvDfFilter.count"+moretvDfFilter.count())
+
       val moretvRDD=moretvDfFilter.toJSON
+
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
       mergerDataFrame
@@ -183,7 +189,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
 
   columnsFromSource = List(
     //作为测试字段,验证维度解析是否正确，上线后删除
-    ("subjectName", "subjectName"),
+ /*   ("subjectName", "subjectName"),
     ("subjectCode", "subjectCode"),
     ("mainCategory", "mainCategory"),
     ("secondCategory", "secondCategory"),
@@ -214,7 +220,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     ("searchFrom", "searchFrom"),
     ("resultIndex", "resultIndex"),
     ("tabName", "tabName"),
-    ("searchFromHotWord", "searchFromHotWord"),
+    ("searchFromHotWord", "searchFromHotWord"),*/
 
 
 //--------在fact_medusa_play表中展示的字段---------
