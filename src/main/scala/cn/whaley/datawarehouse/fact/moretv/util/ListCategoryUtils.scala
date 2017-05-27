@@ -260,14 +260,14 @@ object ListCategoryUtils extends LogConfig {
         //获得体育列表维度sk ，[有一级，二级,三级,四级维度]
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code","fourthCategory"->"fourth_category"),
-          s"site_content_type in ('$CHANNEL_SPORTS')",
-          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is not null"
+          s"site_content_type in ('$CHANNEL_SPORTS') and fourth_category is not null and fourth_category<>'' and fourth_category<>'null'",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is not null and fourthCategory<>'' and fourthCategory<>'null'"
         ),
         //获得体育列表维度sk ，[只有一级，二级,三级维度]
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
-          s"site_content_type in ('$CHANNEL_SPORTS')",
-          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is null"
+          s"site_content_type in ('$CHANNEL_SPORTS') and (fourth_category is null or fourth_category='' or fourth_category='null') ",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and (fourthCategory is null or fourthCategory='' or fourthCategory='null')"
         )
       ),
       "source_site_sk")
