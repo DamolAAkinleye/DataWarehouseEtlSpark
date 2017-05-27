@@ -128,13 +128,13 @@ object Play2xFilter extends BaseClass with LogConfig {
     filterDF.registerTempTable("filterTable")
     //writeToHDFS(filterDF, baseOutputPathFilter)
     val df = sqlContext.sql(
-      s"""select a.*
+      s"""select a.*,'startplay' as start_event,'unKnown' as end_event
         | from       $fact_table_name   a
         | left join  filterTable        b on
         |    concat_ws('_',a.userId,a.episodeSid)=b.key  and
         |    a.datetime=b.datetime
         |where b.key is null
-      """.stripMargin).withColumnRenamed("duration","fDuration").withColumnRenamed("event","end_event").withColumnRenamed("datetime","fDatetime")
+      """.stripMargin).withColumnRenamed("duration","fDuration").withColumnRenamed("datetime","fDatetime")
     df
   }
 
