@@ -8,6 +8,7 @@ import cn.whaley.datawarehouse.fact.moretv.util._
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
+import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
@@ -26,13 +27,15 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     * */
   override def readSource(startDate: String): DataFrame = {
     println("------- before readSource "+Calendar.getInstance().getTime)
-    val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, startDate)
-    val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, startDate)
+    val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
+    val reallyStartDate=DateFormatUtils.readFormat.format(date)
+    val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, reallyStartDate)
+    val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, reallyStartDate)
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
     val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     if (medusaFlag && moretvFlag) {
-      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).withColumn("flag",lit(MEDUSA))
-      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).withColumn("flag",lit(MORETV))
+      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY,reallyStartDate ).withColumn("flag",lit(MEDUSA))
+      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
 
       val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
       val medusaRDD=medusaDfCombine.toJSON
