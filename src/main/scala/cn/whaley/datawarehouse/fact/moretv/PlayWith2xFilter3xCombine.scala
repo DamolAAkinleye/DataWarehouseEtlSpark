@@ -213,7 +213,7 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
 
   columnsFromSource = List(
     //作为测试字段,验证维度解析是否正确，上线后删除
-    ("subjectName", "subjectName"),
+   /* ("subjectName", "subjectName"),
     ("subjectCode", "subjectCode"),
     ("mainCategory", "mainCategory"),
     ("secondCategory", "secondCategory"),
@@ -244,7 +244,7 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
     ("searchFrom", "searchFrom"),
     ("resultIndex", "resultIndex"),
     ("tabName", "tabName"),
-    ("searchFromHotWord", "searchFromHotWord"),
+    ("searchFromHotWord", "searchFromHotWord"),*/
 
 
 //--------在fact_medusa_play表中展示的字段---------
@@ -265,7 +265,7 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
     ("search_keyword", "searchKeyword"),
     ("product_model", "productModel"),
     ("auto_clarity", "tencentAutoClarity"),
-    ("contain_ad", "containAd"),
+    ("contain_ad", "case when containAd = '1' then 'true' else 'false' end"),
     ("app_enter_way", "appEnterWay"),
     //("session_id", "sessionId"),//for now,not online filed
     //("device_id", "deviceId"),//for now,not online filed

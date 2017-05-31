@@ -87,7 +87,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
   )
 
   /**
-    * step 4, left join dimension table,get sk
+    * step 3, left join dimension table,get sk
     * */
   dimensionColumns = List(
     /** 获得列表页sk source_site_sk */
@@ -182,7 +182,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
 
 
   /**
-    * step 5,保留哪些列，以及别名声明
+    * step 4,保留哪些列，以及别名声明
     * */
 
   dimensionsNeedInFact = List("dim_medusa_subject", "dim_medusa_program")
@@ -308,5 +308,18 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     } catch {
       case ex: Exception => ""
     }
+  }
+
+  def writeToHDFS(df: DataFrame, path: String): Unit = {
+    println(s"write df to $path")
+    val isBaseOutputPathExist = HdfsUtil.IsDirExist(path)
+    if (isBaseOutputPathExist) {
+      HdfsUtil.deleteHDFSFileOrPath(path)
+      println(s"删除目录: $path")
+    }
+    println("记录条数:" + df.count())
+    println("输出目录为：" + path)
+    println("time：" + Calendar.getInstance().getTime)
+    df.write.parquet(path)
   }
 }
