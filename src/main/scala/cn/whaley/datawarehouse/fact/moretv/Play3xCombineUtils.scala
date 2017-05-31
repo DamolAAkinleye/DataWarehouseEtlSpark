@@ -44,12 +44,12 @@ object Play3xCombineUtils extends LogConfig {
   val noStart = "noStart"
   val shortDataFrameTable = "shortDataFrameTable"
   val combineTmpTable = "combineTmpTable"
-
+  var factDataFrameWithIndex:DataFrame= null
   /** 合并操作
     * */
   def get3xCombineDataFrame(factDataFrame: DataFrame, sqlContext: SQLContext, sc: SparkContext): DataFrame = {
     //进行索引编号
-    val factDataFrameWithIndex = DataFrameUtil.dfZipWithIndex(factDataFrame, INDEX_NAME)
+    factDataFrameWithIndex = DataFrameUtil.dfZipWithIndex(factDataFrame, INDEX_NAME)
     factDataFrameWithIndex.cache()
     println("factDataFrameWithIndex.count():" + factDataFrameWithIndex.count())
     factDataFrameWithIndex.registerTempTable(fact_table_name)

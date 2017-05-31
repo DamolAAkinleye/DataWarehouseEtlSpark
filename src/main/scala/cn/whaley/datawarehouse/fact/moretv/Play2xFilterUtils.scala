@@ -29,18 +29,16 @@ object Play2xFilterUtils extends LogConfig {
   //两条日志之间的平均时间间隔阀值：5分钟
   val avg_second_threshold = 300
 
-
   /** 获得过滤结果 */
     def get2xFilterDataFrame(factDataFrame: DataFrame,sqlContext: SQLContext,sc: SparkContext): DataFrame = {
     factDataFrame.repartition(1000).registerTempTable(fact_table_name)
-    println("factDataFrame.count():" + factDataFrame.count())
+    //println("factDataFrame.count():" + factDataFrame.count())
     val sqlStr =
       s"""select concat_ws('_',userId,episodeSid) as key,datetime,unix_timestamp(datetime) as timestampValue
           |from $fact_table_name
           |order by concat_ws('_',userId,episodeSid),datetime
        """.stripMargin
     val orderByDF = sqlContext.sql(sqlStr)
-    orderByDF.cache()
     orderByDF.registerTempTable("orderbyTable")
     val array = orderByDF.collect()
     val length = array.length

@@ -18,7 +18,7 @@ import org.apache.spark.sql.functions._
 object PlayFinal extends FactEtlBase with  LogConfig{
   /** log type name */
   topicName = "fact_medusa_play"
-  partition = 2000
+  partition = 1000
 
 
   /**
@@ -36,15 +36,14 @@ object PlayFinal extends FactEtlBase with  LogConfig{
 
       val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
       val medusaRDD=medusaDfCombine.toJSON
-      println("medusaDfCombine.count"+medusaDfCombine.count())
 
       val moretvDfFilter= Play2xFilterUtils.get2xFilterDataFrame(moretvDf,sqlContext,sc)
-      println("moretvDfFilter.count"+moretvDfFilter.count())
-
       val moretvRDD=moretvDfFilter.toJSON
 
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
+      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
+      Play3xCombineUtils.factDataFrameWithIndex.unpersist()
       mergerDataFrame
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
