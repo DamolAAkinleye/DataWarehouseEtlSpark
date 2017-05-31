@@ -265,7 +265,7 @@ object Play extends FactEtlBase with  LogConfig{
     ("search_keyword", "searchKeyword"),
     ("product_model", "productModel"),
     ("auto_clarity", "tencentAutoClarity"),
-    ("contain_ad", "containAd"),
+    ("contain_ad", "case when containAd = '1' then 'true' else 'false' end"),
     ("app_enter_way", "appEnterWay"),
     //("session_id", "sessionId"),//for now,not online filed
     //("device_id", "deviceId"),//for now,not online filed
