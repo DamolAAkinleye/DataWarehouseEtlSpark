@@ -24,7 +24,7 @@ object Subject extends DimensionBase {
   columns.allColumns = List(
     "subject_code",
     "subject_name",
-//    "subject_title",
+    //    "subject_title",
     "subject_content_type",
     "subject_content_type_name",
     "subject_create_time",
@@ -46,15 +46,17 @@ object Subject extends DimensionBase {
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     val sq = sqlContext
-    import sq.implicits._
     import org.apache.spark.sql.functions._
+    import sq.implicits._
 
     val contentTypeDb = MysqlDB.medusaCms("mtv_content_type", "id", 1, 100, 1)
 
     val contentTypeDf = sqlContext.read.format("jdbc").options(contentTypeDb).load()
       .select($"code", $"name")
 
-    sourceDf.filter($"code".isNotNull && $"code".notEqual("") && $"status".notEqual(-1))
+    sourceDf.filter($"code".isNotNull && $"code".notEqual("")
+      && $"name".isNotNull && $"name".notEqual("")
+      && $"status".notEqual(-1))
       .withColumn("codev", regexp_extract($"code", "[a-z]*", 0)).as("s")
 
       .join(contentTypeDf.as("c"), $"s.codev" === $"c.code", "left_outer")
