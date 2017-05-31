@@ -167,11 +167,11 @@ object ListCategoryUtils extends LogConfig {
   /**
     * 2.x，原有统计分析没有做少儿；体育最新的逻辑解析没有上线
     * SportsPathParserUtils现在没有解析2.x path路径
-    *
     **/
   def getListCategoryMoretvETL(path: String, index_input: Int): String = {
     var result: String = null
-    if (null != path && !path.contains(UDFConstantDimension.SEARCH_DIMENSION)) {
+    //去除过滤包含"search"的逻辑, !path.contains(UDFConstantDimension.SEARCH_DIMENSION)
+    if (null != path) {
       //少儿使用最新逻辑
       if (path.contains(UDFConstantDimension.KIDS)) {
         result = KidsPathParserUtils.pathParse(path, index_input)

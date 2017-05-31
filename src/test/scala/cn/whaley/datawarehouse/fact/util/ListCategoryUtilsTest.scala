@@ -27,9 +27,13 @@ class ListCategoryUtilsTest {
       ("", "home-comic-comic_zhuanti-comic134", MORETV, "comic", "comic_zhuanti", null),
       ("", "home-comic-dongman_xinfan-comic203-similar", MORETV, "comic", "dongman_xinfan", null),
       ("", "home-comic-comic_dashi-comic158", MORETV, "comic", "comic_dashi", null),
-//      ("", "home-comic-search-XHR", MORETV, "comic", "搜索", null),
-//      ("", "thirdparty_0-comic-search-JSZZJ", MORETV, "comic", "搜索", null),
-//      ("", "home-comic-multi_search-hot-all-riben-2017", MORETV, "comic", "筛选", null),
+      ("", "thirdparty_0-comic-movie_comic", MORETV, "comic", "movie_comic", null),
+      ("", "home-comic-movie_comic-similar", MORETV, "comic", "movie_comic", null),
+      ("", "home-comic-comic_mingzuo", MORETV, "comic", "comic_mingzuo", null),
+      ("", "thirdparty_0-comic-comic_mingzuo", MORETV, "comic", "comic_mingzuo", null),
+      ("", "home-comic-search-XHR", MORETV, "comic", "search", null),
+      ("", "thirdparty_0-comic-search-JSZZJ", MORETV, "comic", "search", null),
+      ("", "home-comic-multi_search-hot-all-riben-2017", MORETV, "comic", "multi_search", null),
       //tv
       ("", "home-tv-tv_kangzhanfengyun", MORETV, "tv", "tv_kangzhanfengyun", null),
       ("", "home-tv-tv_zhuanti-tv235", MORETV, "tv", "tv_zhuanti", null),
@@ -52,6 +56,10 @@ class ListCategoryUtilsTest {
       //hot
       ("", "home-hot-hot_zhuanti-hot399", MORETV, "hot", "hot_zhuanti", null),
       ("", "thirdparty_0-hot-1_hot_tag_qingsonggaoxiao", MORETV, "hot", "1_hot_tag_qingsonggaoxiao", null),
+      ("", "home-hot-hot_jiaodian-hot641", MORETV, "hot", "hot_jiaodian", null),
+      ("", "home-hot-danmuzhuanqu", MORETV, "hot", "danmuzhuanqu", null),
+      ("", "home-hot-1_hot_tag_xinwenredian", MORETV, "hot", "1_hot_tag_xinwenredian", null),
+      ("", "thirdparty_0-hot-1_hot_tag_xinwenredian", MORETV, "hot", "1_hot_tag_xinwenredian", null),
       //movie
       ("", "home-movie-movie_zhuanti-tv115", MORETV, "movie", "movie_zhuanti", null),
       ("", "home-movie-movie_star-movie817", MORETV, "movie", "movie_star", null),
@@ -90,13 +98,17 @@ class ListCategoryUtilsTest {
       //comic
       ("home*classification*comic-comic-retrieval*hot*maoxian*neidi*2015", "", MEDUSA, "comic", "筛选", null),
       ("home*classification*comic-comic-search*QHD", "", MEDUSA, "comic", "搜索", null),
+      ("home*my_tv*comic-comic*搜索", "", MEDUSA, "comic", "搜索", null),
       ("home*my_tv*comic-comic*国语动画", "", MEDUSA, "comic", "国语动画", null),
       ("comic*动画大师", "", MEDUSA, "comic", "动画大师", null),
       ("comic-search*QXSM", "", MEDUSA, "comic", "搜索", null),
+      ("comic-search*QXSM", "", MEDUSA, "comic", "搜索", null),
+      ("comic*筛选", "", MEDUSA, "comic", "筛选", null),
       //tv
       ("home*classification*tv-tv-search*DCG", "", MEDUSA, "tv", "搜索", null),
       ("home*my_tv*tv-tv-retrieval*new*all*neidi*all", "", MEDUSA, "tv", "筛选", null),
       ("home*my_tv*movie-tv*特色美剧", "", MEDUSA, "tv", "特色美剧", null),
+      ("tv*家庭伦理", "", MEDUSA, "tv", "家庭伦理", null),
       //zongyi
       ("home*my_tv*zongyi-zongyi-search*AB", "", MEDUSA, "zongyi", "搜索", null),
       ("home*my_tv*zongyi-zongyi-retrieval*hot*gaoxiao*xianggang*all", "", MEDUSA, "zongyi", "筛选", null),
@@ -126,11 +138,15 @@ class ListCategoryUtilsTest {
       ("home*my_tv*hot-hot*影视短片*电台", "", MEDUSA, "hot", "影视短片", null),
       ("home*recommendation*1-hot*创意运动", "", MEDUSA, "hot", "创意运动", null),
       ("home*classification*hot-hot*音乐舞蹈*电台", "", MEDUSA, "hot", "音乐舞蹈", null),
+      ("home*classification*hot*新闻热点", "", MEDUSA, "hot", "新闻热点", null),
+//      ("home*recommendation*1-hot-hot*弹幕专区", "", MEDUSA, "hot", "弹幕专区", null),
+//      ("home*recommendation*1-hot-hot*我的收藏", "", MEDUSA, "hot", "我的收藏", null),
       //movie
       ("home*classification*movie-movie-search*DLZ", "", MEDUSA, "movie", "搜索", null),
       ("home*my_tv*movie-movie-retrieval*hot*xiju*neidi*2010", "", MEDUSA, "movie", "筛选", null),
       ("home*my_tv*movie-movie*午夜场", "", MEDUSA, "movie", "午夜场", null),
       ("movie*粤语佳片", "", MEDUSA, "movie", "粤语佳片", null),
+      ("home*my_tv*movie-movie*粤语佳片", "", MEDUSA, "movie", "粤语佳片", null),
       //xiqu
       ("home*classification*xiqu-xiqu-search*JINGJU", "", MEDUSA, "xiqu", "搜索", null),
       ("home*classification*xiqu-xiqu*广场舞*电台", "", MEDUSA, "xiqu", "广场舞", null),
