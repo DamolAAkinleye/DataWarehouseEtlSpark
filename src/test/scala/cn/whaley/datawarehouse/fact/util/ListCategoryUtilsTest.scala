@@ -27,11 +27,19 @@ class ListCategoryUtilsTest {
       ("", "home-comic-comic_zhuanti-comic134", MORETV, "comic", "comic_zhuanti", null),
       ("", "home-comic-dongman_xinfan-comic203-similar", MORETV, "comic", "dongman_xinfan", null),
       ("", "home-comic-comic_dashi-comic158", MORETV, "comic", "comic_dashi", null),
+      ("", "thirdparty_0-comic-movie_comic", MORETV, "comic", "movie_comic", null),
+      ("", "home-comic-movie_comic-similar", MORETV, "comic", "movie_comic", null),
+      ("", "home-comic-comic_mingzuo", MORETV, "comic", "comic_mingzuo", null),
+      ("", "thirdparty_0-comic-comic_mingzuo", MORETV, "comic", "comic_mingzuo", null),
+      ("", "home-comic-search-XHR", MORETV, "comic", "search", null),
+      ("", "thirdparty_0-comic-search-JSZZJ", MORETV, "comic", "search", null),
+      ("", "home-comic-multi_search-hot-all-riben-2017", MORETV, "comic", "multi_search", null),
       //tv
       ("", "home-tv-tv_kangzhanfengyun", MORETV, "tv", "tv_kangzhanfengyun", null),
       ("", "home-tv-tv_zhuanti-tv235", MORETV, "tv", "tv_zhuanti", null),
       ("", "thirdparty_0-tv-tv_meizhouyixing-tv333", MORETV, "tv", "tv_meizhouyixing", null),
       ("", "thirdparty_1-tv-tv_genbo", MORETV, "tv", "tv_genbo", null),
+      ("", "home-tv-tv_zhuanti-tv306", MORETV, "tv", "tv_zhuanti", null),
       //zongyi
       ("", "home-zongyi-zongyi_weishi-zongyi3-similar", MORETV, "zongyi", "zongyi_weishi", null),
       ("", "home-zongyi-zongyi_zhuanti-zongyi71", MORETV, "zongyi", "zongyi_zhuanti", null),
@@ -48,6 +56,10 @@ class ListCategoryUtilsTest {
       //hot
       ("", "home-hot-hot_zhuanti-hot399", MORETV, "hot", "hot_zhuanti", null),
       ("", "thirdparty_0-hot-1_hot_tag_qingsonggaoxiao", MORETV, "hot", "1_hot_tag_qingsonggaoxiao", null),
+      ("", "home-hot-hot_jiaodian-hot641", MORETV, "hot", "hot_jiaodian", null),
+      ("", "home-hot-danmuzhuanqu", MORETV, "hot", "danmuzhuanqu", null),
+      ("", "home-hot-1_hot_tag_xinwenredian", MORETV, "hot", "1_hot_tag_xinwenredian", null),
+      ("", "thirdparty_0-hot-1_hot_tag_xinwenredian", MORETV, "hot", "1_hot_tag_xinwenredian", null),
       //movie
       ("", "home-movie-movie_zhuanti-tv115", MORETV, "movie", "movie_zhuanti", null),
       ("", "home-movie-movie_star-movie817", MORETV, "movie", "movie_star", null),
@@ -57,8 +69,10 @@ class ListCategoryUtilsTest {
       //xiqu
       ("", "thirdparty_0-xiqu-1_xiqu_tags_chaoju7", MORETV, "xiqu", "1_xiqu_tags_chaoju7", null),
       ("", "home-xiqu-1_xiqu_tags_jinju", MORETV, "xiqu", "1_xiqu_tags_jinju", null),
-      ("", "thirdparty_0-xiqu-1_tv_xiqu_tag_yuju", MORETV, "xiqu", "1_tv_xiqu_tag_yuju", null)
+      ("", "thirdparty_0-xiqu-1_tv_xiqu_tag_yuju", MORETV, "xiqu", "1_tv_xiqu_tag_yuju", null),
       //kids
+      ("", "thirdparty_0-kids_home-kids_seecartoon-kid_zhuanti-kids217", MORETV, "kids", "show_kidsSite", "kid_zhuanti")
+
     )
 
     val medusaTestCaseList = List(//pathMain, path, flag, mainCategory, secondCategory, thirdCategory
@@ -66,6 +80,9 @@ class ListCategoryUtilsTest {
       ("home*classification*kids-kids_home-tingerge-search*XMF", "", MEDUSA, "kids", "show_kidsSongSite", "搜一搜"),
       ("home*classification*kids-kids_home-kandonghua-search*WJ", "", MEDUSA, "kids", "show_kidsSite", "搜一搜"),
       ("home*classification*kids-kids_home-xuezhishi-search*DJA", "", MEDUSA, "kids", "kids_knowledge", "搜一搜"),
+      ("kids_anim*动画专题", "", MEDUSA, "kids", "show_kidsSite", "动画专题"),
+      ("home*my_tv*kids-kids_home-kids_home-kids_anim*动画明星", "", MEDUSA, "kids", "show_kidsSite", "动画明星"),
+      ("home*classification*kids-kids_home-tingerge*儿歌明星", "", MEDUSA, "kids", "show_kidsSongSite", "儿歌明星"),
       //sports
       ("home*my_tv*4-sports*League*qipai-league*围棋", "", MEDUSA, "sports", "leagueEntry", "qipai"),
       ("home*my_tv*7-sports*League*dj", "", MEDUSA, "sports", "leagueEntry", "dj"),
@@ -81,11 +98,17 @@ class ListCategoryUtilsTest {
       //comic
       ("home*classification*comic-comic-retrieval*hot*maoxian*neidi*2015", "", MEDUSA, "comic", "筛选", null),
       ("home*classification*comic-comic-search*QHD", "", MEDUSA, "comic", "搜索", null),
+      ("home*my_tv*comic-comic*搜索", "", MEDUSA, "comic", "搜索", null),
       ("home*my_tv*comic-comic*国语动画", "", MEDUSA, "comic", "国语动画", null),
+      ("comic*动画大师", "", MEDUSA, "comic", "动画大师", null),
+      ("comic-search*QXSM", "", MEDUSA, "comic", "搜索", null),
+      ("comic-search*QXSM", "", MEDUSA, "comic", "搜索", null),
+      ("comic*筛选", "", MEDUSA, "comic", "筛选", null),
       //tv
       ("home*classification*tv-tv-search*DCG", "", MEDUSA, "tv", "搜索", null),
       ("home*my_tv*tv-tv-retrieval*new*all*neidi*all", "", MEDUSA, "tv", "筛选", null),
       ("home*my_tv*movie-tv*特色美剧", "", MEDUSA, "tv", "特色美剧", null),
+      ("tv*家庭伦理", "", MEDUSA, "tv", "家庭伦理", null),
       //zongyi
       ("home*my_tv*zongyi-zongyi-search*AB", "", MEDUSA, "zongyi", "搜索", null),
       ("home*my_tv*zongyi-zongyi-retrieval*hot*gaoxiao*xianggang*all", "", MEDUSA, "zongyi", "筛选", null),
@@ -115,10 +138,15 @@ class ListCategoryUtilsTest {
       ("home*my_tv*hot-hot*影视短片*电台", "", MEDUSA, "hot", "影视短片", null),
       ("home*recommendation*1-hot*创意运动", "", MEDUSA, "hot", "创意运动", null),
       ("home*classification*hot-hot*音乐舞蹈*电台", "", MEDUSA, "hot", "音乐舞蹈", null),
+      ("home*classification*hot*新闻热点", "", MEDUSA, "hot", "新闻热点", null),
+//      ("home*recommendation*1-hot-hot*弹幕专区", "", MEDUSA, "hot", "弹幕专区", null),
+//      ("home*recommendation*1-hot-hot*我的收藏", "", MEDUSA, "hot", "我的收藏", null),
       //movie
       ("home*classification*movie-movie-search*DLZ", "", MEDUSA, "movie", "搜索", null),
       ("home*my_tv*movie-movie-retrieval*hot*xiju*neidi*2010", "", MEDUSA, "movie", "筛选", null),
       ("home*my_tv*movie-movie*午夜场", "", MEDUSA, "movie", "午夜场", null),
+      ("movie*粤语佳片", "", MEDUSA, "movie", "粤语佳片", null),
+      ("home*my_tv*movie-movie*粤语佳片", "", MEDUSA, "movie", "粤语佳片", null),
       //xiqu
       ("home*classification*xiqu-xiqu-search*JINGJU", "", MEDUSA, "xiqu", "搜索", null),
       ("home*classification*xiqu-xiqu*广场舞*电台", "", MEDUSA, "xiqu", "广场舞", null),
@@ -145,7 +173,8 @@ class ListCategoryUtilsTest {
       ("home*classification*3-sports*League*dzjj-league*LPL", "", MEDUSA, "sports", "leagueEntry", "dzjj", "LPL"),
       ("home*classification*3-sports*League*jiewu-league*Breaking", "", MEDUSA, "sports", "leagueEntry", "jiewu", "Breaking"),
       ("home*my_tv*4-sports*newsHomePage*tvn8xzu9wytu", "", MEDUSA, "sports", "horizontal", "newsHomePage", null),
-      ("home*my_tv*xiqu-xiqu*吕剧", "", MEDUSA, "xiqu", "吕剧", null, null)
+      ("home*my_tv*xiqu-xiqu*吕剧", "", MEDUSA, "xiqu", "吕剧", null, null),
+      ("home*classification*3-sports*League*dj-league", "", MEDUSA, "sports", "leagueEntry", "dj", null)
     )
 
     val testCaseList = moretvTestCaseList ++ medusaTestCaseList

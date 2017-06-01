@@ -1,12 +1,11 @@
 package cn.whaley.datawarehouse.fact.moretv
 
-import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.global.{LogTypes, LogConfig}
-import cn.whaley.datawarehouse.util.{HdfsUtil, Params}
-import cn.whaley.sdk.dataexchangeio.DataIO
-import org.apache.spark.sql.{Row, DataFrame}
+import cn.whaley.datawarehouse.global.{LogConfig}
+import cn.whaley.datawarehouse.util.{ Params}
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.types.StructType
-import scala.collection.mutable.{ArrayBuffer}
+import org.apache.spark.sql.{SQLContext, DataFrame, Row}
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * Created by michael on 2017/5/18.
@@ -20,13 +19,8 @@ import scala.collection.mutable.{ArrayBuffer}
   *case2:
   *
   */
-object Play2xFilter extends BaseClass with LogConfig {
-  //val topicName = "x2"
-  //val baseOutputPath = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicName
-  //val topicNameFilter = "x2filter"
-  //val baseOutputPathFilter = FACT_HDFS_BASE_PATH_CHECK + File.separator + topicNameFilter
-
-  val fact_table_name = "log_data"
+object Play2xFilterUtils extends LogConfig {
+  val fact_table_name = "log_data_play2x"
 
   //多组时间段间隔阀值：30分钟
   val time_quantum_threshold = 1800
@@ -35,36 +29,16 @@ object Play2xFilter extends BaseClass with LogConfig {
   //两条日志之间的平均时间间隔阀值：5分钟
   val avg_second_threshold = 300
 
-  /** 加载2.x play数据 */
-  override def extract(params: Params): DataFrame = {
-    params.paramMap.get("date") match {
-      case Some(d) => {
-        val startDate = d.toString
-        val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, startDate)
-        val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
-        if (moretvFlag) {
-          val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String, String](), MORETV, LogTypes.PLAYVIEW, startDate)
-          moretvDf
-        } else {
-          throw new RuntimeException(s" $moretv_input_dir not exist")
-        }
-      }
-      case None =>
-        throw new RuntimeException("未设置时间参数！")
-    }
-  }
-
   /** 获得过滤结果 */
-  override def transform(params: Params, factDataFrame: DataFrame): DataFrame = {
+    def get2xFilterDataFrame(factDataFrame: DataFrame,sqlContext: SQLContext,sc: SparkContext): DataFrame = {
     factDataFrame.repartition(1000).registerTempTable(fact_table_name)
-    println("factDataFrame.count():" + factDataFrame.count())
+    //println("factDataFrame.count():" + factDataFrame.count())
     val sqlStr =
       s"""select concat_ws('_',userId,episodeSid) as key,datetime,unix_timestamp(datetime) as timestampValue
           |from $fact_table_name
           |order by concat_ws('_',userId,episodeSid),datetime
        """.stripMargin
     val orderByDF = sqlContext.sql(sqlStr)
-    orderByDF.cache()
     orderByDF.registerTempTable("orderbyTable")
     val array = orderByDF.collect()
     val length = array.length
@@ -81,8 +55,8 @@ object Play2xFilter extends BaseClass with LogConfig {
       *
       */
     while (i < length) {
-      val irow = array.apply(i)
-      val ikey = irow.getString(0)
+      val iRow = array.apply(i)
+      val ikey = iRow.getString(0)
       breakable {
         var j = i + 1
         while (j < length - 1) {
@@ -139,7 +113,7 @@ object Play2xFilter extends BaseClass with LogConfig {
   }
 
   //将数组中i到j之间[左闭右开区间]的数值存入另一个list,用来做过滤
-  def saveRecordToArray(array: Array[Row], i: Int, j: Int, arrayBuffer: ArrayBuffer[Row]) {
+  private def saveRecordToArray(array: Array[Row], i: Int, j: Int, arrayBuffer: ArrayBuffer[Row]) {
     val check_play_times_threshold = j - i
     val endRow = array.apply(j - 1)
     val endTimestampValue = endRow.getLong(2)
@@ -155,30 +129,4 @@ object Play2xFilter extends BaseClass with LogConfig {
       }
     }
   }
-
-  override def load(params: Params, df: DataFrame): Unit = {
-    val date = params.paramMap("date").toString
-    val baseOutputPath= DataIO.getDataFrameOps.getPath(MERGER,LogTypes.MEDUSA_PLAY_2X_FILTER_RESULT,date)
-    val isBaseOutputPathExist = HdfsUtil.IsDirExist(baseOutputPath)
-    if (isBaseOutputPathExist) {
-      HdfsUtil.deleteHDFSFileOrPath(baseOutputPath)
-      println(s"删除目录: $baseOutputPath")
-    }
-    println("过滤后记录条数:" + df.count())
-    println("过滤后结果输出目录为：" + baseOutputPath)
-    df.write.parquet(baseOutputPath)
-  }
-
-  def writeToHDFS(df: DataFrame, path: String): Unit = {
-    println(s"write df to $path")
-    val isBaseOutputPathExist = HdfsUtil.IsDirExist(path)
-    if (isBaseOutputPathExist) {
-      HdfsUtil.deleteHDFSFileOrPath(path)
-      println(s"删除目录: $path")
-    }
-    println("记录条数:" + df.count())
-    println("输出目录为：" + path)
-    df.write.parquet(path)
-  }
-
 }

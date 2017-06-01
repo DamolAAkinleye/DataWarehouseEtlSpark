@@ -196,22 +196,23 @@ abstract class FactEtlBase extends BaseClass {
     println("线上数据临时目录:" + onLineFactDirTmp)
 
     //防止文件碎片
-    /*    val total_count = BigDecimal(df.count())
-        val partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
-        println("repartition:" + partition)*/
+     /*   val total_count = BigDecimal(df.count())
+        val load_to_hdfs_partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
+        println("load_to_hdfs_partition:" + load_to_hdfs_partition)*/
 
     val isTmpExist = HdfsUtil.IsDirExist(onLineFactDirTmp)
-
-    HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
-
+    if(isTmpExist){
+      HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
+    }
     println("生成线上维度数据到临时目录:" + onLineFactDirTmp)
-    if (partition == 0) {
+    df.write.parquet(onLineFactDirTmp)
+    /*if (partition == 0) {
       df.write.parquet(onLineFactDirTmp)
     } else {
       df.repartition(partition).write.parquet(onLineFactDirTmp)
-    }
+    }*/
 
-    println("数据是否上线:" + p.isOnline)
+    println("数据是否准备上线:" + p.isOnline)
     if (p.isOnline) {
       val isOnlineFileExist = HdfsUtil.IsDirExist(onLineFactDir)
       println("数据上线:" + onLineFactDir)

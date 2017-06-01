@@ -89,6 +89,11 @@ class EntranceTypeUtilsTest {
       ("xxx","home-search-BXJC",MORETV,"search",null)
     )
 
+    val more_moretv_list=List(
+      ("xxx","home-history-subjectcollect-subject-comic13",MORETV,"my_tv","history"),
+      ("xxx","home-hotrecommend-3-0 ",MORETV,"recommendation",null)
+    )
+
     val more_case_list=List(
       ("home*my_tv*account-accountcenter_home*节目预约","xxx",MEDUSA,"my_tv","account"),
       ("home*my_tv*account","xxx",MEDUSA,"my_tv","account"),
@@ -163,7 +168,8 @@ class EntranceTypeUtilsTest {
     )
 
     val testCaseList=my_tv_medusa_list++foundation_medusa_list++classification_medusa_list++
-      live_medusa_list++recommendation_medusa_list++search_medusa_list++setting_medusa_list++live_moretv_list++more_case_list
+      live_medusa_list++recommendation_medusa_list++search_medusa_list++setting_medusa_list++live_moretv_list++
+      more_moretv_list++more_case_list
     //println("首页入口维度工具类测试用例")
     testCaseList.foreach(w => {
       //println(w._1+","+w._2+","+w._3+","+w._4+","+w._5)

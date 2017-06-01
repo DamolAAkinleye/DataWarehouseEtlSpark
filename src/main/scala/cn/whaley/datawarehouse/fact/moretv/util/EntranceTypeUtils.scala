@@ -17,7 +17,7 @@ object EntranceTypeUtils extends LogConfig {
     */
   private val MEDUSA_ENTRANCE_REGEX = ("home\\*(classification|foundation|my_tv)\\*[0-9-]{0,2}([a-z_]*)").r
   private val MEDUSA_ENTRANCE_REGEX_WITHOUT_LOCATION_CODE = ("(live|recommendation|search|setting)").r
-  private val MORETV_ENTRANCE_REGEX = ("home-(TVlive|live|search)").r
+  private val MORETV_ENTRANCE_REGEX = ("home-(TVlive|live|search|history|watchhistory|hotrecommend)").r
 
   private def getEntranceCodeByPathETL(path: String, flag: String, code: String): String = {
     var result: String = null
@@ -46,9 +46,16 @@ object EntranceTypeUtils extends LogConfig {
         case MORETV => {
           MORETV_ENTRANCE_REGEX findFirstMatchIn path match {
             case Some(p) => {
-              launcher_area_code = p.group(1)
-              if(launcher_area_code.equalsIgnoreCase("TVlive")){
+              val code = p.group(1)
+              if(code.equalsIgnoreCase("TVlive")){
                 launcher_area_code="live"
+              } else if(code.equalsIgnoreCase("hotrecommend")){
+                launcher_area_code="recommendation"
+              } else if (code.equalsIgnoreCase("history") || code.equalsIgnoreCase("watchhistory")){
+                launcher_area_code="my_tv"
+                launcher_location_code="history"
+              } else {
+                launcher_area_code = code
               }
             }
             case None =>

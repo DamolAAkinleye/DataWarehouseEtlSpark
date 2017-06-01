@@ -167,11 +167,11 @@ object ListCategoryUtils extends LogConfig {
   /**
     * 2.x，原有统计分析没有做少儿；体育最新的逻辑解析没有上线
     * SportsPathParserUtils现在没有解析2.x path路径
-    *
     **/
   def getListCategoryMoretvETL(path: String, index_input: Int): String = {
     var result: String = null
-    if (null != path && !path.contains(UDFConstantDimension.SEARCH_DIMENSION)) {
+    //去除过滤包含"search"的逻辑, !path.contains(UDFConstantDimension.SEARCH_DIMENSION)
+    if (null != path) {
       //少儿使用最新逻辑
       if (path.contains(UDFConstantDimension.KIDS)) {
         result = KidsPathParserUtils.pathParse(path, index_input)
@@ -260,14 +260,14 @@ object ListCategoryUtils extends LogConfig {
         //获得体育列表维度sk ，[有一级，二级,三级,四级维度]
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code","fourthCategory"->"fourth_category"),
-          s"site_content_type in ('$CHANNEL_SPORTS')",
-          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is not null"
+          s"site_content_type in ('$CHANNEL_SPORTS') and fourth_category is not null and fourth_category<>'' and fourth_category<>'null'",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is not null and fourthCategory<>'' and fourthCategory<>'null'"
         ),
         //获得体育列表维度sk ，[只有一级，二级,三级维度]
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
-          s"site_content_type in ('$CHANNEL_SPORTS')",
-          null,s" mainCategory in ('$CHANNEL_SPORTS') and fourthCategory is null"
+          s"site_content_type in ('$CHANNEL_SPORTS') and (fourth_category is null or fourth_category='' or fourth_category='null') ",
+          null,s" mainCategory in ('$CHANNEL_SPORTS') and (fourthCategory is null or fourthCategory='' or fourthCategory='null')"
         )
       ),
       "source_site_sk")
