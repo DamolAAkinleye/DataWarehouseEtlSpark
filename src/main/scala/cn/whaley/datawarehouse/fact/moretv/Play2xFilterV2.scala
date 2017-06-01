@@ -66,8 +66,10 @@ object Play2xFilterV2 extends BaseClass with LogConfig {
           |where datetime is not null
        """.stripMargin
     val orderByDF = sqlContext.sql(sqlStr)
-
-    val rdd1 = orderByDF.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
+    orderByDF.cache()
+    //val rdd1 = orderByDF.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
+    //偶尔有一个execute执行事件特别长，并且报错
+    val rdd1= orderByDF.map(row => (row.getString(0), List((row.getString(1), row.getLong(2))))).reduceByKey(_++_,1000)
     val rddNotNeed = rdd1.map(x => {
       val ikey = x._1
       val tupleIterable = x._2
@@ -119,8 +121,8 @@ object Play2xFilterV2 extends BaseClass with LogConfig {
 
     println("orderByDF.schema.fields:" + orderByDF.schema.fields.foreach(e => println(e.name)))
     val filterDF = sqlContext.createDataFrame(rddNotNeed, StructType(orderByDF.schema.fields))
+    writeToHDFS(filterDF,DataIO.getDataFrameOps.getPath(MERGER,"filterDF",params.paramMap("date").toString))
     filterDF.registerTempTable("filterTable")
-    //writeToHDFS(filterDF, baseOutputPathFilter)
     val df = sqlContext.sql(
       s"""select a.*,'startplay' as start_event,'unKnown' as end_event
         | from       $fact_table_name   a

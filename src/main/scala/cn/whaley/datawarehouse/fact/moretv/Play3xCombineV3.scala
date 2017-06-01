@@ -54,7 +54,7 @@ object Play3xCombineV3 extends BaseClass with LogConfig {
     }
   }
 
-  /** 合并操作,datetime比较
+  /** 合并操作,以startplay event为标准,并且比较合并记录中，startplay的datetime必须大于等于结束事件的datetime
     * */
   override def transform(params: Params, factDataFrame: DataFrame): DataFrame = {
     //进行索引编号

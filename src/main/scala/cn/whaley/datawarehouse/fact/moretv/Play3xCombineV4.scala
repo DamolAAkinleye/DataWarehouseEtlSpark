@@ -75,7 +75,7 @@ object Play3xCombineV4 extends BaseClass with LogConfig {
     }
   }
 
-  /** 合并操作
+  /** 合并操作,线上使用的版本
     * */
   override def transform(params: Params, factDataFrame: DataFrame): DataFrame = {
     //进行索引编号
