@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.tmp
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}

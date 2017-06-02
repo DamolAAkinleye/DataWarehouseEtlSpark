@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.tmp
 
 import java.util.Calendar
 
@@ -15,10 +15,10 @@ import org.apache.spark.sql.functions._
 /**
   * Created by michel on 17/4/24.
   */
-object PlayTest extends FactEtlBase with LogConfig{
+object Play extends FactEtlBase with  LogConfig{
   /** log type name */
   topicName = "fact_medusa_play"
-  partition = 500
+  partition = 2000
 
 
   /**
@@ -37,7 +37,7 @@ object PlayTest extends FactEtlBase with LogConfig{
       val moretvRDD=moretvDf.toJSON
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
-      mergerDataFrame.randomSplit(Array(0.2,0.8)).head
+      mergerDataFrame
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
     }
@@ -50,7 +50,7 @@ object PlayTest extends FactEtlBase with LogConfig{
     println("------- before filterRows "+Calendar.getInstance().getTime)
     /** 用于过滤单个用户播放单个视频量过大的情况 */
     val playNumLimit=5000
-    println("sourceDf.count():"+sourceDf.count())
+//    println("sourceDf.count():"+sourceDf.count())
     sourceDf.registerTempTable("source_log")
     var sqlStr =
       s"""
@@ -70,7 +70,8 @@ object PlayTest extends FactEtlBase with LogConfig{
          |where b.filterColumn is null
                      """.stripMargin
     val resultDF = sqlContext.sql(sqlStr)
-    println("------- after filterRows "+Calendar.getInstance().getTime+"filterRows resultDF.count():"+resultDF.count())
+//    println("------- after filterRows "+Calendar.getInstance().getTime)
+//    println("filterRows resultDF.count():"+resultDF.count())
     resultDF
   }
 
@@ -88,6 +89,7 @@ object PlayTest extends FactEtlBase with LogConfig{
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("secondCategory",udf(ListCategoryUtils.getListSecondCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("thirdCategory", udf(ListCategoryUtils.getListThirdCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("fourthCategory", udf(ListCategoryUtils.getListFourthCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterContentType", udf(FilterCategoryUtils.getFilterCategoryContentType: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -133,37 +135,31 @@ object PlayTest extends FactEtlBase with LogConfig{
     /** 获得首页入口 launcher_entrance_sk */
     EntranceTypeUtils.getLauncherEntranceSK(),
 
-    /** 获得用户ip对应的地域维度user_web_location_sk */
-
-    /** 获得音乐榜单维度mv_hot_sk */
-    new DimensionColumn("dim_medusa_mv_hot_list",
-      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_rank_id"))),
-      "mv_hot_sk"),
 
     /** 获得访问ip对应的地域维度user_web_location_sk */
     new DimensionColumn("dim_web_location",
       List(DimensionJoinCondition(Map("ipKey" -> "web_location_key"))),
-      "web_location_sk","user_web_location_sk"),
+      "web_location_sk","access_web_location_sk"),
 
     /** 获得用户维度user_sk */
     new DimensionColumn("dim_medusa_terminal_user",
       List(DimensionJoinCondition(Map("userId" -> "user_id"))),
-      "user_sk"),
+      List(("user_sk","user_sk"), ("web_location_sk", "user_web_location_sk"))),
+
+    /** 获得用户登录维度user_login_sk */
+    new DimensionColumn("dim_medusa_terminal_user_login",
+      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
+      "user_login_sk"),
 
     /** 获得设备型号维度product_model_sk */
     new DimensionColumn("dim_medusa_product_model",
       List(DimensionJoinCondition(Map("productModel" -> "product_model"))),
       "product_model_sk"),
 
-    /** 获得推广渠道维度promotion_sk */
+   /** 获得推广渠道维度promotion_sk */
     new DimensionColumn("dim_medusa_promotion",
       List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
       "promotion_sk"),
-
-    /** 获得用户登录维度user_login_sk */
-    new DimensionColumn("dim_medusa_terminal_user_login",
-      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
-      "user_login_sk"),
 
     /** 获得app版本维度app_version_sk */
     new DimensionColumn("dim_app_version",
@@ -178,7 +174,7 @@ object PlayTest extends FactEtlBase with LogConfig{
       "program_sk"),
 
     /** 获得剧集节目维度episode_program_sk*/
-    new DimensionColumn("dim_medusa_program",
+    new DimensionColumn("dim_medusa_program", "dim_medusa_program_episode",
       List(DimensionJoinCondition(Map("episodeSid" -> "sid"))),
       "program_sk","episode_program_sk"),
 
@@ -200,13 +196,21 @@ object PlayTest extends FactEtlBase with LogConfig{
     /** 获得电台维度mv_radio_sk*/
     new DimensionColumn("dim_medusa_mv_radio",
       List(DimensionJoinCondition(Map("station" -> "mv_radio_title"))),
-      "mv_radio_sk")
+      "mv_radio_sk"),
+
+    /** 获得音乐榜单维度mv_hot_sk */
+    new DimensionColumn("dim_medusa_mv_hot_list",
+      List(DimensionJoinCondition(Map("topRankSid" -> "mv_hot_rank_id"))),
+      "mv_hot_sk")
   )
 
 
   /**
     * step 5,保留哪些列，以及别名声明
     * */
+
+  dimensionsNeedInFact = List("dim_medusa_subject", "dim_medusa_program")
+
   columnsFromSource = List(
     //作为测试字段,验证维度解析是否正确，上线后删除
     ("subjectName", "subjectName"),
@@ -214,6 +218,7 @@ object PlayTest extends FactEtlBase with LogConfig{
     ("mainCategory", "mainCategory"),
     ("secondCategory", "secondCategory"),
     ("thirdCategory", "thirdCategory"),
+    ("fourthCategory", "fourthCategory"),
     ("launcherAreaCode", "launcherAreaCode"),
     ("launcherLocationCode", "launcherLocationCode"),
     ("filterContentType", "filterContentType"),
@@ -239,23 +244,28 @@ object PlayTest extends FactEtlBase with LogConfig{
     ("searchFrom", "searchFrom"),
     ("resultIndex", "resultIndex"),
     ("tabName", "tabName"),
-    ("extraPath", "extraPath"),
+    ("searchFromHotWord", "searchFromHotWord"),
 
 
-    //--------在fact_medusa_play表中展示的字段---------
+//--------在fact_medusa_play表中展示的字段---------
     ("duration", "duration"),
-    ("program_duration", "programDuration"),//programDuration
+    ("program_duration", "cast(programDuration as bigint)"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
     ("user_id", "userId"),
+//    ("mac", "mac"),
     ("event", "event"),//no end_event,need to merge play
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
-    ("program_sid", "videoSid"),
-    ("program_content_type", "contentType"),//need,for 预告片类型
+    ("content_type", "contentType"),
+    ("play_content_type",
+      "case when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
+        "when dim_medusa_program.content_type is not null then dim_medusa_program.content_type " +
+        "when trim(contentType) = '' then null else contentType end"),
+    ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false' end"),
     ("search_keyword", "searchKeyword"),
     ("product_model", "productModel"),
     ("auto_clarity", "tencentAutoClarity"),
-    ("contain_ad", "containAd"),
+    ("contain_ad", "case when containAd = '1' then 'true' else 'false' end"),
     ("app_enter_way", "appEnterWay"),
     //("session_id", "sessionId"),//for now,not online filed
     //("device_id", "deviceId"),//for now,not online filed
@@ -267,7 +277,7 @@ object PlayTest extends FactEtlBase with LogConfig{
 
   factTime = null
 
-  //will use common util function class instead
+ //will use common util function class instead
   def getIpKey(ip: String): Long = {
     try {
       val ipInfo = ip.split("\\.")
