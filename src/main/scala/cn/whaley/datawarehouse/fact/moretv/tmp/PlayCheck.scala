@@ -1,13 +1,14 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.tmp
 
 import java.io.File
 
 import cn.whaley.datawarehouse.BaseClass
 import cn.whaley.datawarehouse.fact.constant.Constants._
-import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
-import org.apache.spark.sql.DataFrame
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.LogConfig
+import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
+import org.apache.spark.sql.DataFrame
+
 /**
   * Created by michael on 2017/5/17.
   */

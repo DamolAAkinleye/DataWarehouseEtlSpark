@@ -5,9 +5,10 @@ import java.util.Calendar
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.moretv.util._
-import cn.whaley.datawarehouse.global.{Constants, Globals, LogConfig, LogTypes}
+import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
 import cn.whaley.sdk.dataexchangeio.DataIO
+import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 
@@ -15,10 +16,10 @@ import org.apache.spark.sql.functions._
 /**
   * Created by michel on 17/4/24.
   */
-object Play extends FactEtlBase with  LogConfig{
+object PlayFinal extends FactEtlBase with  LogConfig{
   /** log type name */
   topicName = "fact_medusa_play"
-  partition = 2000
+  partition = 1000
 
 
   /**
@@ -26,17 +27,26 @@ object Play extends FactEtlBase with  LogConfig{
     * */
   override def readSource(startDate: String): DataFrame = {
     println("------- before readSource "+Calendar.getInstance().getTime)
-    val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, startDate)
-    val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, startDate)
+    val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
+    val reallyStartDate=DateFormatUtils.readFormat.format(date)
+    val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, reallyStartDate)
+    val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, reallyStartDate)
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
     val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     if (medusaFlag && moretvFlag) {
-      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY, startDate).withColumn("flag",lit(MEDUSA))
-      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, startDate).withColumn("flag",lit(MORETV))
-      val medusaRDD=medusaDf.toJSON
-      val moretvRDD=moretvDf.toJSON
+      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY,reallyStartDate ).withColumn("flag",lit(MEDUSA))
+      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
+
+      val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
+      val medusaRDD=medusaDfCombine.toJSON
+
+      val moretvDfFilter= Play2xFilterUtils.get2xFilterDataFrame(moretvDf,sqlContext,sc)
+      val moretvRDD=moretvDfFilter.toJSON
+
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
+      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
+      Play3xCombineUtils.factDataFrameWithIndex.unpersist()
       mergerDataFrame
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
@@ -44,44 +54,12 @@ object Play extends FactEtlBase with  LogConfig{
   }
 
   /**
-    * step 2, filter data source record
-    * */
-  override def filterRows(sourceDf: DataFrame): DataFrame = {
-    println("------- before filterRows "+Calendar.getInstance().getTime)
-    /** 用于过滤单个用户播放单个视频量过大的情况 */
-    val playNumLimit=5000
-//    println("sourceDf.count():"+sourceDf.count())
-    sourceDf.registerTempTable("source_log")
-    var sqlStr =
-      s"""
-         |select concat(userId,videoSid) as filterColumn
-         |from source_log
-         |group by concat(userId,videoSid)
-         |having count(1)>=$playNumLimit
-                     """.stripMargin
-    sqlContext.sql(sqlStr).registerTempTable("table_filter")
-    sqlStr =
-      s"""
-         |select a.*
-         |from source_log         a
-         |     left join
-         |     table_filter       b
-         |     on concat(a.userId,a.videoSid)=b.filterColumn
-         |where b.filterColumn is null
-                     """.stripMargin
-    val resultDF = sqlContext.sql(sqlStr)
-//    println("------- after filterRows "+Calendar.getInstance().getTime)
-//    println("filterRows resultDF.count():"+resultDF.count())
-    resultDF
-  }
-
-  /**
-    * step 3, generate new columns
+    * step 2, generate new columns
     * */
   addColumns = List(
     UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
-    UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("datetime")),
-    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("datetime")),
+    UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("fDatetime")),
+    UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("fDatetime")),
     UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
     UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version")),
     UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
@@ -111,7 +89,7 @@ object Play extends FactEtlBase with  LogConfig{
   )
 
   /**
-    * step 4, left join dimension table,get sk
+    * step 3, left join dimension table,get sk
     * */
   dimensionColumns = List(
     /** 获得列表页sk source_site_sk */
@@ -206,14 +184,14 @@ object Play extends FactEtlBase with  LogConfig{
 
 
   /**
-    * step 5,保留哪些列，以及别名声明
+    * step 4,保留哪些列，以及别名声明
     * */
 
   dimensionsNeedInFact = List("dim_medusa_subject", "dim_medusa_program")
 
   columnsFromSource = List(
     //作为测试字段,验证维度解析是否正确，上线后删除
-    ("subjectName", "subjectName"),
+ /*   ("subjectName", "subjectName"),
     ("subjectCode", "subjectCode"),
     ("mainCategory", "mainCategory"),
     ("secondCategory", "secondCategory"),
@@ -244,19 +222,18 @@ object Play extends FactEtlBase with  LogConfig{
     ("searchFrom", "searchFrom"),
     ("resultIndex", "resultIndex"),
     ("tabName", "tabName"),
-    ("searchFromHotWord", "searchFromHotWord"),
+    ("searchFromHotWord", "searchFromHotWord"),*/
 
 
 //--------在fact_medusa_play表中展示的字段---------
-    ("duration", "duration"),
-    ("program_duration", "programDuration"),//programDuration
+    ("duration", "fDuration"),
+    ("program_duration", "cast(programDuration as bigint)"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
     ("user_id", "userId"),
-//    ("mac", "mac"),
-    ("event", "event"),//no end_event,need to merge play
+    ("start_event", "start_event"),
+    ("end_event", "end_event"),
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
-    ("program_sid", "videoSid"),
     ("content_type", "contentType"),
     ("play_content_type",
       "case when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
@@ -266,12 +243,13 @@ object Play extends FactEtlBase with  LogConfig{
     ("search_keyword", "searchKeyword"),
     ("product_model", "productModel"),
     ("auto_clarity", "tencentAutoClarity"),
-    ("contain_ad", "containAd"),
+    ("contain_ad", "case when containAd = '1' then 'true' else 'false' end"),
     ("app_enter_way", "appEnterWay"),
     //("session_id", "sessionId"),//for now,not online filed
     //("device_id", "deviceId"),//for now,not online filed
     //("display_id", "displayId"),//for now,not online filed
     //("player_type", "playerType"),//for now,not online filed
+    ("version_flag", "flag"),
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )
@@ -332,5 +310,18 @@ object Play extends FactEtlBase with  LogConfig{
     } catch {
       case ex: Exception => ""
     }
+  }
+
+  def writeToHDFS(df: DataFrame, path: String): Unit = {
+    println(s"write df to $path")
+    val isBaseOutputPathExist = HdfsUtil.IsDirExist(path)
+    if (isBaseOutputPathExist) {
+      HdfsUtil.deleteHDFSFileOrPath(path)
+      println(s"删除目录: $path")
+    }
+    println("记录条数:" + df.count())
+    println("输出目录为：" + path)
+    println("time：" + Calendar.getInstance().getTime)
+    df.write.parquet(path)
   }
 }

@@ -46,7 +46,10 @@ object ProductSN extends DimensionBase {
     //限制id != 1339211 是因为有一条重复数据先去掉（此处为临时解决方案）
     sqlContext.sql("select  serial_number, service_id,rom_version, wui_version,mac, " +
       "open_time, wifi_mac,current_ip" +
-      s" from mtv_terminal where status =1 and activate_status =1 and serial_number not like 'XX%' and id !=1339211 and serial_number is not null and serial_number <> ''").registerTempTable("userinfo")
+      s" from mtv_terminal where status =1 and activate_status =1 " +
+      s"and device_id is not null and serial_number not like 'XX%' " +
+      s"and id !=1339211 and serial_number is not null " +
+      s"and serial_number <> ''").registerTempTable("userinfo")
 
     //获取用户机型信息
     val productModulInfo = MysqlDB.dwDimensionDb("whaley_sn_to_productmodel")

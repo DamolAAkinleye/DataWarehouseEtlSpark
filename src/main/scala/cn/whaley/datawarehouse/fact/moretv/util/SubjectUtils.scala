@@ -107,15 +107,19 @@ object SubjectUtils extends LogConfig{
   }
 
   /** 通过专题subject_code and subject_name获得subject_sk  */
-  def getSubjectSK() :DimensionColumn = {
+  def getSubjectSK(): DimensionColumn = {
     new DimensionColumn("dim_medusa_subject",
       List(DimensionJoinCondition(
         Map("subjectCode" -> "subject_code"),
-        null,null,null
+        null, null, "subjectCode is not null"
       ),
+        DimensionJoinCondition(  //先按照名字和contentType关联，防止出现不同频道重名的专题
+          Map("subjectName" -> "subject_name", "contentType" -> "subject_content_type"),
+          null, null, "subjectName is not null"
+        ),
         DimensionJoinCondition(
           Map("subjectName" -> "subject_name"),
-          null,null,null
+          null, null, "subjectName is not null"
         )
       ),
       "subject_sk")

@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.tmp
 
 import java.util.Calendar
 
@@ -213,7 +213,7 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
 
   columnsFromSource = List(
     //作为测试字段,验证维度解析是否正确，上线后删除
-    ("subjectName", "subjectName"),
+   /* ("subjectName", "subjectName"),
     ("subjectCode", "subjectCode"),
     ("mainCategory", "mainCategory"),
     ("secondCategory", "secondCategory"),
@@ -244,18 +244,18 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
     ("searchFrom", "searchFrom"),
     ("resultIndex", "resultIndex"),
     ("tabName", "tabName"),
-    ("searchFromHotWord", "searchFromHotWord"),
+    ("searchFromHotWord", "searchFromHotWord"),*/
 
 
 //--------在fact_medusa_play表中展示的字段---------
     ("duration", "fDuration"),
-    ("program_duration", "programDuration"),//programDuration
+    ("program_duration", "cast(programDuration as bigint)"),//programDuration
     //("mid_post_duration", ""),//for now,not online filed
     ("user_id", "userId"),
-    ("end_event", "end_event"),//no end_event,need to merge play
+    ("start_event", "start_event"),
+    ("end_event", "end_event"),
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
-    ("program_sid", "videoSid"),
     ("content_type", "contentType"),
     ("play_content_type",
       "case when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
@@ -265,12 +265,13 @@ object PlayWith2xFilter3xCombine extends FactEtlBase with  LogConfig{
     ("search_keyword", "searchKeyword"),
     ("product_model", "productModel"),
     ("auto_clarity", "tencentAutoClarity"),
-    ("contain_ad", "containAd"),
+    ("contain_ad", "case when containAd = '1' then 'true' else 'false' end"),
     ("app_enter_way", "appEnterWay"),
     //("session_id", "sessionId"),//for now,not online filed
     //("device_id", "deviceId"),//for now,not online filed
     //("display_id", "displayId"),//for now,not online filed
     //("player_type", "playerType"),//for now,not online filed
+    ("version_flag", "flag"),
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )

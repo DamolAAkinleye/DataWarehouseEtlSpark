@@ -1,11 +1,12 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.tmp
 
 import cn.whaley.datawarehouse.BaseClass
-import cn.whaley.datawarehouse.global.{ LogConfig, LogTypes}
+import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
 import cn.whaley.sdk.dataexchangeio.DataIO
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row}
+
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -19,17 +20,17 @@ import scala.collection.mutable.ArrayBuffer
   * datetime
   * duration
   * end_event
-  *  规则：
-  *  1.如果有开始行为又有结束行为，datetime使用开始行为的datetime
-  *  2.如果单个startplay自己合成一条记录,end_event类型为noEnd
+  * 规则：
+  * 1.如果有开始行为又有结束行为，datetime使用开始行为的datetime
+  * 2.如果单个startplay自己合成一条记录,end_event类型为noEnd
   */
-object Play3xCombineV2 extends BaseClass with LogConfig {
+object Play3xCombineV3 extends BaseClass with LogConfig {
   val fact_table_name = "log_data"
   val INDEX_NAME = "r_index"
   val startPlayEvent = "startplay"
   val userExitEvent = "userexit"
   val selfEndEvent = "selfend"
-  val noEnd = "noEnd"
+  val noEnd = null
   val shortDataFrameTable = "shortDataFrameTable"
   val combineTmpTable = "combineTmpTable"
 
@@ -53,7 +54,7 @@ object Play3xCombineV2 extends BaseClass with LogConfig {
     }
   }
 
-  /** 合并操作
+  /** 合并操作,以startplay event为标准,并且比较合并记录中，startplay的datetime必须大于等于结束事件的datetime
     * */
   override def transform(params: Params, factDataFrame: DataFrame): DataFrame = {
     //进行索引编号
@@ -73,25 +74,41 @@ object Play3xCombineV2 extends BaseClass with LogConfig {
     shortDataFrame.registerTempTable(shortDataFrameTable)
     //(key,list(duration,datetime,event,r_index))
     val rdd1 = shortDataFrame.map(row => (row.getString(0), (row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))).groupByKey()
+    import scala.util.control.Breaks._
     val rddCombineTmp = rdd1.map(x => {
       val ikey = x._1
       val tupleIterable = x._2
-      val startList=tupleIterable.toList.filter(_._3==startPlayEvent).sortBy(_._2)
-      val endList=tupleIterable.toList.filter(_._3!=null).filter(_._3!=startPlayEvent).sortBy(_._2)
-      val startLength=startList.length
-      val endLength=endList.length
+      val startList = tupleIterable.toList.filter(_._3 == startPlayEvent).sortBy(_._2)
+      val endList = tupleIterable.toList.filter(_._3 != null).filter(_._3 != startPlayEvent).sortBy(_._2)
+      val startLength = startList.length
+      val endLength = endList.length
       val arrayBuffer = ArrayBuffer.empty[Row]
 
-      var i=0
-      while(i<startLength){
-        if(i<endLength){
-          val row = Row(ikey, endList(i)._1, startList(i)._2, endList(i)._3, endList(i)._4)
-          arrayBuffer.+=(row)
-        }else{
-          val row = Row(ikey, startList(i)._1, startList(i)._2, noEnd, startList(i)._4)
-          arrayBuffer.+=(row)
+      var i = 0
+      var j = 0
+      while (i < startLength) {
+        breakable {
+          if (i < endLength && j < endLength) {
+            while (j < endLength) {
+              if (endList(j)._2 >= startList(i)._2) {
+                val row = Row(ikey, endList(i)._1, startList(i)._2, endList(i)._3, endList(i)._4)
+                arrayBuffer.+=(row)
+                j = j + 1
+                break
+               }else{
+                  j = j + 1
+              }
+            }
+            if(j==endLength){
+              val row = Row(ikey, startList(i)._1, startList(i)._2, noEnd, startList(i)._4)
+              arrayBuffer.+=(row)
+            }
+          } else {
+            val row = Row(ikey, startList(i)._1, startList(i)._2, noEnd, startList(i)._4)
+            arrayBuffer.+=(row)
+          }
         }
-        i=i+1
+        i = i + 1
       }
       arrayBuffer.toList
     }).flatMap(x => x)
@@ -110,7 +127,7 @@ object Play3xCombineV2 extends BaseClass with LogConfig {
 
   override def load(params: Params, df: DataFrame): Unit = {
     val date = params.paramMap("date").toString
-    val baseOutputPath= DataIO.getDataFrameOps.getPath(MERGER,"medusaPlay3xCombineResultV3",date)
+    val baseOutputPath = DataIO.getDataFrameOps.getPath(MERGER, "medusaPlay3xCombineResultV3", date)
     val isBaseOutputPathExist = HdfsUtil.IsDirExist(baseOutputPath)
     if (isBaseOutputPathExist) {
       HdfsUtil.deleteHDFSFileOrPath(baseOutputPath)

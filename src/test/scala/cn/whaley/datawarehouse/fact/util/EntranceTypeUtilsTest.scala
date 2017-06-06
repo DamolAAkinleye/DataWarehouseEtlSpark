@@ -90,7 +90,7 @@ class EntranceTypeUtilsTest {
     )
 
     val more_moretv_list=List(
-      ("xxx","home-history-subjectcollect-subject-comic13",MORETV,"history",null),
+      ("xxx","home-history-subjectcollect-subject-comic13",MORETV,"my_tv","history"),
       ("xxx","home-hotrecommend-3-0 ",MORETV,"recommendation",null)
     )
 
