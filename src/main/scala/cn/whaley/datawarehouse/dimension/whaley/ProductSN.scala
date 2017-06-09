@@ -57,8 +57,6 @@ object ProductSN extends DimensionBase {
 
 
     //从长连接中找出各SN号对应的IP
-    println("==============1====================")
-
 
     val aliveInfo = MysqlDB.lcmsAccount
     sqlContext.read.format("jdbc").options(aliveInfo).load().where("product = 'whaley'").persist(StorageLevel.MEMORY_AND_DISK).registerTempTable("account")
