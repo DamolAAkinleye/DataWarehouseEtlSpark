@@ -149,4 +149,17 @@ object MysqlDB {
       "numPartitions" -> numPartitions.toString)
   }
 
+  //长连接用户信息
+  def lcmsAccount = {
+    Map("url" -> "jdbc:mysql://10.19.100.243:3306/lcms_base?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> "account",
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "lcmsreade",
+      "password" -> "moretv2016!@#",
+      "partitionColumn" -> "id",
+      "lowerBound" -> "1",
+      "upperBound" -> "7000000000",
+      "numPartitions" -> "1000")
+  }
+
 }

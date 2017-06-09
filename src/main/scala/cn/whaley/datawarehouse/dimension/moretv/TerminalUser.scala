@@ -17,10 +17,11 @@ object TerminalUser extends DimensionBase {
 
   columns.skName = "user_sk"
   columns.primaryKeys = List("user_id")
-  columns.trackingColumns = List("app_version", "app_series", "ip")
+  columns.trackingColumns = List("app_version", "app_series")
   columns.allColumns = List(
     "user_id",
     "open_time",
+    "origin_ip",
     "ip",
     "mac",
     "wifi_mac",
@@ -66,8 +67,19 @@ object TerminalUser extends DimensionBase {
     val udFunctionSeries = udf(getAppSeries: String => String)
     val udFunctionVersion = udf(getAppVersion: String => String)
 
-    df.withColumn("app_version", udFunctionVersion(col("current_version")))
+    val newDf = df.withColumn("app_version", udFunctionVersion(col("current_version")))
       .withColumn("app_series", udFunctionSeries(col("current_version")))
+      .withColumnRenamed("ip", "origin_ip")
+
+    //长连接数据
+    val accountSource = MysqlDB.lcmsAccount
+    val accountDf = sqlContext.read.format("jdbc").options(accountSource).load()
+      .where("product = 'moretv'").selectExpr("uid", "real_client_ip").dropDuplicates(List("uid"))
+
+    newDf.as("a").join(accountDf.as("b"), expr("a.user_id = b.uid"), "leftouter")
+      .selectExpr("a.*", "case when b.real_client_ip is null or trim(real_client_ip) = '' " +
+        "then a.origin_ip else b.real_client_ip end as ip")
+
   }
 
   def getAppSeries(seriesAndVersion: String): String = {
