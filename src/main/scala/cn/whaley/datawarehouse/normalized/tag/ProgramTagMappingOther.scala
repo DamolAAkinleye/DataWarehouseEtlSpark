@@ -41,7 +41,8 @@ object ProgramTagMappingOther extends NormalizedEtlBase {
     val kidsAndComicDf = programDf.where("content_type = 'kids' or content_type = 'comic'")
     result = getTagDf(kidsAndComicDf, "area", "产地").unionAll(result)
     result = getTagDfInt(kidsAndComicDf, "year", "年代").unionAll(result)
-
+    result = getTagDf(kidsAndComicDf, "tags", "关联标签").unionAll(result)
+    result = getTagDf(kidsAndComicDf, "director", "导演").unionAll(result)
 
     val liveDf = sqlContext.read.parquet(Globals.DIMENSION_HDFS_BASE_PATH + "/dim_medusa_live_program")
     result = getLiveTagDf(liveDf, "live_type_name", "分类").unionAll(result)
