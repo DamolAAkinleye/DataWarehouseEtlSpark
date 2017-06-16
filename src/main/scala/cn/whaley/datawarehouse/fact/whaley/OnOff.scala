@@ -35,7 +35,8 @@ object OnOff extends FactEtlBase{
   )
   dimensionColumns = List(
     new DimensionColumn("dim_whaley_product_sn",
-      List(DimensionJoinCondition(Map("product_sn" -> "product_sn"))), "product_sn_sk"),
+      List(DimensionJoinCondition(Map("product_sn" -> "product_sn"))),
+      List(("product_sn_sk", "product_sn_sk"), ("web_location_sk", "user_web_location_sk"))),
     new DimensionColumn("dim_whaley_account",
     List(DimensionJoinCondition(Map("account_id" -> "account_id"))), "account_sk")
   )
