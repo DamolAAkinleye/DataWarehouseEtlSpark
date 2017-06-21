@@ -26,6 +26,7 @@ object OnOff extends FactEtlBase{
     ("firmware_version", "firmware_version"),
     ("is_yunos","is_yunos"),
     ("product_line","product_line"),
+    ("log_type","log_type"),
     ("event","event"),
     ("duration","duration"),
     ("start_time","cast(start_time as long ) "),
@@ -58,7 +59,7 @@ object OnOff extends FactEtlBase{
 
     var onDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_ON,startDate)
     var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
-    onDf = addColumn(offDf,fields)
+    onDf = addColumn(onDf,fields)
     offDf = addColumn(offDf,fields)
 
     //on,off日志合并
@@ -69,6 +70,7 @@ object OnOff extends FactEtlBase{
             "currentVipLevel as current_vip_level",
             "firmwareVersion as firmware_version",
             "isYunos as is_yunos",
+            " 'on' as log_type ",
             "event",
             "0 as duration",
             "0 as start_time",
@@ -84,6 +86,7 @@ object OnOff extends FactEtlBase{
                 "currentVipLevel as current_vip_level",
                 "firmwareVersion as firmware_version",
                 "isYunos as is_yunos",
+                " 'off' as log_type ",
                 "event",
                 "case when duration is null then 0 else duration end  duration",
                 "case when startTime is null then 0 else startTime end start_time",
