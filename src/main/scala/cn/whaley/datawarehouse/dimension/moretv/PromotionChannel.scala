@@ -42,12 +42,12 @@ object PromotionChannel extends DimensionBase {
   //sourceFilterWhere = "user_id is not null and user_id <> ''"
   sourceDb =  MysqlDB.dwDimensionDb("medusa_promotion_channel_status")
 
-  override def readSource(readSourceType: SourceType.Value): DataFrame = {
-    val df = super.readSource(readSourceType)
-    df.show(10,false)
-    df
-
-  }
+//  override def readSource(readSourceType: SourceType.Value): DataFrame = {
+//    val df = super.readSource(readSourceType)
+//    df.show(10,false)
+//    df
+//
+//  }
   dimensionName = "dim_medusa_promotion_channel"
 
 }
