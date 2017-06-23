@@ -60,8 +60,8 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("realIP")),
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("fDatetime")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("fDatetime")),
-    UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
-    UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version")),
+//    UserDefinedColumn("app_series", udf(getAppSeries: String => String), List("version")),
+//    UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version")),
     UserDefinedColumn("subjectCode", udf(SubjectUtils.getSubjectCodeByPathETL: (String, String,String) => String), List("pathSpecial", "path", "flag")),
     UserDefinedColumn("subjectName", udf(SubjectUtils.getSubjectNameByPathETL: (String) => String), List("pathSpecial")),
     UserDefinedColumn("mainCategory", udf(ListCategoryUtils.getListMainCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -142,7 +142,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     /** 获得app版本维度app_version_sk */
     new DimensionColumn("dim_app_version",
       List(DimensionJoinCondition(
-        Map("app_series" -> "app_series", "app_version" -> "version"))
+        Map("apkSeries" -> "app_series", "apkVersion" -> "version"))
       ),
       "app_version_sk"),
 
