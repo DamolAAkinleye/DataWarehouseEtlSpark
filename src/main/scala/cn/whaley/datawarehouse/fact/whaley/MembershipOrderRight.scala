@@ -60,12 +60,13 @@ object MembershipOrderRight extends FactEtlBase{
     //账号订单表
     val dolphin_whaley_account_order = MysqlDB.whaleyDolphin("dolphin_whaley_account_order","id",1, 1000000000, 10)
     sqlContext.read.format("jdbc").options(dolphin_whaley_account_order).load()
-      .filter("orderStutas ='1' and substr(sn,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("account_order")
+      .filter("orderStutas ='1' and substr(sn,1,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("account_order")
 
     //账号发货订单表
     val dolphin_whaley_delivered_order = MysqlDB.whaleyDolphin("dolphin_whaley_delivered_order","id",1, 1000000000, 10)
     sqlContext.read.format("jdbc").options(dolphin_whaley_delivered_order).load()
-      .filter("status = 1 and substr(sn,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("delivered_order")
+      .filter("status = 1 and substr(sn,1,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("delivered_order")
+    //开始到当天的数据
     val sql1 =
       s"""
          | select a.sn,a.whaleyAccount,a.whaleyOrder,a.goodsNo,
@@ -84,6 +85,7 @@ object MembershipOrderRight extends FactEtlBase{
          |    or (a.orderStatus != 4 and substr(a.overTime,1,10) <= '${day} 23:59:59')
        """.stripMargin
 
+    //仅仅当天的数据
     val sql =
       s"""
          | select a.sn,a.whaleyAccount,a.whaleyOrder,a.goodsNo,

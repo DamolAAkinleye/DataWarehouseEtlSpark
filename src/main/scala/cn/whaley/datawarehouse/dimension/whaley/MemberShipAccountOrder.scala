@@ -29,10 +29,11 @@ object MemberShipAccountOrder extends DimensionBase {
     val sq = sqlContext
 
     import sq.implicits._
-    sourceDf.filter("orderStutas ='1' and substr(sn,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')")
+    sourceDf.filter("orderStutas ='1' and substr(sn,1,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')")
         .selectExpr(
           "id as membership_order_id",
           "sn as product_sn",
+
           "whaleyAccount as membership_account",
           "whaleyOrder as order_id",
           "orderStatus as order_status",

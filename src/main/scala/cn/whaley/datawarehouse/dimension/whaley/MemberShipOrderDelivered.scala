@@ -28,7 +28,7 @@ object MemberShipOrderDelivered extends DimensionBase {
   override def filterSource(sourceDf: DataFrame): DataFrame = {
     val sq = sqlContext
     import sq.implicits._
-    sourceDf.filter("status = 1 and substr(sn,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("tmp")
+    sourceDf.filter("status = 1 and substr(sn,1,2) not in ('XX','XY','XZ','YX','YY','YZ','ZX')").registerTempTable("tmp")
 
     val sql =
       s"""
