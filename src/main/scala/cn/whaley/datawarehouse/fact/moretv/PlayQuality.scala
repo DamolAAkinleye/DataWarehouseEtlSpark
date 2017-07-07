@@ -16,53 +16,53 @@ import org.apache.spark.sql.types.{DataType, IntegerType, StringType, LongType}
   * 数据输入：播放质量的五个日志
   * 数据输出：播放质量事实表
   */
-object PlayQuality extends FactEtlBase{
+object PlayQuality extends FactEtlBase {
   topicName = "fact_medusa_play_quality"
 
   addColumns = List(
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("date_time")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("date_time")),
-    UserDefinedColumn("event",udf(getEvent:(String,String)=>String),List("event_id","phrase"))
+    UserDefinedColumn("event", udf(getEvent: (String, String) => String), List("event_id", "phrase"))
   )
 
   columnsFromSource = List(
-    ("event","event"),
+    ("event", "event"),
     ("app_package", "app_package"),
     ("auto_version", "auto_version"),
     ("luascript", "luascript"),
-    ("sdk_version","sdk_version"),
-    ("net_type","net_type"),
-    ("play_type","play_type"),
-    ("player_type","player_type"),
-    ("preload_mark","preload_mark"),
-    ("product_model","product_model"),
-    ("user_type","user_type"),
-    ("source","source"),
-    ("cause","cause"),
-    ("cause_time","cause_time"),
+    ("sdk_version", "sdk_version"),
+    ("net_type", "net_type"),
+    ("play_type", "play_type"),
+    ("player_type", "player_type"),
+    ("preload_mark", "preload_mark"),
+    ("product_model", "product_model"),
+    ("user_type", "user_type"),
+    ("source", "source"),
+    ("cause", "cause"),
+    ("cause_time", "cause_time"),
     ("user_operation", "user_operation"),
-    ("auto_operation","auto_operation"),
-    ("retry_times","retry_times"),
-    ("play_url","play_url"),
-    ("result","result"),
-    ("add_info","add_info"),
-    ("error_code","error_code"),
-    ("definition","definition"),
+    ("auto_operation", "auto_operation"),
+    ("retry_times", "retry_times"),
+    ("play_url", "play_url"),
+    ("result", "result"),
+    ("add_info", "add_info"),
+    ("error_code", "error_code"),
+    ("definition", "definition"),
     ("start_time", "cast(start_time as timestamp)"),
-    ("end_time","cast(end_time as timestamp)"),
-    ("duration","cast(duration as double)"),
-    ("play_session_id","play_session_id"),
-    ("start_play_session_id","start_play_session_id"),
-    ("trailer_process","trailer_process"),
-    ("user_id","user_id"),
-    ("dim_date","dim_date"),
-    ("dim_time","dim_time")
+    ("end_time", "cast(end_time as timestamp)"),
+    ("duration", "cast(duration as double)"),
+    ("play_session_id", "play_session_id"),
+    ("start_play_session_id", "start_play_session_id"),
+    ("trailer_process", "trailer_process"),
+    ("user_id", "user_id"),
+    ("dim_date", "dim_date"),
+    ("dim_time", "dim_time")
   )
   dimensionColumns = List(
     /** 获得用户维度user_sk */
     new DimensionColumn("dim_medusa_terminal_user",
       List(DimensionJoinCondition(Map("user_id" -> "user_id"))),
-      List(("user_sk","user_sk"), ("web_location_sk", "user_web_location_sk"))),
+      List(("user_sk", "user_sk"), ("web_location_sk", "user_web_location_sk"))),
 
     /** 获得用户登录维度user_login_sk */
     new DimensionColumn("dim_medusa_terminal_user_login",
@@ -74,7 +74,7 @@ object PlayQuality extends FactEtlBase{
       List(DimensionJoinCondition(Map("product_model" -> "product_model"))),
       "product_model_sk"),
 
-   /** 获得推广渠道维度promotion_sk */
+    /** 获得推广渠道维度promotion_sk */
     new DimensionColumn("dim_medusa_promotion",
       List(DimensionJoinCondition(Map("promotion_channel" -> "promotion_code"))),
       "promotion_sk"),
@@ -92,12 +92,12 @@ object PlayQuality extends FactEtlBase{
       List(DimensionJoinCondition(Map("video_sid" -> "sid"))),
       "program_sk"),
 
-    /** 获得剧集节目维度episode_program_sk*/
+    /** 获得剧集节目维度episode_program_sk */
     new DimensionColumn("dim_medusa_program", "dim_medusa_program_episode",
       List(DimensionJoinCondition(Map("episode_sid" -> "sid"))),
-      "program_sk","episode_program_sk"),
+      "program_sk", "episode_program_sk"),
 
-    /** 获得账号维度account_sk*/
+    /** 获得账号维度account_sk */
     new DimensionColumn("dim_medusa_account",
       List(DimensionJoinCondition(Map("account_id" -> "account_id"))),
       "account_sk")
@@ -108,45 +108,45 @@ object PlayQuality extends FactEtlBase{
     val realStartDate = DateFormatUtils.readFormat.format(date)
 
     val fields = List(
-      ("exitType",null,StringType),
-      ("videoTime",0,IntegerType),
-      ("bufferType",null,StringType),
-      ("luascript",null,StringType),
-      ("sourceArea",null,StringType),
-      ("sourceList",null,StringType),
-      ("startPlaySessionId",null,StringType),
-      ("errorCode",null,StringType),
-      ("definition",null,StringType),
-      ("result",null,StringType),
-      ("autoVersion",null,StringType),
-      ("userSwitch",3,IntegerType),
-      ("autoSwitch",3,IntegerType),
-      ("retryTimes",-1L,LongType),
-      ("preloadMark",null,StringType),
-      ("trailerProcess",null,StringType),
-      ("playUrl",null,StringType),
-      ("playerType",null,StringType),
-      ("phrase",null,StringType),
-      ("addInfo",null,StringType),
-      ("userType",null,StringType)
+      ("exitType", null, StringType),
+      ("videoTime", 0, IntegerType),
+      ("bufferType", null, StringType),
+      ("luascript", null, StringType),
+      ("sourceArea", null, StringType),
+      ("sourceList", null, StringType),
+      ("startPlaySessionId", null, StringType),
+      ("errorCode", null, StringType),
+      ("definition", null, StringType),
+      ("result", null, StringType),
+      ("autoVersion", null, StringType),
+      ("userSwitch", 3, IntegerType),
+      ("autoSwitch", 3, IntegerType),
+      ("retryTimes", -1L, LongType),
+      ("preloadMark", null, StringType),
+      ("trailerProcess", null, StringType),
+      ("playUrl", null, StringType),
+      ("playerType", null, StringType),
+      ("phrase", null, StringType),
+      ("addInfo", null, StringType),
+      ("userType", null, StringType)
     )
 
     //节目信息
-    var  getVideoDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.MEDUSA_PLAY_VIDEO_INFO,realStartDate)
+    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_VIDEO_INFO, realStartDate)
     //起播
-    var  startPlayDf =  DataExtractUtils.readFromParquet(sqlContext,LogPath.MEDUSA_PLAY_START,realStartDate)
+    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_START, realStartDate)
     //解析
-    var  parseDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.MEDUSA_PLAY_PARSE,realStartDate)
+    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_PARSE, realStartDate)
     //缓冲
-    var  bufferDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.MEDUSA_PLAY_BUFFER,realStartDate)
+    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BUFFER, realStartDate)
     //结束播放
-    var  endPlayDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.MEDUSA_PLAY_END,realStartDate)
+    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_END, realStartDate)
 
-    getVideoDf = addColumn(getVideoDf,fields)
-    startPlayDf = addColumn(startPlayDf,fields)
-    parseDf = addColumn(parseDf,fields)
-    bufferDf = addColumn(bufferDf,fields)
-    endPlayDf = addColumn(endPlayDf,fields)
+    getVideoDf = addColumn(getVideoDf, fields)
+    startPlayDf = addColumn(startPlayDf, fields)
+    parseDf = addColumn(parseDf, fields)
+    bufferDf = addColumn(bufferDf, fields)
+    endPlayDf = addColumn(endPlayDf, fields)
 
     //日志合并
     getVideoDf.selectExpr(
@@ -190,7 +190,7 @@ object PlayQuality extends FactEtlBase{
       "eventId as event_id",
       "phrase as phrase",
       "accountId as account_id"
-    ) .unionAll(
+    ).unionAll(
       startPlayDf.selectExpr(
         "productModel as product_model",
         "luascript as luascript",
@@ -233,7 +233,7 @@ object PlayQuality extends FactEtlBase{
         "phrase as phrase",
         "accountId as account_id"
       )
-    ) .unionAll(
+    ).unionAll(
       parseDf.selectExpr(
         "productModel as product_model",
         "luascript as luascript",
@@ -365,15 +365,15 @@ object PlayQuality extends FactEtlBase{
     )
   }
 
-  def addColumn(df:DataFrame,fields:List[(String,Any,DataType)]):DataFrame = {
-    var dataFrame:DataFrame = df
-    fields.foreach(tuple=>{
-      val field =  tuple._1
+  def addColumn(df: DataFrame, fields: List[(String, Any, DataType)]): DataFrame = {
+    var dataFrame: DataFrame = df
+    fields.foreach(tuple => {
+      val field = tuple._1
       val value = tuple._2
       val dataType = tuple._3
       val flag = dataFrame.schema.fieldNames.contains(field)
-      if(!flag){
-        dataFrame = dataFrame.withColumn(field,lit(value).cast(dataType))
+      if (!flag) {
+        dataFrame = dataFrame.withColumn(field, lit(value).cast(dataType))
       }
     })
     dataFrame
@@ -401,14 +401,13 @@ object PlayQuality extends FactEtlBase{
     }
   }
 
-  def getEvent(eventId: String,phrase:String): String = {
+  def getEvent(eventId: String, phrase: String): String = {
     try {
-      if(phrase == null)
-      {
+      if (phrase == null) {
         val event = eventId.split("-")
-        val  num = event.length
-        event(num-1)
-      }else {
+        val num = event.length
+        event(num - 1)
+      } else {
         phrase
       }
     } catch {
