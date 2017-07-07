@@ -5,8 +5,6 @@ import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, 
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.fact.whaley.util.RomVersionUtils
 import cn.whaley.datawarehouse.util.MysqlDB
-import cn.whaley.sdk.dataexchangeio.DataIO
-import cn.whaley.sdk.utils.DataFrameUtil
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.storage.StorageLevel
@@ -21,9 +19,9 @@ object ProductSN extends DimensionBase {
   columns.skName = "product_sn_sk"
   columns.primaryKeys = List("product_sn")
   columns.trackingColumns = List("rom_version")
-  columns.allColumns = List("product_sn","product_line", "product_model", "user_id", "rom_version","wui_version",
+  columns.allColumns = List("product_sn", "product_line", "product_model", "user_id", "rom_version", "wui_version",
     "mac", "open_time", "wifi_mac", "ip", "vip_type",
-    "country", "area", "province", "city","district", "isp", "city_level","prefecture_level_city")
+    "country", "area", "province", "city", "district", "isp", "city_level", "prefecture_level_city")
 
   columns.addColumns = List(
     UserDefinedColumn("ip_key", udf(getIpKey: String => Long), List("ip"))
@@ -64,7 +62,7 @@ object ProductSN extends DimensionBase {
     sqlContext.read.format("jdbc").options(aliveInfo).load().where("product = 'whaley'").persist(StorageLevel.MEMORY_AND_DISK).registerTempTable("account")
 
     //选出SN和对应的最后的时间，保证每个SN只对应一个时间
-   sqlContext.sql("select sn ,max(last_time) AS last_time from account where product = 'whaley'  group by sn ").registerTempTable("sn_time")
+    sqlContext.sql("select sn ,max(last_time) AS last_time from account where product = 'whaley'  group by sn ").registerTempTable("sn_time")
 
     //根据SN和时间选择出对应的IP，只限制最新更新的IP
     sqlContext.sql("select a.sn,b.real_client_ip from  sn_time a left join account b on a.last_time = b.last_time and a.sn = b.sn where b.product = 'whaley'").registerTempTable("account_info")

@@ -17,7 +17,7 @@ object LogPath {
   val HELIOS_GET_VIDEO = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-getVideoInfo"
   val HELIOS_START_PLAY = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-startPlay"
   val HELIOS_PARSE = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-inner_outer_auth_parse"
-  val HELIOS_BUFFER= s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-buffer"
+  val HELIOS_BUFFER = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-buffer"
   val HELIOS_END_PLAY = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-endPlay"
 
   //微鲸站点树维度表

@@ -1,13 +1,11 @@
 package cn.whaley.datawarehouse.fact.whaley
 
-import cn.whaley.datawarehouse.common
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
-import cn.whaley.datawarehouse.util.DataExtractUtils
-import org.apache.parquet.filter2.predicate.Operators.UserDefined
-import org.apache.spark.sql.DataFrame
 import cn.whaley.datawarehouse.fact.whaley.util.RomVersionUtils
+import cn.whaley.datawarehouse.util.DataExtractUtils
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{DataType, IntegerType, StringType}
 
@@ -18,47 +16,47 @@ import org.apache.spark.sql.types.{DataType, IntegerType, StringType}
   * 数据输入：播放质量的五个日志
   * 数据输出：播放质量事实表
   */
-object PlayQuality extends FactEtlBase{
+object PlayQuality extends FactEtlBase {
   topicName = "fact_whaley_play_quality"
 
 
   addColumns = List(
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("date_time")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("date_time")),
-    UserDefinedColumn("event",udf(getEvent:(String,String)=>String),List("event_id","phrase"))
+    UserDefinedColumn("event", udf(getEvent: (String, String) => String), List("event_id", "phrase"))
   )
 
   columnsFromSource = List(
-    ("event","event"),
+    ("event", "event"),
     ("app_pack_age", "app_pack_age"),
     ("app_version", "app_version"),
-    ("sdk_version","sdk_version"),
-    ("rom_version","rom_version"),
-    ("firmware_version","firmware_version"),
-    ("net_type","net_type"),
-    ("play_type","play_type"),
-    ("preload_mark","preload_mark"),
-    ("current_vip_level","current_vip_level"),
-    ("source","source"),
-    ("cause","cause "),
-    ("cause_time","cause_time"),
+    ("sdk_version", "sdk_version"),
+    ("rom_version", "rom_version"),
+    ("firmware_version", "firmware_version"),
+    ("net_type", "net_type"),
+    ("play_type", "play_type"),
+    ("preload_mark", "preload_mark"),
+    ("current_vip_level", "current_vip_level"),
+    ("source", "source"),
+    ("cause", "cause "),
+    ("cause_time", "cause_time"),
     ("user_operation", " user_operation"),
-    ("auto_operation","auto_operation"),
-    ("retry_times","retry_times"),
-    ("play_url","play_url"),
-    ("result","result"),
-    ("error_code","error_code "),
-    ("definition","definition"),
+    ("auto_operation", "auto_operation"),
+    ("retry_times", "retry_times"),
+    ("play_url", "play_url"),
+    ("result", "result"),
+    ("error_code", "error_code "),
+    ("definition", "definition"),
     ("start_time", " cast(start_time as timestamp)"),
-    ("end_time","cast(end_time as timestamp)"),
-    ("duration","cast(duration as double) "),
-    ("play_session_id","play_session_id"),
-    ("start_play_session_id","start_play_session_id"),
+    ("end_time", "cast(end_time as timestamp)"),
+    ("duration", "cast(duration as double) "),
+    ("play_session_id", "play_session_id"),
+    ("start_play_session_id", "start_play_session_id"),
     ("trailer_process", "trailer_process"),
-    ("product_line","product_line "),
-    ("user_id","user_id "),
+    ("product_line", "product_line "),
+    ("user_id", "user_id "),
     ("dim_date", " dim_date"),
-    ("dim_time","dim_time")
+    ("dim_time", "dim_time")
   )
   dimensionColumns = List(
     new DimensionColumn("dim_whaley_product_sn",
@@ -84,33 +82,33 @@ object PlayQuality extends FactEtlBase{
     sqlContext.udf.register("getEpisodeSid", getEpisodeSid _)
 
     val fields = List(
-      ("exitType",null,StringType),
-      ("videoTime",0,IntegerType),
-      ("bufferType",null,StringType),
-      ("startPlaySessionId",null,StringType),
-      ("errorCode",null,StringType),
-      ("definition",null,StringType),
-      ("result",null,StringType),
-      ("userSwitch",3,IntegerType),
-      ("autoSwitch",3,IntegerType),
-      ("retryTimes",-1,IntegerType),
-      ("playUrl",null,StringType),
-      ("currentVipLevel",null,StringType),
-      ("phrase",null,StringType),
-      ("datetime",null,StringType)
+      ("exitType", null, StringType),
+      ("videoTime", 0, IntegerType),
+      ("bufferType", null, StringType),
+      ("startPlaySessionId", null, StringType),
+      ("errorCode", null, StringType),
+      ("definition", null, StringType),
+      ("result", null, StringType),
+      ("userSwitch", 3, IntegerType),
+      ("autoSwitch", 3, IntegerType),
+      ("retryTimes", -1, IntegerType),
+      ("playUrl", null, StringType),
+      ("currentVipLevel", null, StringType),
+      ("phrase", null, StringType),
+      ("datetime", null, StringType)
     )
 
-    var  getVideoDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_GET_VIDEO,startDate)
-    var  startPlayDf =  DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_START_PLAY,startDate)
-    var  parseDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_PARSE,startDate)
-    var  bufferDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_BUFFER,startDate)
-    var  endPlayDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_END_PLAY,startDate)
+    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_GET_VIDEO, startDate)
+    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_START_PLAY, startDate)
+    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_PARSE, startDate)
+    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_BUFFER, startDate)
+    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_END_PLAY, startDate)
 
-    getVideoDf = addColumn(getVideoDf,fields)
-    startPlayDf = addColumn(startPlayDf,fields)
-    parseDf = addColumn(parseDf,fields)
-    bufferDf = addColumn(bufferDf,fields)
-    endPlayDf = addColumn(endPlayDf,fields)
+    getVideoDf = addColumn(getVideoDf, fields)
+    startPlayDf = addColumn(startPlayDf, fields)
+    parseDf = addColumn(parseDf, fields)
+    bufferDf = addColumn(bufferDf, fields)
+    endPlayDf = addColumn(endPlayDf, fields)
 
     //日志合并
     getVideoDf.selectExpr(
@@ -148,7 +146,7 @@ object PlayQuality extends FactEtlBase{
       "eventId as event_id",
       "phrase as phrase",
       "accountId as account_id"
-    ) .unionAll(
+    ).unionAll(
       startPlayDf.selectExpr(
         "appPackage as app_pack_age",
         "appVersion as  app_version",
@@ -185,7 +183,7 @@ object PlayQuality extends FactEtlBase{
         "phrase as phrase",
         "accountId as account_id"
       )
-    ) .unionAll(
+    ).unionAll(
       parseDf.selectExpr(
         "appPackage as app_pack_age",
         "appVersion as  app_version",
@@ -222,7 +220,7 @@ object PlayQuality extends FactEtlBase{
         "phrase as phrase",
         "accountId as account_id"
       )
-      ).unionAll(
+    ).unionAll(
       bufferDf.selectExpr(
         "appPackage as app_pack_age",
         "appVersion as  app_version",
@@ -300,18 +298,38 @@ object PlayQuality extends FactEtlBase{
 
   }
 
-  def addColumn(df:DataFrame,fields:List[(String,Any,DataType)]):DataFrame = {
-    var dataFrame:DataFrame = df
-    fields.foreach(tuple=>{
-      val field =  tuple._1
+  def addColumn(df: DataFrame, fields: List[(String, Any, DataType)]): DataFrame = {
+    var dataFrame: DataFrame = df
+    fields.foreach(tuple => {
+      val field = tuple._1
       val value = tuple._2
       val dataType = tuple._3
       val flag = dataFrame.schema.fieldNames.contains(field)
-      if(!flag){
-        dataFrame = dataFrame.withColumn(field,lit(value).cast(dataType))
+      if (!flag) {
+        dataFrame = dataFrame.withColumn(field, lit(value).cast(dataType))
       }
     })
     dataFrame
+  }
+
+  def getVideoSid(videoSid: String, episodeSid: String, romVersion: String, firmwareVersion: String): String = {
+    try {
+      val rom = RomVersionUtils.getRomVersion(romVersion, firmwareVersion)
+      if (rom >= "02:00:00:00") videoSid
+      else episodeSid
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  def getEpisodeSid(videoSid: String, episodeSid: String, romVersion: String, firmwareVersion: String): String = {
+    try {
+      val rom = RomVersionUtils.getRomVersion(romVersion, firmwareVersion)
+      if (rom >= "02:00:00:00") episodeSid
+      else videoSid
+    } catch {
+      case ex: Exception => ""
+    }
   }
 
   def getDimDate(dateTime: String): String = {
@@ -336,36 +354,15 @@ object PlayQuality extends FactEtlBase{
     }
   }
 
-  def getEvent(eventId: String,phrase:String): String = {
+  def getEvent(eventId: String, phrase: String): String = {
     try {
-      if(phrase == null)
-        {
-          val event = eventId.split("-")
-          val  num = event.length
-          event(num-1)
-        }else {
+      if (phrase == null) {
+        val event = eventId.split("-")
+        val num = event.length
+        event(num - 1)
+      } else {
         phrase
       }
-    } catch {
-      case ex: Exception => ""
-    }
-  }
-
-  def getVideoSid(videoSid: String,episodeSid:String,romVersion:String,firmwareVersion:String): String = {
-    try {
-      val rom = RomVersionUtils.getRomVersion(romVersion,firmwareVersion)
-      if(rom >= "02:00:00:00") videoSid
-      else episodeSid
-    } catch {
-      case ex: Exception => ""
-    }
-  }
-
-  def getEpisodeSid(videoSid: String,episodeSid:String,romVersion:String,firmwareVersion:String): String = {
-    try {
-      val rom = RomVersionUtils.getRomVersion(romVersion,firmwareVersion)
-      if(rom >= "02:00:00:00") episodeSid
-      else videoSid
     } catch {
       case ex: Exception => ""
     }
