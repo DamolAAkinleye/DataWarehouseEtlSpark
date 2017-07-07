@@ -26,4 +26,10 @@ object LogPath {
   val DIM_WHALEY_RADIO = s"/data_warehouse/dw_dimensions/dim_whaley_radio"
   val DIM_WHALEY_SPOTRS_MATCH = s"/data_warehouse/dw_dimensions/dim_whaley_sports_match"
 
+  val MEDUSA_PLAY_BUFFER = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-buffer"
+  val MEDUSA_PLAY_START = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-startPlay"
+  val MEDUSA_PLAY_END = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-endPlay"
+  val MEDUSA_PLAY_VIDEO_INFO = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-getVideoInfo"
+  val MEDUSA_PLAY_PARSE = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-inner_outer_auth_parse"
+
 }
