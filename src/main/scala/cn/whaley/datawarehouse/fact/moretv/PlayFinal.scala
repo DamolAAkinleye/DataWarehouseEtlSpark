@@ -141,8 +141,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
 
     /** 获得app版本维度app_version_sk */
     new DimensionColumn("dim_app_version",
-      List(DimensionJoinCondition(
-        Map("apkSeries" -> "app_series", "apkVersion" -> "version"))
+      List(
+        DimensionJoinCondition(Map("apkSeries" -> "app_series", "apkVersion" -> "version", "buildDate" -> "build_time")),
+        DimensionJoinCondition(Map("apkSeries" -> "app_series", "apkVersion" -> "version"))
       ),
       "app_version_sk"),
 
