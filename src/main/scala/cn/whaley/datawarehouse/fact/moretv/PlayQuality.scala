@@ -155,7 +155,7 @@ object PlayQuality extends FactEtlBase {
     endPlayDf = addColumn(endPlayDf, fields)
 
     //日志合并
-    val df:DataFrame = getVideoDf.selectExpr(
+    getVideoDf.selectExpr(
       "productModel as product_model",
       "luascript as luascript",
       "appPackage as app_package",
@@ -374,8 +374,6 @@ object PlayQuality extends FactEtlBase {
         "accountId as account_id"
       )
     )
-    df.printSchema()
-    df
   }
 
   def addColumn(df: DataFrame, fields: List[(String, Any, DataType)]): DataFrame = {
