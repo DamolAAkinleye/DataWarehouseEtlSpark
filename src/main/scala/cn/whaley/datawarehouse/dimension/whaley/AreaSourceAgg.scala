@@ -41,7 +41,7 @@ object AreaSourceAgg extends DimensionBase {
                      "last_first_code as sub_module_code",
                      "last_first_name as sub_module_name"
                    )
-                   .distinct()
+                     .dropDuplicates(Array("module_code","sub_module_code"))
     /**
       * 首页入口维度
       */
@@ -67,7 +67,7 @@ object AreaSourceAgg extends DimensionBase {
         "page_name as module_name",
         "area_code as sub_module_code",
         "area_name as sub_module_name")
-      .distinct()
+      .dropDuplicates(Array("module_code","sub_module_code"))
 
     val sc1 = sqlContext
     import sc1.implicits._
