@@ -12,6 +12,14 @@ object LogPath {
   val HELIOS_OFF = s"/log/whaley/parquet/$DATE_ESCAPE/off"
   val HELIOS_PLAY = s"/log/whaley/parquet/$DATE_ESCAPE/play"
   val HELIOS_DETAIL = s"/log/whaley/parquet/$DATE_ESCAPE/detail"
+
+  //微鲸播放质量日志
+  val HELIOS_GET_VIDEO = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-getVideoInfo"
+  val HELIOS_START_PLAY = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-startPlay"
+  val HELIOS_PARSE = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-inner_outer_auth_parse"
+  val HELIOS_BUFFER = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-buffer"
+  val HELIOS_END_PLAY = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-endPlay"
+
   //微鲸站点树维度表
   val DIM_WHALEY_SOURCE_SITE = s"/data_warehouse/dw_dimensions/dim_whaley_source_site"
   //首页入口维度表
@@ -25,5 +33,11 @@ object LogPath {
   val DIM_WHALEY_SINGER = s"/data_warehouse/dw_dimensions/dim_whaley_singer"
   val DIM_WHALEY_RADIO = s"/data_warehouse/dw_dimensions/dim_whaley_radio"
   val DIM_WHALEY_SPOTRS_MATCH = s"/data_warehouse/dw_dimensions/dim_whaley_sports_match"
+
+  val MEDUSA_PLAY_BUFFER = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-buffer"
+  val MEDUSA_PLAY_START = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-startPlay"
+  val MEDUSA_PLAY_END = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-endPlay"
+  val MEDUSA_PLAY_VIDEO_INFO = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-getVideoInfo"
+  val MEDUSA_PLAY_PARSE = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-inner_outer_auth_parse"
 
 }

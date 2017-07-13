@@ -3,9 +3,8 @@ package cn.whaley.datawarehouse.dimension.whaley
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.dimension.DimensionBase
+import cn.whaley.datawarehouse.fact.whaley.util.RomVersionUtils
 import cn.whaley.datawarehouse.util.MysqlDB
-import cn.whaley.sdk.dataexchangeio.DataIO
-import cn.whaley.sdk.utils.DataFrameUtil
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.udf
 import org.apache.spark.storage.StorageLevel
@@ -20,12 +19,13 @@ object ProductSN extends DimensionBase {
   columns.skName = "product_sn_sk"
   columns.primaryKeys = List("product_sn")
   columns.trackingColumns = List("rom_version")
-  columns.allColumns = List("product_sn","product_line", "product_model", "user_id", "rom_version","wui_version",
+  columns.allColumns = List("product_sn", "product_line", "product_model", "user_id", "rom_version", "wui_version",
     "mac", "open_time", "wifi_mac", "ip", "vip_type",
-    "country", "area", "province", "city","district", "isp", "city_level","prefecture_level_city")
+    "country", "area", "province", "city", "district", "isp", "city_level", "prefecture_level_city")
 
   columns.addColumns = List(
-    UserDefinedColumn("ip_key", udf(getIpKey: String => Long), List("ip")))
+    UserDefinedColumn("ip_key", udf(getIpKey: String => Long), List("ip"))
+  )
 
   columns.linkDimensionColumns = List(
     new DimensionColumn(
@@ -45,11 +45,11 @@ object ProductSN extends DimensionBase {
 
     sourceDf.registerTempTable("mtv_terminal")
 
-
+    sqlContext.udf.register("wui", RomVersionUtils.getRomVersion _)
     //得出用户的信息，status表示用户是否有效，activate_status表示用户是否激活
     //限制id != 1339211 是因为有一条重复数据先去掉（此处为临时解决方案）
-    sqlContext.sql("select  serial_number, service_id,rom_version, wui_version,mac, " +
-      "open_time, wifi_mac,current_ip" +
+    sqlContext.sql("select  serial_number, service_id,rom_version, wui(wui_version,rom_version) as wui_version ,mac, " +
+      "open_time, wifi_mac ,current_ip" +
       s" from mtv_terminal where status =1 and activate_status =1 " +
       s"and device_id is not null and serial_number not like 'XX%' " +
       s"and id !=1339211 and serial_number is not null " +
@@ -62,7 +62,7 @@ object ProductSN extends DimensionBase {
     sqlContext.read.format("jdbc").options(aliveInfo).load().where("product = 'whaley'").persist(StorageLevel.MEMORY_AND_DISK).registerTempTable("account")
 
     //选出SN和对应的最后的时间，保证每个SN只对应一个时间
-   sqlContext.sql("select sn ,max(last_time) AS last_time from account where product = 'whaley'  group by sn ").registerTempTable("sn_time")
+    sqlContext.sql("select sn ,max(last_time) AS last_time from account where product = 'whaley'  group by sn ").registerTempTable("sn_time")
 
     //根据SN和时间选择出对应的IP，只限制最新更新的IP
     sqlContext.sql("select a.sn,b.real_client_ip from  sn_time a left join account b on a.last_time = b.last_time and a.sn = b.sn where b.product = 'whaley'").registerTempTable("account_info")
@@ -84,8 +84,8 @@ object ProductSN extends DimensionBase {
 
     //将用户机型信息加入用户信息中存为中间表“product”
     sqlContext.sql("select a.serial_number as product_sn, snToProductLine(a.serial_number) as product_line ,b.product_model as product_model," +
-      " a.service_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time, a.wifi_mac as wifi_mac, a.ip as ip" +
-      " from user_info a left join product_model b on getSNtwo(a.serial_number) = b.serial_number").registerTempTable("product")
+      " a.service_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time, a.wifi_mac as wifi_mac, " +
+      "a.ip as ip from user_info a left join product_model b on getSNtwo(a.serial_number) = b.serial_number").registerTempTable("product")
 
 
     //获取用户的会员信息
@@ -97,8 +97,8 @@ object ProductSN extends DimensionBase {
 
     //将用户会员信息加入用户信息中作为中间表。表明为"userVipInfo"
     sqlContext.sql("select a.product_sn as product_sn, a.product_line as product_line ,a.product_model as product_model," +
-      " a.user_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time, a.wifi_mac as wifi_mac, a.ip as ip," +
-      "case b.vip when 'vip' then 'vip' else '未知' end  as vip_type from product a left join vipType b on a.product_sn = b.sn")
+      " a.user_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time, a.wifi_mac as wifi_mac," +
+      " a.ip as ip, case b.vip when 'vip' then 'vip' else '未知' end  as vip_type from product a left join vipType b on a.product_sn = b.sn")
       .registerTempTable("userVipInfo")
 
     //获取用户的城市信息
@@ -111,7 +111,8 @@ object ProductSN extends DimensionBase {
     sqlContext.sql("select ip_section_1,ip_section_2,ip_section_3,country,area,province,city,district,isp,city_level,prefecture_level_city,dim_invalid_time from log_data").registerTempTable("countryInfo")
 
     sqlContext.sql("select a.product_sn as product_sn, a.product_line as product_line ,a.product_model as product_model," +
-      " a.user_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time, a.wifi_mac as wifi_mac, a.ip as ip," +
+      " a.user_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time, a.wifi_mac as wifi_mac," +
+      "a.ip as ip," +
       "a.vip_type  as vip_type ,case when b.country = '' then '未知' when  b.country is null  then '未知' else b.country end  as country," +
       "case when b.area = '' then '未知' when b.area is null then '未知' else b.area end  as area," +
       "case when b.province = '' then '未知' when b.province is null then '未知' else b.province end as province," +
@@ -134,13 +135,6 @@ object ProductSN extends DimensionBase {
     } else "helios"
   }
 
-
-  /**
-    * 由版本号映射出对应的版本
-    *
-    * @param sn
-    * @return 版本
-    */
 
   def getSNtwo(sn: String) = {
     if (sn != null) {
