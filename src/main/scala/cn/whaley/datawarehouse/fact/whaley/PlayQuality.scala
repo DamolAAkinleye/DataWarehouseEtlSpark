@@ -21,6 +21,7 @@ object PlayQuality extends FactEtlBase {
 
 
   addColumns = List(
+    UserDefinedColumn("real_ip", udf(getIpKey: String => Long), List("real_ip")),
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("date_time")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("date_time")),
     UserDefinedColumn("event", udf(getEvent: (String, String) => String), List("event_id", "phrase"))
@@ -59,6 +60,11 @@ object PlayQuality extends FactEtlBase {
     ("dim_time", "dim_time")
   )
   dimensionColumns = List(
+    /** 获得访问ip对应的地域维度user_web_location_sk */
+    new DimensionColumn("dim_web_location",
+      List(DimensionJoinCondition(Map("real_ip" -> "web_location_key"))),
+      "web_location_sk","access_web_location_sk"),
+
     new DimensionColumn("dim_whaley_product_sn",
       List(DimensionJoinCondition(Map("product_sn" -> "product_sn"))),
       List(("product_sn_sk", "product_sn_sk"), ("web_location_sk", "user_web_location_sk"))),
@@ -145,6 +151,7 @@ object PlayQuality extends FactEtlBase {
       "productSN as product_sn",
       "eventId as event_id",
       "phrase as phrase",
+      "realIP as real_ip",
       "accountId as account_id"
     ).unionAll(
       startPlayDf.selectExpr(
@@ -181,6 +188,7 @@ object PlayQuality extends FactEtlBase {
         "productSN as product_sn",
         "eventId as event_id",
         "phrase as phrase",
+        "realIP as real_ip",
         "accountId as account_id"
       )
     ).unionAll(
@@ -218,6 +226,7 @@ object PlayQuality extends FactEtlBase {
         "productSN as product_sn",
         "eventId as event_id",
         "phrase as phrase",
+        "realIP as real_ip",
         "accountId as account_id"
       )
     ).unionAll(
@@ -255,6 +264,7 @@ object PlayQuality extends FactEtlBase {
         "productSN as product_sn",
         "eventId as event_id",
         "phrase as phrase",
+        "realIP as real_ip",
         "accountId as account_id"
       )
     ).unionAll(
@@ -292,10 +302,23 @@ object PlayQuality extends FactEtlBase {
         "productSN as product_sn",
         "eventId as event_id",
         "phrase as phrase",
+        "realIP as real_ip",
         "accountId as account_id"
       )
     )
 
+  }
+
+  //will use common util function class instead
+  def getIpKey(ip: String): Long = {
+    try {
+      val ipInfo = ip.split("\\.")
+      if (ipInfo.length >= 3) {
+        (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+      } else 0
+    } catch {
+      case ex: Exception => 0
+    }
   }
 
   def addColumn(df: DataFrame, fields: List[(String, Any, DataType)]): DataFrame = {

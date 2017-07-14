@@ -7,7 +7,7 @@ import cn.whaley.datawarehouse.util.{DataExtractUtils, DateFormatUtils}
 import org.apache.spark.sql.DataFrame
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.{DataType, IntegerType, StringType, LongType}
+import org.apache.spark.sql.types.{DataType, IntegerType, LongType, StringType}
 
 /**
   * 创建人：luoziyu
@@ -20,6 +20,7 @@ object PlayQuality extends FactEtlBase {
   topicName = "fact_medusa_play_quality"
 
   addColumns = List(
+    UserDefinedColumn("real_ip", udf(getIpKey: String => Long), List("real_ip")),
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("date_time")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("date_time")),
     UserDefinedColumn("event", udf(getEvent: (String, String) => String), List("event_id", "phrase"))
@@ -59,6 +60,11 @@ object PlayQuality extends FactEtlBase {
     ("dim_time", "dim_time")
   )
   dimensionColumns = List(
+    /** 获得访问ip对应的地域维度user_web_location_sk */
+    new DimensionColumn("dim_web_location",
+      List(DimensionJoinCondition(Map("real_ip" -> "web_location_key"))),
+      "web_location_sk","access_web_location_sk"),
+
     /** 获得用户维度user_sk */
     new DimensionColumn("dim_medusa_terminal_user",
       List(DimensionJoinCondition(Map("user_id" -> "user_id"))),
@@ -113,7 +119,6 @@ object PlayQuality extends FactEtlBase {
       ("bufferType", null, StringType),
       ("luascript", null, StringType),
       ("sourceArea", null, StringType),
-      ("sourceList", null, StringType),
       ("startPlaySessionId", null, StringType),
       ("errorCode", null, StringType),
       ("definition", null, StringType),
@@ -176,6 +181,7 @@ object PlayQuality extends FactEtlBase {
       "(case  when autoSwitch = 0 then 'false'  when autoSwitch = 1 then 'true' else null end)  as  auto_operation",
       "retryTimes as retry_times",
       "playUrl as play_url",
+      "realIP as real_ip",
       "result as result",
       "errorCode as error_code",
       "definition as definition",
@@ -203,7 +209,7 @@ object PlayQuality extends FactEtlBase {
         "playerType as player_type",
         "preloadMark as preload_mark",
         "userType as user_type",
-        "sourceList as source",
+        "source as source",
         "addInfo as add_info",
         "promotionChannel as promotion_channel",
         "apkSeries as apk_series",
@@ -218,6 +224,7 @@ object PlayQuality extends FactEtlBase {
         "(case  when autoSwitch = 0 then 'false'  when autoSwitch = 1 then 'true' else null end)  as  auto_operation",
         "retryTimes as retry_times",
         "playUrl as play_url",
+        "realIP as real_ip",
         "result as result",
         "errorCode as error_code",
         "definition as definition",
@@ -246,7 +253,7 @@ object PlayQuality extends FactEtlBase {
         "playerType as player_type",
         "preloadMark as preload_mark",
         "userType as user_type",
-        "sourceList as source",
+        "source as source",
         "addInfo as add_info",
         "promotionChannel as promotion_channel",
         "apkSeries as apk_series",
@@ -261,6 +268,7 @@ object PlayQuality extends FactEtlBase {
         "(case  when autoSwitch = 0 then 'false'  when autoSwitch = 1 then 'true' else null end)  as  auto_operation",
         "retryTimes as retry_times",
         "playUrl as play_url",
+        "realIP as real_ip",
         "result as result",
         "errorCode as error_code",
         "definition as definition",
@@ -289,7 +297,7 @@ object PlayQuality extends FactEtlBase {
         "playerType as player_type",
         "preloadMark as preload_mark",
         "userType as user_type",
-        "sourceList as source",
+        "source as source",
         "addInfo as add_info",
         "promotionChannel as promotion_channel",
         "apkSeries as apk_series",
@@ -304,6 +312,7 @@ object PlayQuality extends FactEtlBase {
         "(case  when autoSwitch = 0 then 'false'  when autoSwitch = 1 then 'true' else null end)  as  auto_operation",
         "retryTimes as retry_times",
         "playUrl as play_url",
+        "realIP as real_ip",
         "result as result",
         "errorCode as error_code",
         "definition as definition",
@@ -332,7 +341,7 @@ object PlayQuality extends FactEtlBase {
         "playerType as player_type",
         "preloadMark as preload_mark",
         "userType as user_type",
-        "sourceList as source",
+        "source as source",
         "addInfo as add_info",
         "promotionChannel as promotion_channel",
         "apkSeries as apk_series",
@@ -347,6 +356,7 @@ object PlayQuality extends FactEtlBase {
         "(case  when autoSwitch = 0 then 'false'  when autoSwitch = 1 then 'true' else null end)  as  auto_operation",
         "retryTimes as retry_times",
         "playUrl as play_url",
+        "realIP as real_ip",
         "result as result",
         "errorCode as error_code",
         "definition as definition",
@@ -377,6 +387,18 @@ object PlayQuality extends FactEtlBase {
       }
     })
     dataFrame
+  }
+
+  //will use common util function class instead
+  def getIpKey(ip: String): Long = {
+    try {
+      val ipInfo = ip.split("\\.")
+      if (ipInfo.length >= 3) {
+        (((ipInfo(0).toLong * 256) + ipInfo(1).toLong) * 256 + ipInfo(2).toLong) * 256
+      } else 0
+    } catch {
+      case ex: Exception => 0
+    }
   }
 
   def getDimDate(dateTime: String): String = {
