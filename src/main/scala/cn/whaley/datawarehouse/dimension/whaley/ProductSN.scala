@@ -51,7 +51,7 @@ object ProductSN extends DimensionBase {
     sqlContext.sql("select  serial_number, service_id,rom_version, wui(wui_version,rom_version) as wui_version ,mac, " +
       "open_time, sold_time,wifi_mac ,current_ip" +
       s" from mtv_terminal where status =1 and activate_status =1 " +
-      s"and device_id is not null and serial_number not like 'XX%' " +
+      s"and serial_number not like 'XX%' " +
       s"and id !=1339211 and serial_number is not null " +
       s"and serial_number <> ''").registerTempTable("mtv_terminal_info")
 
