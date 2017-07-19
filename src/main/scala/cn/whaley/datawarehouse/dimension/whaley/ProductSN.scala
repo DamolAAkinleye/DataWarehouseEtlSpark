@@ -129,12 +129,12 @@ object ProductSN extends DimensionBase {
 
   }
 
-  def snToProductLine(productSN: String) = {
-    if (productSN == null || productSN == "") {
+  def snToProductLine(productSN:String) = {
+    if(productSN == null || productSN == ""){
       "helios"
-    } else if (productSN.startsWith("P")) {
+    } else if(productSN.startsWith("P") || productSN.startsWith("A")){
       "orca"
-    } else "helios"
+    }else "helios"
   }
 
 
