@@ -49,7 +49,6 @@ object Subject extends DimensionBase {
 
     val sq = sqlContext
     import sq.implicits._
-    import org.apache.spark.sql.functions._
 
     val contentTypeDb = MysqlDB.whaleyCms("mtv_content_type", "id", 1, 100, 1)
 
@@ -57,9 +56,9 @@ object Subject extends DimensionBase {
       .select($"code", $"name")
 
     sourceDf.filter($"code".isNotNull && $"code" != "")
-      .withColumn("codev", regexp_extract($"code", "[a-z]*", 0)).as("s")
+      .as("s")
 
-      .join(contentTypeDf.as("c"), $"s.codev" === $"c.code", "left_outer")
+      .join(contentTypeDf.as("c"), $"s.content_type" === $"c.code", "left_outer")
       .select(
         $"s.code".as(columns.primaryKeys(0)),
         $"s.name".as(columns.allColumns(1)),
