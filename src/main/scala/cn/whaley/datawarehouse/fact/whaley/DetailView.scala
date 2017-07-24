@@ -34,13 +34,13 @@ object DetailView extends FactEtlBase{
       udf(ContentTypeUtils.getContentType: (String, String) => String),
       List("path", "contentType")),
     UserDefinedColumn("udc_page_code",
-      udf(ChannelLauncherEntranceUtils.getPageEntrancePageCode: (String, String) => String),
+      udf(ChannelLauncherEntranceUtils.getPageEntrancePageCode: (String, String,String,String) => String),
       List("path", "contentType")),
     UserDefinedColumn("udc_page_area_code",
-      udf(ChannelLauncherEntranceUtils.getPageEntranceAreaCode: (String, String) => String),
+      udf(ChannelLauncherEntranceUtils.getPageEntranceAreaCode: (String, String,String,String) => String),
       List("path", "contentType")),
     UserDefinedColumn("udc_page_location_code",
-      udf(ChannelLauncherEntranceUtils.getPageEntranceLocationCode: (String, String) => String),
+      udf(ChannelLauncherEntranceUtils.getPageEntranceLocationCode: (String, String,String,String) => String),
       List("path", "contentType")),
     UserDefinedColumn("udc_last_category",
       udf(ListCategoryUtils.getLastFirstCode: String => String),
@@ -72,9 +72,10 @@ object DetailView extends FactEtlBase{
     ("user_id", "userId"),
     ("product_sn", "productSN"),
 
-    ("content_type", "contentType"),
+    ("content_type", "udc_path_content_type"),
     ("play_content_type",
       "case when dim_whaley_subject.subject_content_type is not null then dim_whaley_subject.subject_content_type " +
+        "when trim(udc_path_content_type) is not null then udc_path_content_type " +
         "when dim_whaley_program.content_type is not null then dim_whaley_program.content_type " +
         "when trim(contentType) = '' then null else contentType end"),
     ("search_keyword", "searchText"),

@@ -29,7 +29,8 @@ object Subject extends DimensionBase {
     "subject_content_type",
     "subject_content_type_name",
     "subject_create_time",
-    "subject_publish_time"
+    "subject_publish_time",
+    "column_type_id"
 
   )
 
@@ -66,8 +67,8 @@ object Subject extends DimensionBase {
         $"c.code".as(columns.allColumns(3)),
         $"c.name".as(columns.allColumns(4)),
         $"s.create_time".cast("timestamp").as(columns.allColumns(5)),
-        $"s.publish_time".cast("timestamp").as(columns.allColumns(6))
+        $"s.publish_time".cast("timestamp").as(columns.allColumns(6)),
+        $"s.column_type_id".as(columns.allColumns(7))
       )
-
   }
 }
