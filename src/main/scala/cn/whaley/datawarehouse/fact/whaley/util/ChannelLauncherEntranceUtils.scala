@@ -31,23 +31,25 @@ object ChannelLauncherEntranceUtils extends LogConfig {
   }
 
 
-  def getPageEntranceCode(path: String, contentType: String, flag: String, wuiVersion: String): String = {
+  def getPageEntranceCode(path: String, contentType: String, flag: String, wuiVersion: String = ""): String = {
     var result: String = null
     var page: String = null
     var area: String = null
     var location: String = null
 
+    val wui = if (wuiVersion == null) "" else wuiVersion
+
     if (path == null || path.isEmpty) {
       result
     } else {
       val tmp = path.split("-")
-      if (tmp.length < 3) {
+      if (tmp.length == 2) {
         //处理OTA20开始的资讯/奇趣频道的播放小窗(路径为home-hot或者home-interest)
-        if (wuiVersion >= "02.02.02" && (tmp(1) == CHANNEL_HOT || tmp(1) == CHANNEL_INTEREST)) {
+        if (wui >= "02.02.02" && (CHANNEL_HOT == tmp(1) || CHANNEL_INTEREST == tmp(1))) {
           page = tmp(1)
           area = "scale_play"
         }
-      } else {
+      } else if(tmp.length >= 3) {
         val tmpPage = ContentTypeUtils.getContentType(path, contentType)
         tmpPage match {
           case CHANNEL_MOVIE | CHANNEL_KIDS | CHANNEL_SPORTS | CHANNEL_VIP => {
@@ -56,7 +58,7 @@ object ChannelLauncherEntranceUtils extends LogConfig {
           }
           case CHANNEL_HOT | CHANNEL_INTEREST => {
             page = tmp(1)
-            if (wuiVersion >= "02.02.02") {
+            if (wui >= "02.02.02") {
               //处理单片订阅推荐区或单片人工推荐区
               if (tmp(2).startsWith("subscribe_recommend") || tmp(2).startsWith("div_recommend")) {
                 val areaIndex = tmp(2).lastIndexOf("_")
@@ -106,6 +108,8 @@ object ChannelLauncherEntranceUtils extends LogConfig {
             }
           }
         }
+      }else {
+
       }
       flag match {
         case PAGECODE => {
