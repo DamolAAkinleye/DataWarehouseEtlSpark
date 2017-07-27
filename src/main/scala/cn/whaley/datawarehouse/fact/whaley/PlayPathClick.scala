@@ -12,7 +12,7 @@ import org.apache.spark.sql.types.{DataType, IntegerType, StringType}
 /**
   * Created by huanghu on 17/7/20.
   */
-object SkipLocationClick extends FactEtlBase {
+object PlayPathClick extends FactEtlBase {
 
   topicName = "fact_whaley_skip_location_click"
 
@@ -411,122 +411,6 @@ object SkipLocationClick extends FactEtlBase {
 
     }
     else null
-
-    /*var getWuiLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_LAUNCHER, startDate)
-    var getLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_LAUNCHER, startDate)
-    var getChannelInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_CHANNEL_Click, startDate)
-    var getMovieInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_MOVIE_Click, startDate)
-    var getWuiButton = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_BUTTON, startDate)
-      .where("buttonType = 'signal' or buttonType = 'search' ")
-
-
-    getWuiLauncherInfo = addColumn(getWuiLauncherInfo, fields)
-    getLauncherInfo = addColumn(getLauncherInfo, fields1)
-    getChannelInfo = addColumn(getChannelInfo, fields)
-    getMovieInfo = addColumn(getMovieInfo, fields)
-    getWuiButton = addColumn(getWuiButton, fields)
-
-
-
-    getWuiLauncherInfo.selectExpr(
-      "romVersion as rom_version",
-      "firmwareVersion as firmware_version",
-      "productLine as product_line",
-      "productSN as product_sn",
-      "pageType as page",
-      "tableName as area_name",
-      "elementCode as  location_code",
-      "positionArea as position_area",
-      "buttonType as button_type",
-      "linkValue as link_value",
-      "linkValue as  sid ",
-      "positionIndex as location_index",
-      "linkType as link_type",
-      "adPuttingId as ad_putting_id",
-      "positionType as position_type",
-      "accountId as account_id",
-      "datetime as date_time"
-    ).unionAll(
-      getLauncherInfo.selectExpr(
-        "romVersion as rom_version",
-        "firmwareVersion as firmware_version",
-        "productLine as product_line",
-        "productSN as product_sn",
-        "pageType as page",
-        "accessAera  as   area_name",
-        "accessLocation  as  location_code",
-        "positionArea as position_area",
-        "buttonType as button_type",
-        "linkValue as link_value",
-        "accessLocation as  sid ",
-        "locationIndex  as  location_index",
-        "linkType as link_type",
-        "adPuttingId as ad_putting_id",
-        "positionType as position_type",
-        "accountId as account_id",
-        "datetime as date_time"
-      )
-    ).unionAll(
-      getChannelInfo.selectExpr(
-        "romVersion as rom_version",
-        "firmwareVersion as firmware_version",
-        "productLine as product_line",
-        "productSN as product_sn",
-        "contentType as page",
-        "accesssArea as area_name",
-        "accessLocation as  location_code",
-        "positionArea as position_area",
-        "buttonType as button_type",
-        "linkValue as link_value",
-        "accessLocation as  sid ",
-        "locationIndex as location_index",
-        "linkType as link_type",
-        "adPuttingId as ad_putting_id",
-        "positionType as position_type",
-        "accountId as account_id",
-        "datetime as date_time"
-      )
-    ).unionAll(getMovieInfo.selectExpr(
-      "romVersion as rom_version",
-      "firmwareVersion as firmware_version",
-      "productLine as product_line",
-      "productSN as product_sn",
-      "contentType as page",
-      "trim(accesssArea) as area_name",
-      "accessLocation as  location_code",
-      "linkValue as link_value",
-      "positionArea as position_area",
-      "buttonType as button_type",
-      "accessLocation as  sid ",
-      "locationIndex as location_index",
-      "linkType as link_type",
-      "adPuttingId as ad_putting_id",
-      "positionType as position_type",
-      "accountId as account_id",
-      "datetime as date_time"
-    )
-    ).unionAll(
-      getWuiButton.selectExpr(
-        "romVersion as rom_version",
-        "firmwareVersion as firmware_version",
-        "productLine as product_line",
-        "productSN as product_sn",
-        "pageType as page",
-        "tableName as area_name",
-        "elementCode as  location_code",
-        "positionArea as position_area",
-        "buttonType as button_type",
-        "linkValue as link_value",
-        "linkValue as  sid ",
-        "positionIndex as location_index",
-        "linkType as link_type",
-        "adPuttingId as ad_putting_id",
-        "positionType as position_type",
-        "accountId as account_id",
-        "datetime as date_time"
-    )
-    )*/
-
 
 
   }

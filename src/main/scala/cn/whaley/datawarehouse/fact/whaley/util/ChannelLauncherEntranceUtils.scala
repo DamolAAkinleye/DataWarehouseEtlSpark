@@ -137,7 +137,8 @@ object ChannelLauncherEntranceUtils extends LogConfig {
   def getPageEntranceLocationIndex(locationIndex: String, contentType: String, romVersion: String, firmwareVersion: String): Int = {
     val wui = RomVersionUtils.getRomVersion(romVersion, firmwareVersion)
     contentType match {
-      case CHANNEL_MOVIE => {
+      case CHANNEL_MOVIE  | CHANNEL_HOT | CHANNEL_INTEREST
+      => {
         if (locationIndex == null || locationIndex.isEmpty) {
           -1
         } else locationIndex.toInt + 1

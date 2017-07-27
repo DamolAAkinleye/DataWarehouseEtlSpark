@@ -2,6 +2,6 @@
 #点击日志建模
 type=command
 table=fact_whaley_click
-mainclass=cn.whaley.datawarehouse.fact.whaley.SkipLocationClick
+mainclass=cn.whaley.datawarehouse.fact.whaley.PlayPathClick
 command=sh ${working.dir}/../../../bin/fact_submit.sh ${mainclass} --startDate ${startDate} --endDate ${endDate} --isOnline  ${isOnline}
 command.1=sh ${working.dir}/../../../bin/addPartition.sh --table ${table} --startDate ${startDate} --endDate ${endDate}  --hour ${hour}
