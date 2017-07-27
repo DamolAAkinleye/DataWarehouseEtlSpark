@@ -59,7 +59,7 @@ object PlayPathClick extends FactEtlBase {
     ("product_line", "product_line"),
     ("product_sn","product_sn"),
     ("page", "page"),
-    ("linkType", "link_type"),
+    ("link_type", "link_type"),
     ("link_value", "link_value"),
     ("ad_putting_id", "ad_putting_id"),
     ("position_type", "position_type"),
