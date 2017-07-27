@@ -12,6 +12,11 @@ object LogPath {
   val HELIOS_OFF = s"/log/whaley/parquet/$DATE_ESCAPE/off"
   val HELIOS_PLAY = s"/log/whaley/parquet/$DATE_ESCAPE/play"
   val HELIOS_DETAIL = s"/log/whaley/parquet/$DATE_ESCAPE/detail"
+  val HELIOS_LAUNCHER = s"/log/whaley/parquet/$DATE_ESCAPE/launcher"
+  val HELIOS_WUI_LAUNCHER = s"/log/boikgpokn78sb95kjhfrendoj8ilnoi7/parquet/$DATE_ESCAPE/positionClick"
+  val HELIOS_WUI_BUTTON = s"/log/boikgpokn78sb95kjhfrendoj8ilnoi7/parquet/$DATE_ESCAPE/buttonClick"
+  val HELIOS_CHANNEL_Click = s"/log/whaley/parquet/$DATE_ESCAPE/helios-channelhome-click"
+  val HELIOS_MOVIE_Click = s"/log/whaley/parquet/$DATE_ESCAPE/helios-whaleymovie-moviehomeaccess"
 
   //微鲸播放质量日志
   val HELIOS_GET_VIDEO = s"/log/whaley/parquet/$DATE_ESCAPE/helios-player-sdk-getVideoInfo"

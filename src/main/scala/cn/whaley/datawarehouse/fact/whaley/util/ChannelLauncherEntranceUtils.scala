@@ -3,10 +3,10 @@ package cn.whaley.datawarehouse.fact.whaley.util
 import cn.whaley.datawarehouse.global.LogConfig
 
 /**
- * Created by zhangyu on 17/5/16.
- * 频道首页入口维度解析
- * 目前包含 电影热门推荐/少儿首页/音乐首页/体育首页(不含联赛)/收藏首页/会员俱乐部首页
- */
+  * Created by zhangyu on 17/5/16.
+  * 频道首页入口维度解析
+  * 目前包含 电影热门推荐/少儿首页/音乐首页/体育首页(不含联赛)/收藏首页/会员俱乐部首页
+  */
 object ChannelLauncherEntranceUtils extends LogConfig {
 
   private val PAGECODE = "page_code"
@@ -21,11 +21,6 @@ object ChannelLauncherEntranceUtils extends LogConfig {
   def getPageEntranceAreaCode(path: String, contentType: String): String = {
     getPageEntranceCode(path, contentType, AREACODE)
   }
-
-  def getPageEntranceLocationCode(path: String, contentType: String): String = {
-    getPageEntranceCode(path, contentType, LOCATIONCODE)
-  }
-
 
   def getPageEntranceCode(path: String, contentType: String, flag: String): String = {
     var result: String = null
@@ -55,8 +50,8 @@ object ChannelLauncherEntranceUtils extends LogConfig {
                   location = tmp(3)
                 }
               }
-              case "rank"  => {
-                if(tmp.length >= 4){
+              case "rank" => {
+                if (tmp.length >= 4) {
                   val rankTmp = tmp(3).split("_")
                   location = rankTmp(0)
                 }
@@ -90,12 +85,17 @@ object ChannelLauncherEntranceUtils extends LogConfig {
     }
   }
 
+  def getPageEntranceLocationCode(path: String, contentType: String): String = {
+    getPageEntranceCode(path, contentType, LOCATIONCODE)
+  }
+
   /**
-   * 获取频道首页推荐位索引值(目前只有电影频道热门推荐中有49个推荐位)
-   * @param locationIndex
-   * @param contentType
-   * @return
-   */
+    * 获取频道首页推荐位索引值(目前只有电影频道热门推荐中有49个推荐位)
+    *
+    * @param locationIndex
+    * @param contentType
+    * @return
+    */
   def getPageEntranceLocationIndex(locationIndex: String, contentType: String): Int = {
 
     contentType match {
@@ -108,6 +108,56 @@ object ChannelLauncherEntranceUtils extends LogConfig {
     }
 
   }
+
+  /**
+    * 根据点击日志获取频道首页推荐位索引值
+    *
+    * @param locationIndex
+    * @return
+    */
+  def getPageLocationIndexFromClick(locationIndex: String): Int = {
+    {
+      if (locationIndex == null || locationIndex.isEmpty) {
+        -1
+      } else locationIndex.toInt + 1
+    }
+  }
+
+  /**
+    * 根据点击日志获取频道首页location信息
+    *
+    * @param contentType
+    * @param locationCode
+    * @return
+    */
+
+  def getPageLocationFromClick(contentType: String, locationCode: String): String = {
+    try {
+      if (contentType == "interest" || contentType == "hot" || contentType == "movie") {
+        null
+      } else locationCode
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+  /**
+    * 根据点击日志获取频道首页area信息
+    *
+    * @param contentType
+    * @return areaName
+    */
+
+  def getPageAreaFromClick(contentType: String, areaName: String): String = {
+    try {
+      if (contentType == "movie" && areaName == "moive_recommend") "movie_recommend"
+      else areaName
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+
 }
 
 
