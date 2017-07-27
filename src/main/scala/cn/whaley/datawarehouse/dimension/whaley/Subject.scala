@@ -29,7 +29,8 @@ object Subject extends DimensionBase {
     "subject_content_type",
     "subject_content_type_name",
     "subject_create_time",
-    "subject_publish_time"
+    "subject_publish_time",
+    "column_type_id"
 
   )
 
@@ -49,7 +50,6 @@ object Subject extends DimensionBase {
 
     val sq = sqlContext
     import sq.implicits._
-    import org.apache.spark.sql.functions._
 
     val contentTypeDb = MysqlDB.whaleyCms("mtv_content_type", "id", 1, 100, 1)
 
@@ -57,9 +57,9 @@ object Subject extends DimensionBase {
       .select($"code", $"name")
 
     sourceDf.filter($"code".isNotNull && $"code" != "")
-      .withColumn("codev", regexp_extract($"code", "[a-z]*", 0)).as("s")
+      .as("s")
 
-      .join(contentTypeDf.as("c"), $"s.codev" === $"c.code", "left_outer")
+      .join(contentTypeDf.as("c"), $"s.content_type" === $"c.code", "left_outer")
       .select(
         $"s.code".as(columns.primaryKeys(0)),
         $"s.name".as(columns.allColumns(1)),
@@ -67,8 +67,8 @@ object Subject extends DimensionBase {
         $"c.code".as(columns.allColumns(3)),
         $"c.name".as(columns.allColumns(4)),
         $"s.create_time".cast("timestamp").as(columns.allColumns(5)),
-        $"s.publish_time".cast("timestamp").as(columns.allColumns(6))
+        $"s.publish_time".cast("timestamp").as(columns.allColumns(6)),
+        $"s.column_type_id".as(columns.allColumns(7))
       )
-
   }
 }
