@@ -59,9 +59,9 @@ object PlayPathClick extends FactEtlBase {
     ("product_line", "product_line"),
     ("product_sn","product_sn"),
     ("page", "page"),
-    ("link_type", "link_type"),
+    ("link_type", "cast(link_type as BIGINT)"),
     ("link_value", "link_value"),
-    ("ad_putting_id", "ad_putting_id"),
+    ("ad_putting_id", " cast(ad_putting_id as BIGINT)"),
     ("position_type", "position_type"),
     ("dim_date", " dim_date"),
     ("dim_time", "dim_time")
@@ -124,23 +124,20 @@ object PlayPathClick extends FactEtlBase {
 
 
     val fields = List(
-      ("linkType", -1, IntegerType),
-      ("adPuttingId", -1, IntegerType),
-      ("positionType", -1, StringType),
+      ("linkType", "-1", StringType),
+      ("adPuttingId", "-1", StringType),
       ("linkValue", null, StringType),
       ("tableName", null, StringType),
       ("elementCode", null, StringType),
       ("positionIndex", null, StringType),
       ("positionType", null, StringType),
       ("positionArea", null, StringType),
-      ("buttonType", null, StringType),
-      ("adPuttingId", -1, IntegerType)
+      ("buttonType", null, StringType)
     )
 
     val fields1 = List(
-      ("linkType", -1, IntegerType),
-      ("adPuttingId", -1, IntegerType),
-      ("positionType", -1, StringType),
+      ("linkType", "-1", StringType),
+      ("adPuttingId", "-1", StringType),
       ("linkValue", null, StringType),
       ("tableName", null, StringType),
       ("elementCode", null, StringType),
@@ -148,7 +145,6 @@ object PlayPathClick extends FactEtlBase {
       ("positionType", null, StringType),
       ("positionArea", null, StringType),
       ("buttonType", null, StringType),
-      ("adPuttingId", -1, IntegerType),
       ("pageType", "home", StringType)
     )
     val launcher = s"/log/whaley/parquet/$startDate/launcher"
@@ -453,7 +449,7 @@ object PlayPathClick extends FactEtlBase {
   }
 
   def getVideoSid(sid: String, linkType: Int): String = {
-    if (linkType == 1) sid
+    if (linkType == "1") sid
     else null
   }
 
