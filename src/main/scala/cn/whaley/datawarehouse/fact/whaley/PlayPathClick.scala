@@ -14,7 +14,7 @@ import org.apache.spark.sql.types.{DataType, IntegerType, StringType}
   */
 object PlayPathClick extends FactEtlBase {
 
-  topicName = "fact_whaley_skip_location_click"
+  topicName = "fact_whaley_play_path_click"
 
 
   addColumns = List(
