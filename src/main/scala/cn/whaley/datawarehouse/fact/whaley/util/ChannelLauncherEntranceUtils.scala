@@ -130,6 +130,7 @@ object ChannelLauncherEntranceUtils extends LogConfig {
   /**
     * 获取频道首页推荐位索引值(目前只有电影频道热门推荐中有49个推荐位)
     * 补充资讯/奇趣首页推荐位索引值
+    *
     * @param locationIndex
     * @param contentType
     * @return
@@ -172,7 +173,7 @@ object ChannelLauncherEntranceUtils extends LogConfig {
 
   def getPageLocationFromClick(contentType: String, locationCode: String): String = {
     try {
-      if (contentType == "interest" || contentType == "hot" || contentType == "movie") {
+      if (contentType == CHANNEL_MOVIE || contentType == CHANNEL_HOT || contentType == CHANNEL_INTEREST) {
         null
       } else locationCode
     } catch {
@@ -189,7 +190,13 @@ object ChannelLauncherEntranceUtils extends LogConfig {
 
   def getPageAreaFromClick(contentType: String, areaName: String): String = {
     try {
-      if (contentType == "movie" && areaName == "moive_recommend") "movie_recommend"
+      if (contentType == CHANNEL_MOVIE && areaName == "moive_recommend") "movie_recommend"
+      else if(contentType == CHANNEL_INTEREST || contentType == CHANNEL_HOT ) {
+        if (areaName.startsWith("subscribe_recommend") || areaName.startsWith("div_recommend")) {
+          val areaIndex = areaName.lastIndexOf("_")
+          areaName.substring(0, areaIndex)
+        }else areaName
+      }
       else areaName
     } catch {
       case ex: Exception => ""
