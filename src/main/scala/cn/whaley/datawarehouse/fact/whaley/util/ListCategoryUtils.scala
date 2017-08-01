@@ -116,6 +116,15 @@ object ListCategoryUtils {
             }
           }
         }
+        case "hot" | "interest" => {
+          if(paths.length >= 4){
+            categoryCodes(1)= "site_" + paths(2)
+            categoryCodes(2)= paths(4)
+          }else if(paths.length >= 3){
+            categoryCodes(1)= contentType
+            categoryCodes(2)= paths(2)
+          }
+        }
         case _  => {
           //其他频道 站点树取第3位
           if(paths.length>=3){
