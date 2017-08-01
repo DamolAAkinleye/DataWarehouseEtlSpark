@@ -100,7 +100,7 @@ object PlayPathClick extends FactEtlBase {
         DimensionJoinCondition(
           Map("page" -> "page_code",
             "udc_page_area_code" -> "area_code",
-            "udc_page_location_index" -> "location_index"),"location_code = null")
+            "udc_page_location_index" -> "location_index"),"location_code is null")
       ), "page_entrance_sk"),
 
     //节目聚合维度
