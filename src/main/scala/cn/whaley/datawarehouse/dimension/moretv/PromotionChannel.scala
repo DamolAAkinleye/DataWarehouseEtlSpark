@@ -2,6 +2,7 @@ package cn.whaley.datawarehouse.dimension.moretv
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.dimension.DimensionBase
+import cn.whaley.datawarehouse.dimension.moretv.PromotionChannel.sourceDb
 import cn.whaley.datawarehouse.global.SourceType
 import cn.whaley.datawarehouse.util.MysqlDB
 import org.apache.spark.sql.DataFrame
@@ -24,6 +25,7 @@ object PromotionChannel extends DimensionBase {
   columns.trackingColumns = List()
   columns.allColumns = List(
     "promotion_channel",
+    "pri_promotion_channel_name",
     "promotion_channel_name",
     "promotion_channel_type",
     "fee_type",
@@ -42,12 +44,16 @@ object PromotionChannel extends DimensionBase {
   //sourceFilterWhere = "user_id is not null and user_id <> ''"
   sourceDb =  MysqlDB.dwDimensionDb("medusa_promotion_channel_status")
 
-//  override def readSource(readSourceType: SourceType.Value): DataFrame = {
-//    val df = super.readSource(readSourceType)
-//    df.show(10,false)
-//    df
-//
-//  }
-  dimensionName = "dim_medusa_promotion_channel"
+  override def readSource(readSourceType: SourceType.Value): DataFrame = {
+    val df = super.readSource(readSourceType)
+    val sourceDbMapping =  MysqlDB.dwDimensionDb("medusa_promotion_channel_mapping")
+    val df_mapping = sqlContext.read.format("jdbc").options(sourceDbMapping).load()
+    .filter("invalid_date is null")
+    .select("promotion_channel","pri_promotion_channel_name")
+    val result = df.join(df_mapping,"promotion_channel")
+    //result.show(10,false)
+    result
+  }
+  dimensionName = "medusa_promotion_channel_status"
 
 }
