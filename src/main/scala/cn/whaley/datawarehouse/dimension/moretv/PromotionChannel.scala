@@ -54,6 +54,6 @@ object PromotionChannel extends DimensionBase {
     //result.show(10,false)
     result
   }
-  dimensionName = "medusa_promotion_channel_status"
+  dimensionName = "dim_medusa_promotion_channel"
 
 }
