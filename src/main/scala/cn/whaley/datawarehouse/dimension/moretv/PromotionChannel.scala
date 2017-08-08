@@ -2,7 +2,6 @@ package cn.whaley.datawarehouse.dimension.moretv
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.dimension.DimensionBase
-import cn.whaley.datawarehouse.dimension.moretv.PromotionChannel.sourceDb
 import cn.whaley.datawarehouse.global.SourceType
 import cn.whaley.datawarehouse.util.MysqlDB
 import org.apache.spark.sql.DataFrame
