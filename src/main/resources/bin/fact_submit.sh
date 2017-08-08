@@ -6,8 +6,8 @@ echo "startDate is $startDate"
 echo "endDate is $endDate"
 startDate=`date -d "-1 days "$startDate +%Y%m%d`
 endDate=`date -d "-1 days "$endDate +%Y%m%d`
-echo "startDate is $startDate"
-echo "endDate is $endDate"
+echo "startDate of data is $startDate"
+echo "endDate of data is $endDate"
 
 Params=($@)
 MainClass=${Params[0]}
@@ -82,21 +82,31 @@ do
         fi
     fi
 done
-ts=`date +%Y%m%d_%H%M%S`
-set -x
-$spark_home/bin/spark-submit -v \
---name ${app_name:-$MainClass}_$ts \
---master ${spark_master} \
---executor-memory $spark_executor_memory \
---driver-memory $spark_driver_memory \
---files $resFiles \
---jars $jarFiles \
---conf spark.cores.max=${spark_cores_max}  \
---conf spark.shuffle.service.enabled=${spark_shuffle_service_enabled} \
---conf spark.dynamicAllocation.enabled=${spark_dynamicAllocation_enabled}  \
---conf spark.dynamicAllocation.minExecutors=${spark_dynamicAllocation_minExecutors} \
---conf spark.dynamicAllocation.maxExecutors=${spark_dynamicAllocation_maxExecutors} \
---conf spark.dynamicAllocation.initialExecutors=${spark_dynamicAllocation_initialExecutors} \
---conf spark.default.parallelism=${spark_default_parallelism} \
---conf spark.yarn.queue=${spark_yarn_queue} \
---class "$MainClass" $spark_mainJar --startDate $startDate --endDate $endDate $Args
+
+while [[ $startDate -le $endDate ]]
+do
+    echo $startDate
+    ts=`date +%Y%m%d_%H%M%S`
+    set -x
+    $spark_home/bin/spark-submit -v \
+    --name ${app_name:-$MainClass}_$ts \
+    --master ${spark_master} \
+    --executor-memory $spark_executor_memory \
+    --driver-memory $spark_driver_memory \
+    --files $resFiles \
+    --jars $jarFiles \
+    --conf spark.cores.max=${spark_cores_max}  \
+    --conf spark.shuffle.service.enabled=${spark_shuffle_service_enabled} \
+    --conf spark.dynamicAllocation.enabled=${spark_dynamicAllocation_enabled}  \
+    --conf spark.dynamicAllocation.minExecutors=${spark_dynamicAllocation_minExecutors} \
+    --conf spark.dynamicAllocation.maxExecutors=${spark_dynamicAllocation_maxExecutors} \
+    --conf spark.dynamicAllocation.initialExecutors=${spark_dynamicAllocation_initialExecutors} \
+    --conf spark.default.parallelism=${spark_default_parallelism} \
+    --conf spark.yarn.queue=${spark_yarn_queue} \
+    --class "$MainClass" $spark_mainJar --startDate $startDate $Args
+    if [ $? -ne 0 ];then
+        echo "Execution failed, startDate of data is {$startDate}  ..."
+        exit 1
+    fi
+    startDate=`date -d "1 days "$startDate +%Y%m%d`
+done
