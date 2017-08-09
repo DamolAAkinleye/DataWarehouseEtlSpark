@@ -44,10 +44,6 @@ object PlayPathClick extends FactEtlBase {
       udf(ChannelLauncherEntranceUtils.getPageAreaFromClick: (String,String) => String),
       List("page","area_name")),
 
-    //节目的sid
-    UserDefinedColumn("udc_video_sid",
-      udf(getVideoSid: (String, Int) => String),
-      List("sid", "link_type")),
 
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("date_time")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("date_time"))
@@ -117,7 +113,7 @@ object PlayPathClick extends FactEtlBase {
 
     //节目信息
     new DimensionColumn("dim_whaley_program",
-      List(DimensionJoinCondition(Map("udc_video_sid" -> "sid"))), "program_sk")
+      List(DimensionJoinCondition(Map("sid" -> "sid"))), "program_sk")
   )
 
   override def readSource(startDate: String): DataFrame = {
@@ -448,9 +444,5 @@ object PlayPathClick extends FactEtlBase {
     }
   }
 
-  def getVideoSid(sid: String, linkType: Int): String = {
-    if (linkType == "1") sid
-    else null
-  }
 
 }
