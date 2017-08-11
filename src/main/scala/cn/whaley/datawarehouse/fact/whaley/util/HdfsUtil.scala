@@ -1,6 +1,5 @@
 package cn.whaley.datawarehouse.fact.whaley.util
 
-import cn.whaley.sdk.dataexchangeio.DataIO
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
@@ -15,15 +14,6 @@ object HdfsUtil {
     *
     * @return true or false
     */
-
-  def isHDFSFileExist(pattern: String, logType: String, date: String): Boolean = {
-    val file = DataIO.getDataFrameOps.getPath(pattern, logType, date)
-    val conf = new Configuration()
-    val fs = FileSystem.get(conf)
-
-    val path = new Path(file)
-    fs.exists(path)
-  }
 
   def isHDFSFileExist(file: String): Boolean = {
     //val file = DataIO.getDataFrameOps.getPath(pattern,logType,date)

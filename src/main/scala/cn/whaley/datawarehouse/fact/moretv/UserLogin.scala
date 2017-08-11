@@ -16,7 +16,7 @@ object UserLogin extends FactEtlBase {
 
 //  debug = true
 
-  topicName = "fact_medusa_user_login"
+  topicName = "fact_medusa_user_login_test"
 
   parquetPath = LogPath.MEDUSA_LOGIN_LOG_PATH
 
@@ -30,7 +30,7 @@ object UserLogin extends FactEtlBase {
   )
 
   columnsFromSource = List(
-    ("product_serial", "ProductSerial"),
+//    ("product_serial", "ProductSerial"),
     ("sys_ver", "SysVer"),
     ("wifi_mac", "WifiMac"),
     ("app_name", "appName"),
@@ -68,7 +68,8 @@ object UserLogin extends FactEtlBase {
     new DimensionColumn("dim_medusa_promotion",
       List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
     new DimensionColumn("dim_app_version",
-      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))), "app_version_sk")
+      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version")))
+      , "app_version_sk")
   )
 
   override def readSource(startDate: String): DataFrame = {

@@ -2,8 +2,10 @@ package cn.whaley.datawarehouse.util
 
 import java.util.{Calendar, Date}
 
+import org.apache.spark.sql.expressions.Window
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{Column, DataFrame, Row}
 
 /**
   * Created by Tony on 17/1/24.
@@ -15,8 +17,7 @@ object DataFrameUtil {
                      offset: Long = 0,
                      inFront: Boolean = true
                     ): DataFrame = {
-    println("-------before dfZipWithIndex "+Calendar.getInstance().getTime)
-    val result=df.sqlContext.createDataFrame(
+    val result = df.sqlContext.createDataFrame(
       df.rdd.zipWithIndex.map(ln =>
         Row.fromSeq(
           (if (inFront) Seq(ln._2 + offset + 1) else Seq())
@@ -30,9 +31,19 @@ object DataFrameUtil {
           (if (inFront) Array[StructField]() else Array(StructField(colName, LongType, false)))
       )
     )
-    println("-------end dfZipWithIndex "+Calendar.getInstance().getTime)
     result
   }
+
+
+  def dfAddIndex(df: DataFrame,
+              colName: String,
+              orderByColumn: Column,
+              offset: Long = 0
+             ): DataFrame = {
+    val windowSpec = Window.orderBy(orderByColumn)
+    df.withColumn(colName, row_number().over(windowSpec).plus(offset))
+  }
+
 
   def addDimTime(df: DataFrame,
                  validTime: Date,

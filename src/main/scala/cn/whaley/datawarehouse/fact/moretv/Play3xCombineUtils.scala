@@ -65,7 +65,9 @@ object Play3xCombineUtils extends LogConfig {
     shortDataFrame.registerTempTable(shortDataFrameTable)
     //(key,list(duration,datetime,event,r_index))
     import scala.util.control.Breaks._
-    val rdd1 = shortDataFrame.map(row => (row.getString(0), (row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))).groupByKey()
+    val rdd1 = shortDataFrame.rdd.map(
+      row => (row.getString(0), (row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))
+    ).groupByKey()
     val rddCombineTmp = rdd1.map(x => {
       val ikey = x._1
       val tupleIterable = x._2

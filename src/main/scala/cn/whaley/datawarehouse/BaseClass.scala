@@ -153,7 +153,7 @@ trait BaseClass {
           }
           //维度表排序
           if (jc.orderBy != null && jc.orderBy.nonEmpty) {
-            dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
+            dimensionDf = dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
           }
           //维度表去重
           //          dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)

@@ -96,6 +96,7 @@ abstract class FactEtlBase extends BaseClass {
     val filteredSourceDf = filterRows(sourceDf)
     val completeSourceDf = addNewColumns(filteredSourceDf)
     println("-------start completeSourceDf.cache()" + Calendar.getInstance().getTime)
+    completeSourceDf.printSchema()
     completeSourceDf.cache()
     println("-------end completeSourceDf.cache()" + Calendar.getInstance().getTime)
 
@@ -163,8 +164,7 @@ abstract class FactEtlBase extends BaseClass {
       }
       )
     }
-    println("-------after addNewColumns " + Calendar.getInstance().getTime)
-    DataFrameUtil.dfZipWithIndex(result, INDEX_NAME)
+    DataFrameUtil.dfAddIndex(result, INDEX_NAME, expr(factTime).asc)
   }
 
   override def load(params: Params, df: DataFrame): Unit = {

@@ -1,6 +1,6 @@
 package cn.whaley.datawarehouse.common
 
-import org.apache.spark.sql.UserDefinedFunction
+import org.apache.spark.sql.expressions.UserDefinedFunction
 
 /**
   * Created by Tony on 17/4/6.
