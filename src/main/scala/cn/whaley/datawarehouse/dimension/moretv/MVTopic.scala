@@ -40,7 +40,7 @@ object MVTopic extends DimensionBase {
   sourceDb = MysqlDB.medusaCms("mtv_mvtopic", "id", 1, 134, 1)
 
   //临时过滤34fhwxac9wtv防止报错
-  sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> '' and mv_topic_sid <> '34fhwxac9wtv'"
+  sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> '' and mv_topic_sid and status=1"
 
 
 
