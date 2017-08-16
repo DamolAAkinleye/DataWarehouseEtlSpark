@@ -24,6 +24,7 @@ import scala.collection.mutable.ArrayBuffer
 object Play2xFilterUtilsNew extends LogConfig {
   val fact_table_name = "log_data_play2x"
   val filterTable = "filterTable"
+  val totalCountFilterTable = "totalCountFilterTable"
 
   //多组时间段间隔阀值：30分钟
   val time_quantum_threshold = 1800
@@ -36,14 +37,25 @@ object Play2xFilterUtilsNew extends LogConfig {
     def get2xFilterDataFrame(factDataFrame: DataFrame,sqlContext: SQLContext,sc: SparkContext): DataFrame = {
     factDataFrame.repartition(1000).registerTempTable(fact_table_name)
     //println("factDataFrame.count():" + factDataFrame.count())
-    val sqlStr =
-      s"""select concat_ws('_',userId,episodeSid) as key,datetime,unix_timestamp(datetime) as timestampValue
+    val totalFilterSql=
+      s"""select  concat_ws('_',userId,episodeSid) as key,count(1) as total
           |from $fact_table_name
+          |group by concat_ws('_',userId,episodeSid)
+          |having total>10000
+       """.stripMargin
+     sqlContext.sql(totalFilterSql).registerTempTable(totalCountFilterTable)
+
+    val sqlStr =
+      s"""select concat_ws('_',a.userId,a.episodeSid) as key,a.datetime,unix_timestamp(a.datetime) as timestampValue
+          |from $fact_table_name a
+          |left join  $totalCountFilterTable b on
+          |concat_ws('_',a.userId,a.episodeSid)=b.key
+          |where b.key is null
        """.stripMargin
     val df = sqlContext.sql(sqlStr)
 
     import scala.util.control.Breaks._
-    val groupByRdd = factDataFrame.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
+    val groupByRdd = df.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
     val resultRdd = groupByRdd.map(x => {
       //key is concat_ws('_',userId,episodeSid)
       val key = x._1
@@ -95,7 +107,8 @@ object Play2xFilterUtilsNew extends LogConfig {
         | left join  $filterTable        b on
         |    concat_ws('_',a.userId,a.episodeSid)=b.key  and
         |    a.datetime=b.datetime
-        |where b.key is null
+        | left join $totalCountFilterTable c on concat_ws('_',a.userId,a.episodeSid)=c.key
+        |where b.key is null and c.key is null
       """.stripMargin).withColumnRenamed("duration","fDuration").withColumnRenamed("datetime","fDatetime")
     resultDF
   }
