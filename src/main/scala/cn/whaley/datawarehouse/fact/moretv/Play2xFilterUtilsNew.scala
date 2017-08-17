@@ -32,16 +32,17 @@ object Play2xFilterUtilsNew extends LogConfig {
   val play_times_threshold = 5
   //两条日志之间的平均时间间隔阀值：5分钟
   val avg_second_threshold = 300
+  val repartitionNum=50
 
   /** 获得过滤结果 */
     def get2xFilterDataFrame(factDataFrame: DataFrame,sqlContext: SQLContext,sc: SparkContext): DataFrame = {
-    factDataFrame.repartition(1000).registerTempTable(fact_table_name)
+    factDataFrame.repartition(repartitionNum).registerTempTable(fact_table_name)
     //println("factDataFrame.count():" + factDataFrame.count())
     val totalFilterSql=
       s"""select  concat_ws('_',userId,episodeSid) as key,count(1) as total
           |from $fact_table_name
           |group by concat_ws('_',userId,episodeSid)
-          |having total>10000
+          |having total>1000
        """.stripMargin
      sqlContext.sql(totalFilterSql).registerTempTable(totalCountFilterTable)
 
@@ -110,7 +111,7 @@ object Play2xFilterUtilsNew extends LogConfig {
         | left join $totalCountFilterTable c on concat_ws('_',a.userId,a.episodeSid)=c.key
         |where b.key is null and c.key is null
       """.stripMargin).withColumnRenamed("duration","fDuration").withColumnRenamed("datetime","fDatetime")
-    resultDF
+    resultDF.repartition(repartitionNum)
   }
 
   //将timeList[左闭右开区间]的数值存入arrayBuffer,用来做过滤,arrayBuffer存储的是黑名单记录
