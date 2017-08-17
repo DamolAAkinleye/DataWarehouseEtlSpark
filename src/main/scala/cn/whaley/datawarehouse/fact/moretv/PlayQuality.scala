@@ -8,6 +8,8 @@ import org.apache.spark.sql.DataFrame
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{DataType, IntegerType, LongType, StringType}
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
 /**
   * 创建人：luoziyu
@@ -23,7 +25,9 @@ object PlayQuality extends FactEtlBase {
     UserDefinedColumn("real_ip", udf(getIpKey: String => Long), List("real_ip")),
     UserDefinedColumn("dim_date", udf(getDimDate: String => String), List("date_time")),
     UserDefinedColumn("dim_time", udf(getDimTime: String => String), List("date_time")),
-    UserDefinedColumn("event", udf(getEvent: (String, String) => String), List("event_id", "phrase"))
+    UserDefinedColumn("event", udf(getEvent: (String, String) => String), List("event_id", "phrase")),
+    UserDefinedColumn("udf_start_time", udf(getFormatTime: (Long) => String), List("start_time")),
+    UserDefinedColumn("udf_end_time", udf(getFormatTime: (Long) => String), List("start_time"))
   )
 
   columnsFromSource = List(
@@ -49,8 +53,8 @@ object PlayQuality extends FactEtlBase {
     ("add_info", "add_info"),
     ("error_code", "error_code"),
     ("definition", "definition"),
-    ("start_time", "start_time"),
-    ("end_time", "end_time"),
+    ("start_time", "cast(udf_start_time as timestamp)"),
+    ("end_time", "cast(udf_end_time as timestamp)"),
     ("duration", "cast(duration as double)"),
     ("play_session_id", "play_session_id"),
     ("start_play_session_id", "start_play_session_id"),
@@ -432,6 +436,16 @@ object PlayQuality extends FactEtlBase {
       } else {
         phrase
       }
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+
+  def getFormatTime(time: Long): String = {
+    try {
+      val format =new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+      format.format(time)
     } catch {
       case ex: Exception => ""
     }
