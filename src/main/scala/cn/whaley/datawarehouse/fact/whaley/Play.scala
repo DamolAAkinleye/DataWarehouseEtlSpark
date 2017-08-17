@@ -137,10 +137,7 @@ object Play extends FactEtlBase {
 //    ("singer_or_radio_sid", "udc_singer_or_radio_sid"),
 //    ("mv_hot_key", "udc_mv_hot_key"),
     ("dim_date", "dim_date"),
-    ("dim_time", "dim_time"),
-    ("udc_launcher_access_area","udc_launcher_access_area"),
-    ("udc_launcher_access_location","udc_launcher_access_location"),
-    ("udc_launcher_location_index","udc_launcher_location_index")
+    ("dim_time", "dim_time")
 
   )
 
