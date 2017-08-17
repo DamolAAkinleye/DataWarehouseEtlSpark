@@ -22,6 +22,7 @@ object MVTopic extends DimensionBase {
   columns.allColumns = List(
     "mv_topic_sid",
     "mv_topic_name",
+    "mv_status",
     "mv_topic_create_time",
     "mv_topic_publish_time"
   )
@@ -33,14 +34,15 @@ object MVTopic extends DimensionBase {
   sourceColumnMap = Map(
     columns.primaryKeys(0) -> "sid",
     columns.allColumns(1) -> "title",
-    columns.allColumns(2) -> "cast(create_time as timestamp)",
-    columns.allColumns(3) -> "cast(publish_time as timestamp)"
+    columns.allColumns(2) -> "status",
+    columns.allColumns(3) -> "cast(create_time as timestamp)",
+    columns.allColumns(4) -> "cast(publish_time as timestamp)"
   )
 
   sourceDb = MysqlDB.medusaCms("mtv_mvtopic", "id", 1, 134, 1)
 
   //临时过滤34fhwxac9wtv防止报错
-  sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> '' and mv_topic_sid <> '34fhwxac9wtv'"
+  sourceFilterWhere = "mv_topic_sid is not null and mv_topic_sid <> '' and mv_status=1 and mv_topic_sid <> '34fhwxac9wtv'"
 
 
 
