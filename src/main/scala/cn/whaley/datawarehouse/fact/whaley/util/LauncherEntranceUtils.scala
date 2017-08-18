@@ -77,7 +77,12 @@ object LauncherEntranceUtils {
       "my_tv"
     }else if (secondPath.startsWith("top")){
       "discover"
-    }else if(secondPath.contains("recommmend")){
+    }else if(secondPath.startsWith("today_recommend")){
+      "today_recommend"
+    }else if(secondPath == "hot11" || secondPath == "recommendation"){
+      "recommendation"
+    }else if(secondPath == "vip_recommend" || secondPath == "movie_recommend" ||
+        secondPath == "children_recommend" || secondPath == "variety_recommend"){
       secondPath
     } else "classification"
   }
