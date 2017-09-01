@@ -103,7 +103,7 @@ object Play extends FactEtlBase {
     ("launcher_link_type", "linkType"),
     ("launcher_link_value", "linkValue"),
     ("position_type", "positionType"),
-    //    ("trailer_process", "trailerProcess"),
+    ("trailer_process", "trailerProcess"),
     ("trailer_mark", "trailerMark"),
     ("current_resolution", "currentResolution"),
     ("program_resolution", "resolution"),
