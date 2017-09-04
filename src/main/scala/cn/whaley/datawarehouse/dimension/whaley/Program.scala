@@ -1,7 +1,6 @@
 package cn.whaley.datawarehouse.dimension.whaley
 
 import cn.whaley.datawarehouse.dimension.DimensionBase
-import cn.whaley.datawarehouse.dimension.share.WebLocation.sqlContext
 import cn.whaley.datawarehouse.util.MysqlDB
 import org.apache.spark.sql.DataFrame
 
