@@ -26,6 +26,8 @@ object Program extends DimensionBase {
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 //    sourceDf.persist()
 
+    sqlContext.udf.register("myReplace",myReplace _)
+
     sourceDf.registerTempTable("mtv_basecontent")
 
     sqlContext.sql("select sid, first(id) id, first(display_name) display_name, first(content_type) content_type, " +
@@ -39,7 +41,7 @@ object Program extends DimensionBase {
 
     sqlContext.read.format("jdbc").options(contentTypeDb).load().registerTempTable("content_type")
 
-    sqlContext.sql("SELECT a.sid, a.display_name as title, " +
+    sqlContext.sql("SELECT a.sid, myReplace(a.display_name) as title, " +
       "a.content_type, c.name as content_type_name, a.duration, a.video_type, a.episode as episode_index, " +
       "a.area, a.year, a.videoLengthType as video_length_type, " +
       "a.create_time, " +
@@ -48,5 +50,15 @@ object Program extends DimensionBase {
       " left join content_type c on a.content_type = c.code " +
       " where a.sid is not null and a.sid <> ''" +
       " ORDER BY a.id")
+  }
+
+  def myReplace(s:String): String ={
+    var t = s
+    t = t.replace("'", "")
+    t = t.replace("\t", " ")
+    t = t.replace("\r\n", "-")
+    t = t.replace("\r", "-")
+    t = t.replace("\n", "-")
+    t
   }
 }
