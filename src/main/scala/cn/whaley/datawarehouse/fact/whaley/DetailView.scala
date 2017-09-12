@@ -24,9 +24,12 @@ object DetailView extends FactEtlBase{
     UserDefinedColumn("udc_launcher_access_location",
       udf(LauncherEntranceUtils.launcherAccessLocationFromPath: (String, String) => String),
       List("path", "linkValue")),
+    UserDefinedColumn("udc_launcher_access_area",
+      udf(LauncherEntranceUtils.launcherAccessAreaFromPlayPath: String => String),
+      List("path")),
     UserDefinedColumn("udc_launcher_location_index",
-      udf(LauncherEntranceUtils.launcherLocationIndexFromPlay: String => Int),
-      List("recommendLocation")),
+      udf(LauncherEntranceUtils.launcherLocationIndexFromPlay: (String, String) => Int),
+      List("path","recommendLocation")),
     UserDefinedColumn("udc_recommend_position",
       udf(RecommendPositionUtils.getRecommendPosition: (String, String) => String),
       List("path", "pathSub")),
@@ -139,14 +142,15 @@ object DetailView extends FactEtlBase{
     new DimensionColumn("dim_whaley_launcher_entrance",
       List(DimensionJoinCondition(
         Map("udc_wui_version" -> "launcher_version",
+          "udc_launcher_access_area" -> "access_area_code",
           "udc_launcher_access_location" -> "access_location_code",
           "udc_launcher_location_index" -> "launcher_location_index")),
         DimensionJoinCondition(
           Map("udc_wui_version" -> "launcher_version",
+            "udc_launcher_access_area" -> "access_area_code",
             "udc_launcher_access_location" -> "access_location_code"),
           "launcher_location_index = -1")
       ), "launcher_entrance_sk"),
-
 
 
     //频道页入口
@@ -161,6 +165,7 @@ object DetailView extends FactEtlBase{
           "location_index = -1"
         )
       ), "page_entrance_sk"),
+
     //站点树
     new DimensionColumn("dim_whaley_source_site",
       List(

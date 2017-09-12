@@ -153,8 +153,15 @@ trait BaseClass {
           }
           //维度表排序
           if (jc.orderBy != null && jc.orderBy.nonEmpty) {
-            dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
+            dimensionDf = dimensionDf.orderBy(jc.orderBy.map(s => if (s._2) col(s._1).desc else col(s._1).asc): _*)
           }
+
+          //维度表字段筛选
+          dimensionDf = dimensionDf.selectExpr(
+            (jc.columnPairs.values.toList ++ c.dimensionColumnName.map(_._1)
+              ++ List("dim_valid_time", "dim_invalid_time")
+              ).distinct : _*)
+
           //维度表去重
           //          dimensionDf = dimensionDf.dropDuplicates(jc.columnPairs.values.toArray)
           //实时表源数据过滤
@@ -163,12 +170,19 @@ trait BaseClass {
             sourceDf.where(jc.sourceWhereClause)
           else
             sourceDf
+
+          //增加时间字段
           sourceFilterDf =
             if (sourceTimeColumn == null || sourceTimeColumn.isEmpty) {
               sourceFilterDf.withColumn(COLUMN_NAME_FOR_SOURCE_TIME, expr("null"))
             } else {
               sourceFilterDf.withColumn(COLUMN_NAME_FOR_SOURCE_TIME, expr(sourceTimeColumn))
             }
+
+          //源表字段筛选
+          sourceFilterDf = sourceFilterDf.selectExpr(
+            (jc.columnPairs.keys.toList ++ List(COLUMN_NAME_FOR_SOURCE_TIME, uniqueKeyName)).distinct: _*
+          )
 
           //源数据中未关联上的行
           val notJoinDf =
@@ -200,7 +214,7 @@ trait BaseClass {
             df = afterJoinDf
           }
         })
-        df = sourceDf.as("a").join(
+        df = sourceDf.select(uniqueKeyName).as("a").join(
           df.as("b"), sourceDf(uniqueKeyName) === df(uniqueKeyName), "leftouter"
         ).selectExpr(
           "a." + uniqueKeyName :: c.dimensionColumnName.map(c => "b." + c._1 + " as " + c._2): _*
@@ -209,7 +223,7 @@ trait BaseClass {
         if (dimensionColumnDf == null) {
           dimensionColumnDf = df
         } else {
-          dimensionColumnDf = dimensionColumnDf.join(df, uniqueKeyName)
+          dimensionColumnDf = dimensionColumnDf.join(df, List(uniqueKeyName), "leftouter")
         }
       }
       )
