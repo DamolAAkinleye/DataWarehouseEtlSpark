@@ -26,6 +26,30 @@ object LauncherEntranceUtils {
     }
   }
 
+  def launcherAccessAreaFromPlayPath(path: String): String = {
+    if (path == null || path.isEmpty) {
+      null
+    } else {
+      val tmp = path.split("-")
+      if (tmp.length >= 2) {
+        val secondPath = tmp(1)
+        getAccessAreaCodeFromPlay(secondPath)
+      } else null
+    }
+  }
+
+  def launcherLocationIndexFromPlay(path: String, recommendLocation: String): Int = {
+    if (path == null || path.isEmpty) {
+      -1
+    } else {
+      val tmp = path.split("-")
+      if (tmp.length >= 2) {
+        val secondPath = tmp(1)
+        getLocationIndexFromPlay(secondPath, recommendLocation)
+      } else -1
+    }
+  }
+
   /**
     * 将 发现 一行的首页入口替换为具体的榜单信息
     * 处理hot11的路径bug(home-hot11)
@@ -44,14 +68,35 @@ object LauncherEntranceUtils {
   }
 
   /**
+   *  仅限从播放日志中分析首页的accessArea,不能适用于点击等其他行为
+   */
+  def getAccessAreaCodeFromPlay(secondPath: String):String = {
+    //处理历史/收藏/账户中心/自定义电视等
+    if(secondPath == "watching_history" || secondPath == "collection" || secondPath == "account" ||
+      secondPath == "history" || secondPath == "collect" || secondPath == "my_tv"){
+      "my_tv"
+    }else if (secondPath.startsWith("top")){
+      "discover"
+    }else if(secondPath.startsWith("today_recommend")){
+      "today_recommend"
+    }else if(secondPath == "hot11" || secondPath == "recommendation"){
+      "recommendation"
+    }else if(secondPath == "vip_recommend" || secondPath == "movie_recommend" ||
+        secondPath == "children_recommend" || secondPath == "variety_recommend"){
+      secondPath
+    } else "classification"
+  }
+
+  /**
     * 获取WUI首页今日推荐/精选推荐的推荐位
     *
     * @param recommendLocation
     * @return
     */
 
-  def launcherLocationIndexFromPlay(recommendLocation: String): Int = {
-    if (recommendLocation == null || recommendLocation.isEmpty) {
+  def getLocationIndexFromPlay(secondPath:String,recommendLocation: String): Int = {
+    if (recommendLocation == null || recommendLocation.isEmpty
+      || !secondPath.contains("recommend")) {
       -1
     } else {
       if (recommendLocation.contains("-")) {

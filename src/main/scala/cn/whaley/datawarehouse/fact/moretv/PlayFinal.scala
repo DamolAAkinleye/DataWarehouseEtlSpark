@@ -40,7 +40,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
       val medusaRDD=medusaDfCombine.toJSON
 
-      val moretvDfFilter= Play2xFilterUtils.get2xFilterDataFrame(moretvDf,sqlContext,sc)
+      val moretvDfFilter= Play2xFilterUtilsNew.get2xFilterDataFrame(moretvDf,sqlContext,sc)
       val moretvRDD=moretvDfFilter.toJSON
 
       val mergerRDD=medusaRDD.union(moretvRDD)
@@ -318,7 +318,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       HdfsUtil.deleteHDFSFileOrPath(path)
       println(s"删除目录: $path")
     }
-    println("记录条数:" + df.count())
+    //println("记录条数:" + df.count())
     println("输出目录为：" + path)
     println("time：" + Calendar.getInstance().getTime)
     df.write.parquet(path)

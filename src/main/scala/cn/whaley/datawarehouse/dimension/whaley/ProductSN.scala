@@ -20,7 +20,7 @@ object ProductSN extends DimensionBase {
   columns.primaryKeys = List("product_sn")
   columns.trackingColumns = List("rom_version")
   columns.allColumns = List("product_sn", "product_line", "product_model", "user_id", "rom_version", "wui_version",
-    "mac", "open_time", "sold_time", "wifi_mac", "ip", "vip_type",
+    "mac", "open_time", "sold_time", "login_time","wifi_mac", "ip", "vip_type",
     "country", "area", "province", "city", "district", "isp", "city_level", "prefecture_level_city")
 
   columns.addColumns = List(
@@ -49,7 +49,7 @@ object ProductSN extends DimensionBase {
     //得出用户的信息，status表示用户是否有效，activate_status表示用户是否激活
     //限制id != 1339211 是因为有一条重复数据先去掉（此处为临时解决方案）
     sqlContext.sql("select  serial_number, service_id,rom_version, wui(wui_version,rom_version) as wui_version ,mac, " +
-      "open_time, sold_time,wifi_mac ,current_ip" +
+      "open_time, sold_time,login_time,wifi_mac ,current_ip" +
       s" from mtv_terminal where status =1 and activate_status =1 " +
       s"and serial_number not like 'XX%' " +
       s"and id !=1339211 and serial_number is not null " +
@@ -69,7 +69,7 @@ object ProductSN extends DimensionBase {
 
     //将用户全量表中的IP和长连接中的IP进行比较如果某个SN在长连接和全量表中均存在则以长连接为准，否则以全量表为准
     sqlContext.sql("select a.serial_number as serial_number,a.service_id as service_id, a.rom_version as rom_version," +
-      "a.wui_version as wui_version,a.mac as mac,a.open_time as open_time,a.sold_time as sold_time,a.wifi_mac as wifi_mac," +
+      "a.wui_version as wui_version,a.mac as mac,a.open_time as open_time,a.sold_time as sold_time, a.login_time as login_time, a.wifi_mac as wifi_mac," +
       " case when b.real_client_ip is null then a.current_ip  when trim(real_client_ip) ='' then a.current_ip  else b.real_client_ip end as ip" +
       " from mtv_terminal_info a left join account_info b on a.serial_number = b.sn").registerTempTable("user_info")
 
@@ -83,9 +83,10 @@ object ProductSN extends DimensionBase {
     sqlContext.udf.register("getSNtwo", getSNtwo _)
 
     //将用户机型信息加入用户信息中存为中间表“product”
-    sqlContext.sql("select a.serial_number as product_sn, snToProductLine(a.serial_number) as product_line ,b.product_model as product_model," +
+    sqlContext.sql("select a.serial_number as product_sn, snToProductLine(a.serial_number) as product_line ," +
+      "case when b.product_model is null then '未知' else b.product_model end as product_model," +
       " a.service_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time, " +
-      "a.sold_time as sold_time,a.wifi_mac as wifi_mac, " +
+      "a.sold_time as sold_time,a.login_time as login_time,a.wifi_mac as wifi_mac, " +
       "a.ip as ip from user_info a left join product_model b on getSNtwo(a.serial_number) = b.serial_number").registerTempTable("product")
 
 
@@ -99,7 +100,7 @@ object ProductSN extends DimensionBase {
     //将用户会员信息加入用户信息中作为中间表。表明为"userVipInfo"
     sqlContext.sql("select a.product_sn as product_sn, a.product_line as product_line ,a.product_model as product_model," +
       " a.user_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time," +
-      "a.sold_time as sold_time, a.wifi_mac as wifi_mac," +
+      "a.sold_time as sold_time, a.login_time as login_time,a.wifi_mac as wifi_mac," +
       " a.ip as ip, case b.vip when 'vip' then 'vip' else '未知' end  as vip_type from product a left join vipType b on a.product_sn = b.sn")
       .registerTempTable("userVipInfo")
 
@@ -114,7 +115,7 @@ object ProductSN extends DimensionBase {
 
     sqlContext.sql("select a.product_sn as product_sn, a.product_line as product_line ,a.product_model as product_model," +
       " a.user_id as user_id, a.rom_version as rom_version,a.wui_version as wui_version,a.mac as mac,a.open_time as open_time," +
-      "a.sold_time as sold_time, a.wifi_mac as wifi_mac,a.ip as ip," +
+      "a.sold_time as sold_time,a.login_time as login_time, a.wifi_mac as wifi_mac,a.ip as ip," +
       "a.vip_type  as vip_type ,case when b.country = '' then '未知' when  b.country is null  then '未知' else b.country end  as country," +
       "case when b.area = '' then '未知' when b.area is null then '未知' else b.area end  as area," +
       "case when b.province = '' then '未知' when b.province is null then '未知' else b.province end as province," +
@@ -132,7 +133,7 @@ object ProductSN extends DimensionBase {
   def snToProductLine(productSN:String) = {
     if(productSN == null || productSN == ""){
       "helios"
-    } else if(productSN.startsWith("P") || productSN.startsWith("A")){
+    } else if(productSN.startsWith("P") || productSN.startsWith("A") || productSN.startsWith("B")){
       "orca"
     }else "helios"
   }
