@@ -45,4 +45,15 @@ object LogPath {
   val MEDUSA_PLAY_VIDEO_INFO = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-getVideoInfo"
   val MEDUSA_PLAY_PARSE = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-inner_outer_auth_parse"
 
+  val MEDUSA_PLAY = s"/log/medusa/parquet/$DATE_ESCAPE/play"
+  val MEDUSA_DETAIL = s"/log/medusa/parquet/$DATE_ESCAPE/detail"
+
+  //电视猫曝光来源
+  val MEDUSA_LAUNCHER_EXPOSE = s"/log/medusa//parquet/$DATE_ESCAPE/medusa-launcher-expose"
+  val MEDUSA_CHANNEL_EXPOSE = s"/log/medusa//parquet/$DATE_ESCAPE/medusa-channel-expose"
+  val MEDUSA_PLAY_BACK = s"/log/medusa//parquet/$DATE_ESCAPE/medusa-play-back"
+
+  //电视猫点击
+  val MEDUSA_LAUNCHER_CLICK = s"/log/medusa//parquet/$DATE_ESCAPE/homeaccess"
+
 }
