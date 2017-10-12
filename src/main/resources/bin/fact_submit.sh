@@ -103,6 +103,7 @@ do
     --conf spark.dynamicAllocation.initialExecutors=${spark_dynamicAllocation_initialExecutors} \
     --conf spark.default.parallelism=${spark_default_parallelism} \
     --conf spark.yarn.queue=${spark_yarn_queue} \
+    --conf spark.sql.caseSensitive=true \
     --class "$MainClass" $spark_mainJar --startDate $startDate $Args
     if [ $? -ne 0 ];then
         echo "Execution failed, startDate of data is {$startDate}  ..."
