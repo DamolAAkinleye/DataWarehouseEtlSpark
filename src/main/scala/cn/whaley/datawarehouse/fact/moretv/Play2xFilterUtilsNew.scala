@@ -56,7 +56,7 @@ object Play2xFilterUtilsNew extends LogConfig {
     val df = sqlContext.sql(sqlStr)
 
     import scala.util.control.Breaks._
-    val groupByRdd = df.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
+    val groupByRdd = df.rdd.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
     val resultRdd = groupByRdd.map(x => {
       //key is concat_ws('_',userId,episodeSid)
       val key = x._1
