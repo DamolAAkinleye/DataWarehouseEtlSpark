@@ -16,7 +16,7 @@ object UserLogin extends FactEtlBase {
 
 //  debug = true
 
-  topicName = "fact_medusa_user_login_test"
+  topicName = "fact_medusa_user_login"
 
   parquetPath = LogPath.MEDUSA_LOGIN_LOG_PATH
 
@@ -30,7 +30,7 @@ object UserLogin extends FactEtlBase {
   )
 
   columnsFromSource = List(
-//    ("product_serial", "ProductSerial"),
+    ("product_serial", "ProductSerial"),
     ("sys_ver", "SysVer"),
     ("wifi_mac", "WifiMac"),
     ("app_name", "appName"),
