@@ -46,5 +46,5 @@ object LogPath {
   val MEDUSA_PLAY_PARSE = s"/log/medusa/parquet/$DATE_ESCAPE/medusa-player-sdk-inner_outer_auth_parse"
 
   val MEDUSA_PLAY = s"/log/medusa/parquet/$DATE_ESCAPE/play"
-  val MORETV_PLAYVIEW = s"/mbi/parquet/$DATE_ESCAPE/playview"
+  val MORETV_PLAYVIEW = s"/mbi/parquet/playview/$DATE_ESCAPE"
 }

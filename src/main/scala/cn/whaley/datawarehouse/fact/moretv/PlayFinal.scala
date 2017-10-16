@@ -45,7 +45,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
 
       val mergerRDD=medusaRDD.union(moretvRDD)
       val mergerDataFrame = mergerRDD.toDF()
-      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
+//      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
       Play3xCombineUtils.factDataFrameWithIndex.unpersist()
       mergerDataFrame
     }else{
