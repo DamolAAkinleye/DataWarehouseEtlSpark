@@ -97,7 +97,7 @@ object Play2xFilterUtilsNew extends LogConfig {
       arrayBuffer.toList
     }).flatMap(x => x)
 
-    println("df.schema.fields:" + df.schema.fields.foreach(e => println(e.name)))
+//    println("df.schema.fields:" + df.schema.fields.foreach(e => println(e.name)))
     val filterDF = sqlContext.createDataFrame(resultRdd, StructType(df.schema.fields))
     filterDF.registerTempTable(filterTable)
 

@@ -34,8 +34,8 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
     val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     if (medusaFlag && moretvFlag) {
-      val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate)
-      val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate)
+      val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate).withColumn("flag",lit(MEDUSA))
+      val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
 
       val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
       val medusaRDD=medusaDfCombine.toJSON
@@ -44,7 +44,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       val moretvRDD=moretvDfFilter.toJSON
 
       val mergerRDD=medusaRDD.union(moretvRDD)
-      val mergerDataFrame = mergerRDD.toDF()
+      val mergerDataFrame = sqlContext.read.json(mergerRDD.rdd)
 //      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
       Play3xCombineUtils.factDataFrameWithIndex.unpersist()
       mergerDataFrame

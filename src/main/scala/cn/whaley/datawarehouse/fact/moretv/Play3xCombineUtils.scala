@@ -129,7 +129,7 @@ object Play3xCombineUtils extends LogConfig {
       arrayBuffer.toList
     }).flatMap(x => x)
 
-    println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
+//    println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
     val combineDFTmp = sqlContext.createDataFrame(rddCombineTmp, StructType(shortDataFrame.schema.fields))
     combineDFTmp.registerTempTable(combineTmpTable)
     //writeToHDFS(combineDFTmp, baseOutputPathCombineTmp)
