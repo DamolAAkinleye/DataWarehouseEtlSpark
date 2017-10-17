@@ -96,4 +96,5 @@ $spark_home/bin/spark-submit -v \
 --conf spark.default.parallelism=${spark_default_parallelism} \
 --conf spark.yarn.queue=${spark_yarn_queue} \
 --conf spark.sql.caseSensitive=true \
+--conf spark.sql.parquet.compression.codec=gzip \
 --class "$MainClass" $spark_mainJar $Args
