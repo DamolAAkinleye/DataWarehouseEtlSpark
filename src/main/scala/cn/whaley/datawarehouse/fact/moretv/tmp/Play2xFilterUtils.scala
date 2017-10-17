@@ -1,10 +1,10 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.tmp
 
-import cn.whaley.datawarehouse.global.{LogConfig}
-import cn.whaley.datawarehouse.util.{ Params}
+import cn.whaley.datawarehouse.global.LogConfig
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{SQLContext, DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+
 import scala.collection.mutable.ArrayBuffer
 
 /**

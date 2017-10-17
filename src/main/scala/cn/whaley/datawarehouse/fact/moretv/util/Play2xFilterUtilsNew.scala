@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.util
 
 import cn.whaley.datawarehouse.global.LogConfig
 import org.apache.spark.SparkContext
