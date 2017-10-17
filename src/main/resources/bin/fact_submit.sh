@@ -70,7 +70,7 @@ do
     fi
 done
 
-for file in /data/apps/azkaban/etl/lib/*.jar
+for file in /data/apps/azkaban/etl2/lib/*.jar
 do
     if [[ "$file" == *${spark_mainJarName} ]]; then
         echo "skip $file"
