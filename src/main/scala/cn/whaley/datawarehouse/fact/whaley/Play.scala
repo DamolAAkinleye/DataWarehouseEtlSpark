@@ -86,7 +86,7 @@ object Play extends FactEtlBase {
     ("trailer_duration", "cast(trailerDuration as bigint)"),
     ("user_id", "userId"),
     ("product_sn", "productSN"),
-    ("end_event", "event"),
+    ("end_event", "event "),
     ("start_time", "cast(startTime as timestamp)"),
     ("end_time", "cast(endTime as timestamp)"),
     ("content_type", "udc_path_content_type"),
@@ -306,7 +306,8 @@ object Play extends FactEtlBase {
   )
 
   override def filterRows(sourceDf: DataFrame): DataFrame = {
-    sourceDf.where("playStatus != 'failure' and playStatus is not null")
+    sourceDf.where("playStatus != 'failure' and playStatus is not null " +
+      "and (event != 'startplay' and event != 'pause' and event != 'resume')")
   }
 
   def getIpKey(ip: String): Long = {
