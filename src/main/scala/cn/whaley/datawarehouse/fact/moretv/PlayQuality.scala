@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.medusa
+package cn.whaley.datawarehouse.fact.moretv
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase

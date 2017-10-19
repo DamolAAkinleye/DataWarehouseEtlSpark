@@ -98,4 +98,5 @@ $spark_home/bin/spark-submit -v \
 --conf spark.sql.caseSensitive=true \
 --conf spark.sql.parquet.compression.codec=gzip \
 --conf spark.memory.storageFraction=0.4 \
+--conf spark.memory.fraction=0.75 \
 --class "$MainClass" $spark_mainJar $Args
