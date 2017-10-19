@@ -306,7 +306,8 @@ object Play extends FactEtlBase {
   )
 
   override def filterRows(sourceDf: DataFrame): DataFrame = {
-    sourceDf.where("playStatus != 'failure' and playStatus is not null")
+    sourceDf.where("playStatus != 'failure' and playStatus is not null " +
+      "and (event != 'startplay' and event != 'pause' and event != 'resume')")
   }
 
   def getIpKey(ip: String): Long = {
