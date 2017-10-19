@@ -5,6 +5,7 @@ import cn.whaley.datawarehouse.util.DataFrameUtil
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.storage.StorageLevel
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -51,7 +52,7 @@ object Play3xCombineUtils extends LogConfig {
   def get3xCombineDataFrame(factDataFrame: DataFrame, sqlContext: SQLContext, sc: SparkContext): DataFrame = {
     //进行索引编号
     factDataFrameWithIndex = DataFrameUtil.dfZipWithIndex(factDataFrame, INDEX_NAME)
-    factDataFrameWithIndex.cache()
+    factDataFrameWithIndex.persist(StorageLevel.MEMORY_AND_DISK_SER)
     println("factDataFrameWithIndex.count():" + factDataFrameWithIndex.count())
     factDataFrameWithIndex.registerTempTable(fact_table_name)
     //writeToHDFS(factDataFrameWithIndex, baseOutputPathFact)

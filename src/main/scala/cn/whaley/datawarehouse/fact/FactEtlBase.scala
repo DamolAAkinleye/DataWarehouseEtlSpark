@@ -12,6 +12,7 @@ import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+import org.apache.spark.storage.StorageLevel
 
 /**
   * Created by Tony on 17/4/5.
@@ -95,7 +96,7 @@ abstract class FactEtlBase extends BaseClass {
     val filteredSourceDf = filterRows(sourceDf)
     val completeSourceDf = addNewColumns(filteredSourceDf)
     completeSourceDf.printSchema()
-    completeSourceDf.cache()
+    completeSourceDf.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     println("完整事实表行数：" + completeSourceDf.count())
     //    if (debug) {
