@@ -27,6 +27,8 @@ abstract class FactEtlBase extends BaseClass {
 
   var parquetPath: String = _
 
+  var odsTableName: String = _
+
   var addColumns: List[UserDefinedColumn] = _
 
   var dimensionColumns: List[DimensionColumn] = _
@@ -74,9 +76,12 @@ abstract class FactEtlBase extends BaseClass {
   def readSource(sourceDate: String): DataFrame = {
     if (sourceDate == null) {
       null
-    } else if (readSourceType == null || readSourceType == parquet) {
+    } else if (readSourceType == null || readSourceType == ods) {
+      readFromOds(odsTableName, sourceDate)
+    } else if (readSourceType == parquet) {
       readFromParquet(parquetPath, sourceDate)
-    } else {
+    }
+    else {
       null
     }
   }
@@ -84,6 +89,11 @@ abstract class FactEtlBase extends BaseClass {
   def readFromParquet(path: String, sourceDate: String): DataFrame = {
     val filePath = path.replace(LogPath.DATE_ESCAPE, sourceDate)
     val sourceDf = sqlContext.read.parquet(filePath)
+    sourceDf
+  }
+
+  def readFromOds(tableName: String, sourceDate: String): DataFrame = {
+    val sourceDf = sqlContext.read.table(tableName).where("key_day=" + sourceDate)
     sourceDf
   }
 

@@ -37,10 +37,10 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate).withColumn("flag",lit(MEDUSA))
       val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
 
-      val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
+      val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext)
       val medusaRDD=medusaDfCombine.toJSON
 
-      val moretvDfFilter= Play2xFilterUtilsNew.get2xFilterDataFrame(moretvDf,sqlContext,sc)
+      val moretvDfFilter= Play2xFilterUtilsNew.get2xFilterDataFrame(moretvDf,sqlContext)
       val moretvRDD=moretvDfFilter.toJSON
 
       val mergerRDD=medusaRDD.union(moretvRDD)
