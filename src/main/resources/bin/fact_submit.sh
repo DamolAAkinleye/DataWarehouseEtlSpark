@@ -106,7 +106,6 @@ do
     --conf spark.sql.caseSensitive=true \
     --conf spark.sql.parquet.compression.codec=gzip \
     --conf spark.memory.storageFraction=0.4 \
-    --conf spark.sql.autoBroadcastJoinThreshold=-1 \
     --class "$MainClass" $spark_mainJar --startDate $startDate $Args
     if [ $? -ne 0 ];then
         echo "Execution failed, startDate of data is {$startDate}  ..."
