@@ -19,7 +19,7 @@ pwd=`pwd`
 
 source ./envFn.sh
 
-load_properties ../conf/spark.properties
+load_properties ../conf/spark_fact.properties
 
 #params: $1 className, $2 propName
 getSparkProp(){
@@ -106,6 +106,7 @@ do
     --conf spark.sql.caseSensitive=true \
     --conf spark.sql.parquet.compression.codec=gzip \
     --conf spark.memory.storageFraction=0.4 \
+    --conf spark.memory.fraction=0.75 \
     --class "$MainClass" $spark_mainJar --startDate $startDate $Args
     if [ $? -ne 0 ];then
         echo "Execution failed, startDate of data is {$startDate}  ..."
