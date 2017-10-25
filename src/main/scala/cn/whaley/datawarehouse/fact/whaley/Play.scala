@@ -14,7 +14,7 @@ object Play extends FactEtlBase {
 
   topicName = "fact_whaley_play"
 
-  parquetPath = LogPath.HELIOS_PLAY
+  odsTableName = "ods_view.log_whaleytv_main_play"
 
   partition = 300
 
