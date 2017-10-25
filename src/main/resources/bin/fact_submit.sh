@@ -70,6 +70,8 @@ do
     fi
 done
 
+resFiles="$resFiles,/opt/hadoop/etc/hadoop/core-site.xml,/opt/hadoop/etc/hadoop/hdfs-site.xml,/opt/spark2/conf/hive-site.xml"
+
 for file in /data/apps/azkaban/etl2/lib/*.jar
 do
     if [[ "$file" == *${spark_mainJarName} ]]; then
