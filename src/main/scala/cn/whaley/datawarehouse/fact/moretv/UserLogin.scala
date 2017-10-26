@@ -30,9 +30,9 @@ object UserLogin extends FactEtlBase {
   )
 
   columnsFromSource = List(
-    ("product_serial", "ProductSerial"),
-    ("sys_ver", "SysVer"),
-    ("wifi_mac", "WifiMac"),
+    ("product_serial", "productSerial"),
+    ("sys_ver", "systemVersion"),
+    ("wifi_mac", "wifiMac"),
     ("app_name", "appName"),
     ("ip", "ip"),
     ("mac", "mac"),
