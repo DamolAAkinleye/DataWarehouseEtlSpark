@@ -15,7 +15,7 @@ object Program extends DimensionBase {
   columns.primaryKeys = List("sid")
   columns.trackingColumns = List()
   columns.allColumns = List("sid", "title", "content_type", "content_type_name", "duration", "video_type", "episode_index",
-    "status", "type", "parent_sid", "area", "year", "video_length_type", "create_time", "publish_time")
+    "status", "type", "parent_sid", "area", "year", "video_length_type", "create_time", "publish_time","supply_type")
 
   sourceDb = MysqlDB.medusaCms("mtv_basecontent", "id", 1, 2010000000, 500)
 
@@ -34,7 +34,7 @@ object Program extends DimensionBase {
       " duration, parent_id, video_type, type, " +
       "(case when status = 1 and origin_status = 1 then 1 else 0 end) status, " +
       " episode, area, year, " +
-      " videoLengthType, create_time, publish_time " +
+      " videoLengthType, create_time, publish_time, supply_type " +
       " from mtv_basecontent where sid is not null and sid <> '' and display_name is not null ")
 
     programDf.persist()
@@ -46,7 +46,7 @@ object Program extends DimensionBase {
 
     sqlContext.sql("SELECT a.sid, b.sid as parent_sid, myReplace(a.display_name) as title, a.status, a.type, " +
       "a.content_type, c.name as content_type_name, a.duration, a.video_type, a.episode as episode_index, " +
-      "a.area, a.year, a.videoLengthType as video_length_type, " +
+      "a.area, a.year, a.videoLengthType as video_length_type,a.supply_type, " +
       "a.create_time, " +
       "a.publish_time " +
       " from program_table a" +
