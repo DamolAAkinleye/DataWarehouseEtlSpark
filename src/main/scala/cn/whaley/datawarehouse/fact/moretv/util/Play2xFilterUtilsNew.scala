@@ -1,4 +1,4 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.util
 
 import cn.whaley.datawarehouse.global.LogConfig
 import org.apache.spark.SparkContext
@@ -56,7 +56,7 @@ object Play2xFilterUtilsNew extends LogConfig {
     val df = sqlContext.sql(sqlStr)
 
     import scala.util.control.Breaks._
-    val groupByRdd = df.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
+    val groupByRdd = df.rdd.map(row => (row.getString(0), (row.getString(1), row.getLong(2)))).groupByKey()
     val resultRdd = groupByRdd.map(x => {
       //key is concat_ws('_',userId,episodeSid)
       val key = x._1
@@ -97,7 +97,7 @@ object Play2xFilterUtilsNew extends LogConfig {
       arrayBuffer.toList
     }).flatMap(x => x)
 
-    println("df.schema.fields:" + df.schema.fields.foreach(e => println(e.name)))
+//    println("df.schema.fields:" + df.schema.fields.foreach(e => println(e.name)))
     val filterDF = sqlContext.createDataFrame(resultRdd, StructType(df.schema.fields))
     filterDF.registerTempTable(filterTable)
 

@@ -3,7 +3,6 @@ package cn.whaley.datawarehouse.fact.moretv.util
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition}
 import cn.whaley.datawarehouse.fact.constant.UDFConstantDimension
 import cn.whaley.datawarehouse.global.{DimensionTypes, LogConfig}
-import cn.whaley.sdk.udf.UDFConstant
 
 /**
   * Created by baozhiwang on 2017/4/24.
@@ -17,6 +16,13 @@ object ListCategoryUtils extends LogConfig {
   private val regex_medusa_list_search = (s".*($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)[-*]?(${UDFConstantDimension.SEARCH_DIMENSION}|${UDFConstantDimension.SEARCH_DIMENSION_CHINESE}).*").r
   /** 用于频道分类入口统计，解析出资讯的一级入口、二级入口 */
   private val regex_medusa_recommendation = (s"home\\*recommendation\\*[\\d]{1}-($MEDUSA_LIST_PAGE_LEVEL_1_REGEX)\\*(.*)").r
+  private val MoretvLauncherAccessLocation = Array("search","setting","history","movie","tv","live","hot","zongyi","comic","mv",
+    "jilu","xiqu","sports","kids_home","subject")
+  private   val MoretvPageInfo = Array("history","movie","tv","zongyi","hot","comic","mv","xiqu","sports","jilu","subject","live",
+    "search","kids_home")
+
+  private val MoretvLauncherUPPART = Array("watchhistory","otherswatch","hotrecommend","TVlive")
+
 
   def getListMainCategory(pathMain: String, path: String, flag: String): String = {
     var result: String = null
@@ -194,9 +200,9 @@ object ListCategoryUtils extends LogConfig {
           result = PathParserUtils.getSplitInfo(path, 2)
           if (result != null) {
             // 如果accessArea为“navi”和“classification”，则保持不变，即在launcherAccessLocation中
-            if (!UDFConstant.MoretvLauncherAccessLocation.contains(result)) {
+            if (!MoretvLauncherAccessLocation.contains(result)) {
               // 如果不在launcherAccessLocation中，则判断accessArea是否在uppart中
-              if (UDFConstant.MoretvLauncherUPPART.contains(result)) {
+              if (MoretvLauncherUPPART.contains(result)) {
                 result = "MoretvLauncherUPPART"
               } else {
                 result = null
@@ -209,7 +215,7 @@ object ListCategoryUtils extends LogConfig {
             if (PathParserUtils.getSplitInfo(path, 2) == "sports") {
               result = PathParserUtils.getSplitInfo(path, 3) + "-" + PathParserUtils.getSplitInfo(path, 4)
             }
-            if (!UDFConstant.MoretvPageInfo.contains(PathParserUtils.getSplitInfo(path, 2))) {
+            if (!MoretvPageInfo.contains(PathParserUtils.getSplitInfo(path, 2))) {
               result = null
             }
           }

@@ -1,10 +1,12 @@
-package cn.whaley.datawarehouse.fact.moretv
+package cn.whaley.datawarehouse.fact.moretv.util
 
-import cn.whaley.datawarehouse.global.{LogConfig}
-import cn.whaley.datawarehouse.util.{DataFrameUtil}
+import cn.whaley.datawarehouse.global.LogConfig
+import cn.whaley.datawarehouse.util.DataFrameUtil
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{SQLContext, DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.storage.StorageLevel
+
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -50,7 +52,7 @@ object Play3xCombineUtils extends LogConfig {
   def get3xCombineDataFrame(factDataFrame: DataFrame, sqlContext: SQLContext, sc: SparkContext): DataFrame = {
     //进行索引编号
     factDataFrameWithIndex = DataFrameUtil.dfZipWithIndex(factDataFrame, INDEX_NAME)
-    factDataFrameWithIndex.cache()
+    factDataFrameWithIndex.persist(StorageLevel.MEMORY_AND_DISK_SER)
     println("factDataFrameWithIndex.count():" + factDataFrameWithIndex.count())
     factDataFrameWithIndex.registerTempTable(fact_table_name)
     //writeToHDFS(factDataFrameWithIndex, baseOutputPathFact)
@@ -65,7 +67,9 @@ object Play3xCombineUtils extends LogConfig {
     shortDataFrame.registerTempTable(shortDataFrameTable)
     //(key,list(duration,datetime,event,r_index))
     import scala.util.control.Breaks._
-    val rdd1 = shortDataFrame.map(row => (row.getString(0), (row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))).groupByKey()
+    val rdd1 = shortDataFrame.rdd.map(
+      row => (row.getString(0), (row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))
+    ).groupByKey()
     val rddCombineTmp = rdd1.map(x => {
       val ikey = x._1
       val tupleIterable = x._2
@@ -127,7 +131,7 @@ object Play3xCombineUtils extends LogConfig {
       arrayBuffer.toList
     }).flatMap(x => x)
 
-    println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
+//    println("shortDataFrame.schema.fields:" + shortDataFrame.schema.fields.foreach(e => println(e.name)))
     val combineDFTmp = sqlContext.createDataFrame(rddCombineTmp, StructType(shortDataFrame.schema.fields))
     combineDFTmp.registerTempTable(combineTmpTable)
     //writeToHDFS(combineDFTmp, baseOutputPathCombineTmp)

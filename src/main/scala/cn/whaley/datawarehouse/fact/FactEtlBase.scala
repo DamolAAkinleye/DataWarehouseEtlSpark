@@ -12,6 +12,7 @@ import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
+import org.apache.spark.storage.StorageLevel
 
 /**
   * Created by Tony on 17/4/5.
@@ -92,12 +93,10 @@ abstract class FactEtlBase extends BaseClass {
     * @return
     */
   override def transform(params: Params, sourceDf: DataFrame): DataFrame = {
-    println("------- before transform " + Calendar.getInstance().getTime)
     val filteredSourceDf = filterRows(sourceDf)
     val completeSourceDf = addNewColumns(filteredSourceDf)
-    println("-------start completeSourceDf.cache()" + Calendar.getInstance().getTime)
-    completeSourceDf.cache()
-    println("-------end completeSourceDf.cache()" + Calendar.getInstance().getTime)
+    completeSourceDf.printSchema()
+    completeSourceDf.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
     println("完整事实表行数：" + completeSourceDf.count())
     //    if (debug) {
@@ -113,10 +112,8 @@ abstract class FactEtlBase extends BaseClass {
     //      println("维度关联表行数：" + dimensionJoinDf.count())
     //    }
 
-    println("-------before completeSourceDf join dimensionJoinDf" + Calendar.getInstance().getTime)
     //关联源数据和join到的维度
     var df = completeSourceDf.join(dimensionJoinDf, List(INDEX_NAME), "leftouter").as("source")
-    println("-------after completeSourceDf join dimensionJoinDf" + Calendar.getInstance().getTime)
 
     // 关联用到的维度
     if (dimensionColumns != null && dimensionsNeedInFact != null) {
@@ -129,7 +126,6 @@ abstract class FactEtlBase extends BaseClass {
         }
       })
     }
-    println("-------before 筛选特定列" + Calendar.getInstance().getTime)
 
     //筛选指定的列
     val result = df.selectExpr(
@@ -141,12 +137,10 @@ abstract class FactEtlBase extends BaseClass {
         ++ dimensionJoinDf.schema.fields.filter(_.name != INDEX_NAME || debug).map("source." + _.name)
         : _*
     )
-    println("-------after 筛选特定列" + Calendar.getInstance().getTime)
 
     //    if(debug) {
     //      println("最终结果行数：" + result.count())
     //    }
-    println("------- last line in transform " + Calendar.getInstance().getTime)
     result
   }
 
@@ -155,7 +149,6 @@ abstract class FactEtlBase extends BaseClass {
   }
 
   private def addNewColumns(sourceDf: DataFrame): DataFrame = {
-    println("-------before addNewColumns " + Calendar.getInstance().getTime)
     var result = sourceDf
     if (addColumns != null) {
       addColumns.foreach(column => {
@@ -163,8 +156,8 @@ abstract class FactEtlBase extends BaseClass {
       }
       )
     }
-    println("-------after addNewColumns " + Calendar.getInstance().getTime)
     DataFrameUtil.dfZipWithIndex(result, INDEX_NAME)
+//    DataFrameUtil.dfAddIndex(result, INDEX_NAME, expr(factTime).asc)
   }
 
   override def load(params: Params, df: DataFrame): Unit = {

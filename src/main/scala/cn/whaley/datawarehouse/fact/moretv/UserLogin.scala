@@ -30,9 +30,9 @@ object UserLogin extends FactEtlBase {
   )
 
   columnsFromSource = List(
-    ("product_serial", "ProductSerial"),
-    ("sys_ver", "SysVer"),
-    ("wifi_mac", "WifiMac"),
+    ("product_serial", "productSerial"),
+    ("sys_ver", "systemVersion"),
+    ("wifi_mac", "wifiMac"),
     ("app_name", "appName"),
     ("ip", "ip"),
     ("mac", "mac"),
@@ -68,7 +68,8 @@ object UserLogin extends FactEtlBase {
     new DimensionColumn("dim_medusa_promotion",
       List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))), "promotion_sk"),
     new DimensionColumn("dim_app_version",
-      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version"), null, List(("build_time", false)))), "app_version_sk")
+      List(DimensionJoinCondition(Map("app_series" -> "app_series", "app_version" -> "version")))
+      , "app_version_sk")
   )
 
   override def readSource(startDate: String): DataFrame = {

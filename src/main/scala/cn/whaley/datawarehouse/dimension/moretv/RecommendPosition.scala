@@ -3,9 +3,8 @@ package cn.whaley.datawarehouse.dimension.moretv
 import cn.whaley.datawarehouse.dimension.DimensionBase
 import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.MysqlDB
-import org.apache.spark.sql.{DataFrame, UserDefinedFunction}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
-
 
 
 /**
@@ -58,9 +57,9 @@ object RecommendPosition extends DimensionBase {
       "recommend_method", getRecommendMethodUdf(col("ai_index"), col("recommend_slot_index"))
     ).explode("algorithms", "recommend_algorithm") {
       (algorithms: String) => {
-        if(algorithms == null || algorithms.trim == "") {
+        if (algorithms == null || algorithms.trim == "") {
           List("未知")
-        }else {
+        } else {
           "未知" :: algorithms.split(",").toList
         }
       }
@@ -68,13 +67,13 @@ object RecommendPosition extends DimensionBase {
   }
 
   private def getRecommendMethod(aiIndex: String, slotIndex: Int): Int = {
-    if(aiIndex == "all") {
+    if (aiIndex == "all") {
       1
-    }else if (aiIndex == null || aiIndex.trim == ""){
+    } else if (aiIndex == null || aiIndex.trim == "") {
       0
     } else {
       val indices = aiIndex.split(",").map(_.toInt)
-      if(indices.contains(slotIndex)) 1 else 0
+      if (indices.contains(slotIndex)) 1 else 0
     }
   }
 

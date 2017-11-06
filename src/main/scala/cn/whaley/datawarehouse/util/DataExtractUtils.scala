@@ -12,6 +12,10 @@ object DataExtractUtils {
     sqlContext.read.format("jdbc").options(sourceDb).load()
   }
 
+  def getParquetPath(sourceParquetPath: String, startDate: String): String = {
+    sourceParquetPath.replace(LogPath.DATE_ESCAPE, startDate)
+  }
+
   def readFromParquet(sqlContext: SQLContext, sourceParquetPath: String, startDate: String): DataFrame = {
     val filePath = sourceParquetPath.replace(LogPath.DATE_ESCAPE, startDate)
     val sourceDf = sqlContext.read.parquet(filePath)

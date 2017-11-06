@@ -17,7 +17,7 @@ object TerminalUser extends DimensionBase {
 
   columns.skName = "user_sk"
   columns.primaryKeys = List("user_id")
-  columns.trackingColumns = List("app_version", "app_series")
+  columns.trackingColumns = List()
   columns.allColumns = List(
     "user_id",
     "open_time",

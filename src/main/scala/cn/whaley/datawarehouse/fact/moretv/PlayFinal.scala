@@ -4,10 +4,10 @@ import java.util.Calendar
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
+import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.fact.moretv.util._
 import cn.whaley.datawarehouse.global.{LogConfig, LogTypes}
 import cn.whaley.datawarehouse.util._
-import cn.whaley.sdk.dataexchangeio.DataIO
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
@@ -29,13 +29,13 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     println("------- before readSource "+Calendar.getInstance().getTime)
     val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
     val reallyStartDate=DateFormatUtils.readFormat.format(date)
-    val medusa_input_dir = DataIO.getDataFrameOps.getPath(MEDUSA, LogTypes.PLAY, reallyStartDate)
-    val moretv_input_dir = DataIO.getDataFrameOps.getPath(MORETV, LogTypes.PLAYVIEW, reallyStartDate)
+    val medusa_input_dir = DataExtractUtils.getParquetPath(LogPath.MEDUSA_PLAY, reallyStartDate)
+    val moretv_input_dir = DataExtractUtils.getParquetPath(LogPath.MORETV_PLAYVIEW, reallyStartDate)
     val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
     val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     if (medusaFlag && moretvFlag) {
-      val medusaDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MEDUSA, LogTypes.PLAY,reallyStartDate ).withColumn("flag",lit(MEDUSA))
-      val moretvDf = DataIO.getDataFrameOps.getDF(sqlContext, Map[String,String](), MORETV, LogTypes.PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
+      val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate).withColumn("flag",lit(MEDUSA))
+      val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
 
       val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext,sc)
       val medusaRDD=medusaDfCombine.toJSON
@@ -44,8 +44,8 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       val moretvRDD=moretvDfFilter.toJSON
 
       val mergerRDD=medusaRDD.union(moretvRDD)
-      val mergerDataFrame = sqlContext.read.json(mergerRDD).toDF()
-      //println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
+      val mergerDataFrame = sqlContext.read.json(mergerRDD.rdd)
+//      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
       Play3xCombineUtils.factDataFrameWithIndex.unpersist()
       mergerDataFrame
     }else{
@@ -254,8 +254,6 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )
-
-  factTime = null
 
  //will use common util function class instead
   def getIpKey(ip: String): Long = {

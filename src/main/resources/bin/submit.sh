@@ -66,7 +66,7 @@ do
     fi
 done
 
-for file in /data/apps/azkaban/etl/lib/*.jar
+for file in /data/apps/azkaban/etl2/lib/*.jar
 do
     if [[ "$file" == *${spark_mainJarName} ]]; then
         echo "skip $file"
@@ -95,4 +95,8 @@ $spark_home/bin/spark-submit -v \
 --conf spark.dynamicAllocation.initialExecutors=${spark_dynamicAllocation_initialExecutors} \
 --conf spark.default.parallelism=${spark_default_parallelism} \
 --conf spark.yarn.queue=${spark_yarn_queue} \
+--conf spark.sql.caseSensitive=true \
+--conf spark.sql.parquet.compression.codec=gzip \
+--conf spark.memory.storageFraction=0.4 \
+--conf spark.memory.fraction=0.75 \
 --class "$MainClass" $spark_mainJar $Args

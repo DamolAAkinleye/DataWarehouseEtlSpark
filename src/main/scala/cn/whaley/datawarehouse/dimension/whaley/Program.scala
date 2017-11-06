@@ -69,6 +69,12 @@ object Program extends DimensionBase {
 
 
   def myReplace(s:String): String ={
-    s.replace("\n","")
+    var t = s
+    t = t.replace("'", "")
+    t = t.replace("\t", " ")
+    t = t.replace("\r\n", "-")
+    t = t.replace("\r", "-")
+    t = t.replace("\n", "-")
+    t
   }
 }
