@@ -90,7 +90,7 @@ object ProductSN extends DimensionBase {
       "a.ip as ip from user_info a left join product_model b on getSNtwo(a.serial_number) = b.serial_number").registerTempTable("product")
 
 
-    //获取用户的会员信息
+    //获取用户的会员信息(该会员信息有误，废弃）
     val vipTypeInfo = MysqlDB.whaleyDolphin("dolphin_club_authority", "id", 1, 100000000, 100)
 
     sqlContext.read.format("jdbc").options(vipTypeInfo).load().registerTempTable("dolphin_club_authority")
