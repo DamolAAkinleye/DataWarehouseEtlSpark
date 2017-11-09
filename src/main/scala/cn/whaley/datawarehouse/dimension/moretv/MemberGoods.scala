@@ -7,7 +7,7 @@ import cn.whaley.datawarehouse.util.MysqlDB
 /**
   * Created by xiajun on 2017/11/9.
   */
-object MedusaMemberGoods extends DimensionBase{
+object MemberGoods extends DimensionBase{
 
 
   dimensionName = "dim_medusa_member_goods"

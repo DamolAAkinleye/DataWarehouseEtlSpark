@@ -22,6 +22,7 @@ object MemberOrder extends FactEtlBase{
     ("vip_end_time","vip_end_time"),
     ("activity_id","activity_id"),
     ("total_price","total_price"),
+    ("real_price", "real_price"),
     ("payment_amount","payment_amount"),
     ("business_type","business_type"),
     ("pay_channel","pay_channel"),
@@ -50,7 +51,7 @@ object MemberOrder extends FactEtlBase{
 
     /** 基于订单中的real_price获取对应的商品维度good_sk */
     new DimensionColumn("dim_medusa_member_goods",
-      List(DimensionJoinCondition(Map("real_price" -> "good_price"))),
+      List(DimensionJoinCondition(Map("payment_amount" -> "good_price"))),
       "good_sk","good_sk"),
 
     /** 基于订单中的account_id获取账号表中的账号维度account_sk */
