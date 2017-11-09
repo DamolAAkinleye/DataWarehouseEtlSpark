@@ -62,4 +62,10 @@ object LogPath {
   val MEDUSA_ACCOUNT = "/data_warehouse/dw_dimensions/dim_medusa_account"
   val MEDUSA_ACCOUNT_UID_MAP = "/data_warehouse/dw_normalized/medusa_account_uid_mapping"
 
+  // 电视猫订单日志
+  val MEDUSA_BUSINESS_ORDER = s"/data_warehouse/ods_view.db/db_snapshot_medusa_business_order/key_day=${DATE_ESCAPE}"
+
+  // 电视猫会员购买页面入口吊起日志
+  val MEDUSA_PURCHASE_ENTRANCE = s"/log/medusa/parquet/${DATE_ESCAPE}/medusa-vipentrance-click"
+
 }
