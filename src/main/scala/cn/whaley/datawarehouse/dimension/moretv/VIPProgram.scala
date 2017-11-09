@@ -13,7 +13,7 @@ object VIPProgram extends DimensionBase{
   columns.primaryKeys = List("program_code")
   columns.trackingColumns = List()
   columns.allColumns = List("program_code", "type", "title", "cast", "area", "year", "episode_count","status",
-    "video_type", "content_type", "parent_id", "is_auto_bound", "valid_time", "invalid_time", "create_time")
+    "video_type", "content_type", "parent_id","source", "is_auto_bound", "valid_time", "invalid_time", "create_time")
 
   readSourceType = jdbc
 
@@ -31,6 +31,7 @@ object VIPProgram extends DimensionBase{
     "video_type" -> "video_type",
     "content_type" -> "content_type",
     "parent_id" -> "parent_id",
+    "source" ->"source",
     "is_auto_bound"->"is_auto_bound",
     "valid_time"->"valid_time",
     "invalid_time" -> "invalid_time",
