@@ -37,6 +37,27 @@ class PageEntranceUtilsTest {
       ("kids_home-kids_anim*国产精选", "", MEDUSA, "kids", "show_kidsSite", null),
       ("home-kids_home-kids_rhymes*单曲精选", "", MEDUSA, "kids", "show_kidsSongSite", null),
       ("home*my_tv*kids-kids_home-kids_collect*观看历史", "", MEDUSA, "kids", "kids_collect", null),
+
+      //interest
+      ("home*classification*interest-interest*分类入口*6-interest*收藏", "", MEDUSA, "interest", "分类入口", null),
+      ("home*classification*interest-interest*分类入口*3-interest-search*JXY", "", MEDUSA, "interest", "分类入口", null),
+      ("home*my_tv*interest-interest*分类入口*6-interest*全网热门", "", MEDUSA, "interest", "分类入口", null),
+      ("home*classification*interest-interest*专题推荐区*1-column*【综合】绝不能错过*4", "", MEDUSA, "interest", "专题推荐区", null),
+      ("home*classification*interest-interest*分类入口*4-interest*收藏", "", MEDUSA, "interest", "分类入口", null),
+      ("home*classification*interest-interest*分类入口*4-interest-search*QQD", "", MEDUSA, "interest", "分类入口", null),
+      ("home*my_tv*interest-interest*热词区", "", MEDUSA, "interest", "热词区", null),
+      ("home*my_tv*interest-interest*热词区*2", "", MEDUSA, "interest", "热词区", null),
+      ("home*my_tv*interest-interest*分类入口*3-interest*文艺咖", "", MEDUSA, "interest", "分类入口", null),
+      ("home*classification*interest-interest*分类入口*4-interest*创意运动", "", MEDUSA, "interest", "分类入口", null),
+      ("home*classification*interest-interest*专题推荐区*1-column*【综合】绝不能错过*4", "", MEDUSA, "interest", "专题推荐区", null),
+      ("home*classification*interest-interest*分类入口*5-interest*游戏动画*电台", "", MEDUSA, "interest", "分类入口", null),
+      ("home*my_tv*interest-interest*单片人工推荐区*10-interest", "", MEDUSA, "interest", "单片人工推荐区", null),
+      ("home*classification*interest-home*单片人工推荐区*2", "", MEDUSA, "interest", "单片人工推荐区", null),
+      ("home*classification*interest-interest*首屏专题推荐区*3", "", MEDUSA, "interest", "首屏专题推荐区", null),
+
+      //hot
+      ("home*classification*hot-hot*单片人工推荐区*26", "", MEDUSA, "hot", "单片人工推荐区", null),
+
       //mv
       ("home*classification*mv-mv*mvRecommendHomePage*8qc3op34qr23-mv_station", "", MEDUSA, "mv", "mvRecommendHomePage", "mv_station"),
       ("home*classification*mv-mv*mvRecommendHomePage*2dpr34nowy5g", "", MEDUSA, "mv", "mvRecommendHomePage", null),

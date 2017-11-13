@@ -107,6 +107,16 @@ object ListCategoryUtils extends LogConfig {
       else if (pathMain.contains(UDFConstantDimension.MV_CATEGORY) || pathMain.contains(UDFConstantDimension.MV_POSTER)) {
         result = MvPathParseUtils.pathMainParse(pathMain,index_input)
       }
+
+      /** 奇趣interest */
+      else if (pathMain.contains(UDFConstantDimension.INTEREST_INTEREST)||pathMain.contains(UDFConstantDimension.INTEREST_HOME)){
+         result = InterestPathParseUtils.pathMainParse(pathMain,index_input)
+    }
+      /**资讯hot（与站点树相关部分，路径中带“分类入口”字样）*/
+    else if (pathMain.contains(UDFConstantDimension.HOT_HOT)||pathMain.contains(UDFConstantDimension.HOT_HOME)){
+      result = HotPathParseUtils.pathMainParse(pathMain,index_input)
+    }
+
       /** 体育sports */
       else if (pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) {
         result = SportsPathParserUtils.pathMainParse(pathMain, index_input)
@@ -249,6 +259,13 @@ object ListCategoryUtils extends LogConfig {
           s"site_content_type in ('$CHANNEL_MV') and main_category_code in ('mv_site') and second_category_code in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject')" ,
           null,s" mainCategory in ('$CHANNEL_MV') and secondCategory in ('site_hotsinger','site_mvtop','site_mvradio','site_mvsubject') "
         ),
+
+        //获得资讯奇趣的列表维度sk
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
+          s"site_content_type in ('$CHANNEL_HOT','$CHANNEL_INTEREST')",null,s" flag='$MEDUSA' and mainCategory in('$CHANNEL_HOT','$CHANNEL_INTEREST')"
+        ),
+
         //moretv日志里的少儿维度，三级入口需要使用code关联, [有一级，二级,三级维度]
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code"),
