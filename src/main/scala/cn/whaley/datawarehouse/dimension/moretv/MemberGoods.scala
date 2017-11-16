@@ -5,7 +5,7 @@ import cn.whaley.datawarehouse.global.SourceType.jdbc
 import cn.whaley.datawarehouse.util.MysqlDB
 
 /**
-  * Created by xiajun on 2017/11/9.
+  * Created by xia.jun on 2017/11/9.
   */
 object MemberGoods extends DimensionBase{
 
@@ -14,7 +14,7 @@ object MemberGoods extends DimensionBase{
 
   columns.skName = "good_sk"
 
-  columns.primaryKeys = List("good_code")
+  columns.primaryKeys = List("good_code","good_price")
 
   columns.allColumns = List(
     "good_code", "good_name", "good_price", "duration", "member_code", "member_name"

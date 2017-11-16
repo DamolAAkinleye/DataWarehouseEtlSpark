@@ -2,8 +2,7 @@ package cn.whaley.datawarehouse.fact.moretv
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.constant.LogPath
-import cn.whaley.datawarehouse.util.DataExtractUtils
+import cn.whaley.datawarehouse.util.{DataExtractUtils, DateFormatUtils, MysqlDB}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.udf
 
@@ -33,12 +32,15 @@ object MemberOrder extends FactEtlBase{
     ("pay_status","pay_status"),
     ("duration","duration"),
     ("create_time","create_time"),
-    ("update_time","update_time")
+    ("update_time","update_time"),
+    ("dim_date","dim_date"),
+    ("dim_time","dim_time")
   )
 
   override def readSource(sourceDate: String): DataFrame = {
-    val businessOrderDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_BUSINESS_ORDER, sourceDate)
-    businessOrderDF
+    val sourceDB = MysqlDB.medusaMemberDB("business_order")
+    val businessOrderDF = DataExtractUtils.readFromJdbc(sqlContext,sourceDB)
+    businessOrderDF.filter(s"substring(create_time,0,10) = '${DateFormatUtils.cnFormat.format(DateFormatUtils.readFormat.parse(sourceDate))}'")
   }
 
   addColumns = List(
@@ -51,7 +53,7 @@ object MemberOrder extends FactEtlBase{
 
     /** 基于订单中的real_price获取对应的商品维度good_sk */
     new DimensionColumn("dim_medusa_member_goods",
-      List(DimensionJoinCondition(Map("payment_amount" -> "good_price"))),
+      List(DimensionJoinCondition(Map("payment_amount" -> "good_price", "member_code" -> "member_code"))),
       "good_sk","good_sk"),
 
     /** 基于订单中的account_id获取账号表中的账号维度account_sk */
@@ -59,6 +61,7 @@ object MemberOrder extends FactEtlBase{
       List(DimensionJoinCondition(Map("account_id" -> "account_id"))),
       "account_sk","account_sk")
   )
+
 
   def getDimDate(dateTime: String): String = {
     try {
