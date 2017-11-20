@@ -125,9 +125,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       List(("user_sk","user_sk"), ("web_location_sk", "user_web_location_sk"))),
 
     /** 获得用户登录维度user_login_sk */
-    new DimensionColumn("dim_medusa_terminal_user_login",
-      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
-      "user_login_sk"),
+//    new DimensionColumn("dim_medusa_terminal_user_login",
+//      List(DimensionJoinCondition(Map("userId" -> "user_id"))),
+//      "user_login_sk"),
 
     /** 获得设备型号维度product_model_sk */
     new DimensionColumn("dim_medusa_product_model",
