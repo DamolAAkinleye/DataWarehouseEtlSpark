@@ -50,7 +50,7 @@ object HotPathParseUtils {
 
   @TestAnnotation
   def main(args: Array[String]): Unit = {
-    val str = "home*classification*hot-hot*分类入口*5-hot*科技前沿*电台"
+    val str = "home*classification*hot-hot*分类入口*1-hot*娱乐动态"
     println(pathMainParse(str,3))
   }
 
