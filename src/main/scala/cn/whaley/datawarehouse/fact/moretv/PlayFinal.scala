@@ -235,9 +235,10 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     ("end_event", "end_event"),
     //("start_time", ""),//for now,not online filed
     //("end_time", ""),//for now,not online filed
-    ("content_type", "contentType"),
+    ("content_type", "contentType" ),
     ("play_content_type",
-      "case when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
+      "case when pathMain like '%interest%' then  'interest' " +
+        "when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
         "when dim_medusa_program.content_type is not null then dim_medusa_program.content_type " +
         "when trim(contentType) = '' then null else contentType end"),
     ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false' end"),
