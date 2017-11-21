@@ -18,6 +18,8 @@ import org.apache.avro.TestAnnotation
 object PageEntrancePathParseUtils extends LogConfig {
 
   private val PAGE_ENTRANCE_KIDS_REGEX = (".*(kids_home)-([A-Za-z_]*)").r
+  private val PAGE_ENTRANGE_INTEREST_REGEX =(".*(interest-interest|interest-home)\\*(.*[\\u4e00-\\u9fa5])").r
+  private val PAGE_ENTRANGE_HOT_REGEX =(".*(hot-hot|hot-home)\\*(.*[\\u4e00-\\u9fa5])").r
   private val PAGE_ENTRANCE_MV_REGEX = (".*(mv)\\*([A-Za-z_]*)\\*([a-zA-Z_]*)").r
   private val PAGE_ENTRANCE_SPORTS_REGEX = (".*(sports)\\*([A-Za-z_]*)").r
   private val PAGE_ENTRANCE_LOCATION_CODE_LIST = List("personal_recommend", "site_mvsubject", "biaoshen", "site_concert", "site_dance", "site_mvyear", "site_collect", "site_mvarea", "site_mvstyle", "mv_station", "xinge", "rege", "site_hotsinger", "search")
@@ -89,6 +91,39 @@ object PageEntrancePathParseUtils extends LogConfig {
         case _ =>
       }
     }
+
+    /** interest: interest-interest和interest-home都表示奇趣首页**/
+    if(path.contains("interest-interest") || path.contains("interest-home")){
+      PAGE_ENTRANGE_INTEREST_REGEX findFirstMatchIn path match {
+        case Some(p) => {
+          page_code = p.group(1).split("-")(0)
+          if(p.group(2).contains("*")){
+            area_code = p.group(2).split("[*]")(0)
+          }
+          else{
+            area_code = p.group(2)
+          }
+        }
+        case None =>
+      }
+    }
+
+    /** hot: hot-hot和hot-home都表示资讯首页**/
+    if(path.contains("hot-hot") || path.contains("hot-home")){
+      PAGE_ENTRANGE_HOT_REGEX findFirstMatchIn path match {
+        case Some(p) => {
+          page_code = p.group(1).split("-")(0)
+          if(p.group(2).contains("*")){
+            area_code = p.group(2).split("[*]")(0)
+          }
+          else{
+            area_code = p.group(2)
+          }
+        }
+        case None =>
+      }
+    }
+
     /** mv: mvRecommendHomePage,mvTopHomePage一部分没有location_code */
     if (path.contains("mv*")) {
       /** home*classification*mv-mv*mvRecommendHomePage*8qlmwxd3abnp-mv_station */

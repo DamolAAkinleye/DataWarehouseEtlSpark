@@ -57,12 +57,12 @@ object UserLogin extends FactEtlBase {
         DimensionJoinCondition(Map("mac" -> "mac"), "mac is not null and trim(mac) != ''")
       ),
       "user_sk"),
-    new DimensionColumn("dim_medusa_terminal_user_login",
-      List(
-        DimensionJoinCondition(Map("userId" -> "user_id")),
-        DimensionJoinCondition(Map("mac" -> "mac"), "mac is not null and trim(mac) != ''")
-      ),
-      "user_login_sk"),
+//    new DimensionColumn("dim_medusa_terminal_user_login",
+//      List(
+//        DimensionJoinCondition(Map("userId" -> "user_id")),
+//        DimensionJoinCondition(Map("mac" -> "mac"), "mac is not null and trim(mac) != ''")
+//      ),
+//      "user_login_sk"),
     new DimensionColumn("dim_medusa_product_model",
       List(DimensionJoinCondition(Map("productModel" -> "product_model"))), "product_model_sk"),
     new DimensionColumn("dim_medusa_promotion",

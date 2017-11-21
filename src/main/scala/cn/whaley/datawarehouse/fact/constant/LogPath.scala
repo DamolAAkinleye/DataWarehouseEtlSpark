@@ -59,7 +59,26 @@ object LogPath {
 
   //电视猫账号登录活跃日志
   val MEDUSA_ACCOUNT_LOGIN = s"/log/medusa/parquet/${DATE_ESCAPE}/mtvaccount"
-  val MEDUSA_ACCOUNT = "/data_warehouse/dw_dimensions/dim_medusa_account"
   val MEDUSA_ACCOUNT_UID_MAP = "/data_warehouse/dw_normalized/medusa_account_uid_mapping"
+
+  // 电视猫会员商品维度表
+  val DIM_MEDUSA_MEMBER_GOOD = "/data_warehouse/dw_dimensions/dim_medusa_member_goods"
+
+  // 电视猫账号维度表
+  val MEDUSA_ACCOUNT = "/data_warehouse/dw_dimensions/dim_medusa_account"
+
+
+  // 电视猫订单日志
+  val MEDUSA_BUSINESS_ORDER = s"/data_warehouse/ods_view.db/db_snapshot_medusa_business_order/key_day=${DATE_ESCAPE}"
+
+  // 电视猫订单事实表
+  val FACT_MEDUSA_ORDER = s"/data_warehouse/dw_facts/fact_medusa_member_order/${DATE_ESCAPE}/00"
+
+  // 电视猫订单&购买入口映射表
+  val ORDER_ENTRANCE_UID_MAPPED = "/data_warehouse/dw_normalized/medusa_order_uid_entrance_mapping"
+
+
+  // 电视猫会员购买页面入口吊起日志
+  val MEDUSA_PURCHASE_ENTRANCE = s"/log/medusa/parquet/${DATE_ESCAPE}/medusa-vipentrance-click"
 
 }
