@@ -18,7 +18,7 @@ object ProductSN extends DimensionBase {
 
   columns.skName = "product_sn_sk"
   columns.primaryKeys = List("product_sn")
-  columns.trackingColumns = List("rom_version")
+  columns.trackingColumns = List("rom_version","wui_version")
   columns.allColumns = List("product_sn", "product_line", "product_model", "user_id", "rom_version", "wui_version",
     "mac", "open_time", "sold_time", "login_time","wifi_mac", "ip", "vip_type",
     "country", "area", "province", "city", "district", "isp", "city_level", "prefecture_level_city")
