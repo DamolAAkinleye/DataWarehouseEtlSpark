@@ -247,6 +247,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     ("auto_clarity", "tencentAutoClarity"),
     ("contain_ad", "case when containAd = '1' then 'true' else 'false' end"),
     ("app_enter_way", "appEnterWay"),
+    ("play_type", "playType"),
     //("session_id", "sessionId"),//for now,not online filed
     //("device_id", "deviceId"),//for now,not online filed
     //("display_id", "displayId"),//for now,not online filed
