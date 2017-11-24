@@ -161,7 +161,7 @@ object MysqlDB {
   }
 
   def programTag(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions: Int) = {
-    Map("url" -> "jdbc:mysql://bigdata-appsvr-130-6:3306/europa?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+    Map("url" -> "jdbc:mysql://bigdata-appsvr-130-6:3306/europa?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&tinyInt1isBit=false",
       "dbtable" -> table,
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "bislave",

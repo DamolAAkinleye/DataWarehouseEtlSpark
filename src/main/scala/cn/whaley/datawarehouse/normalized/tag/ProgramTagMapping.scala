@@ -24,10 +24,11 @@ object ProgramTagMapping extends NormalizedEtlBase {
     val sourceDb4 = MysqlDB.programTag("tag", "id", 1, 500000, 100)
     val tagDf = DataExtractUtils.readFromJdbc(sqlContext, sourceDb4).where("status = 1")
 
-    val df = programTagDf.join(programDf, List("sid"), "leftouter").selectExpr(
-      "sid", "title", "tag_id", "tag_level_value", "tag_source", "type", "content_type", "program_status").as("a").join(
-      tagMappingDf.as("b"), programTagDf("tag_id") === tagMappingDf("tag_id"), "leftouter"
-    ).selectExpr(
+    val df = programTagDf
+      .join(programDf, List("sid"), "leftouter")
+      .selectExpr("sid", "title", "tag_id", "tag_level_value", "cast(tag_source as int) tag_source", "type", "content_type", "program_status").as("a")
+      .join(tagMappingDf.as("b"), programTagDf("tag_id") === tagMappingDf("tag_id"), "leftouter")
+      .selectExpr(
       "sid",
       "title",
       "case when b.mapping_tag_id is null then a.tag_id else b.mapping_tag_id end as tag_id",
