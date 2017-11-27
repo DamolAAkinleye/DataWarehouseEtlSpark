@@ -18,7 +18,7 @@ object ProductSN extends DimensionBase {
 
   columns.skName = "product_sn_sk"
   columns.primaryKeys = List("product_sn")
-  columns.trackingColumns = List("rom_version")
+  columns.trackingColumns = List("rom_version","wui_version")
   columns.allColumns = List("product_sn", "product_line", "product_model", "user_id", "rom_version", "wui_version",
     "mac", "open_time", "sold_time", "login_time","wifi_mac", "ip", "vip_type",
     "country", "area", "province", "city", "district", "isp", "city_level", "prefecture_level_city")
@@ -90,7 +90,7 @@ object ProductSN extends DimensionBase {
       "a.ip as ip from user_info a left join product_model b on getSNtwo(a.serial_number) = b.serial_number").registerTempTable("product")
 
 
-    //获取用户的会员信息
+    //获取用户的会员信息(该会员信息有误，废弃）
     val vipTypeInfo = MysqlDB.whaleyDolphin("dolphin_club_authority", "id", 1, 100000000, 100)
 
     sqlContext.read.format("jdbc").options(vipTypeInfo).load().registerTempTable("dolphin_club_authority")

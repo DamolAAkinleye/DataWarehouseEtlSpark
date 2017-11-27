@@ -17,6 +17,22 @@ object MysqlDB {
       "numPartitions" -> "10")
   }
 
+  def medusaAccountDB(table:String) = {
+    Map("url" -> "jdbc:mysql://10.10.59.240:3306/moretv_account?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "bigdata",
+      "password" -> "bigdata2017!@#")
+  }
+
+  def medusaMemberDB(table:String) = {
+    Map("url" -> "jdbc:mysql://10.10.57.213:3306/moretv_admin?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+      "dbtable" -> table,
+      "driver" -> "com.mysql.jdbc.Driver",
+      "user" -> "bislave",
+      "password" -> "slave4bi@whaley")
+  }
+
   def medusaTvServiceAccount = {
     Map("url" -> "jdbc:mysql://bigdata-appsvr-130-3:3306/tvservice?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
       "dbtable" -> "mtv_account",
@@ -145,7 +161,7 @@ object MysqlDB {
   }
 
   def programTag(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions: Int) = {
-    Map("url" -> "jdbc:mysql://bigdata-appsvr-130-6:3306/europa?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
+    Map("url" -> "jdbc:mysql://bigdata-appsvr-130-6:3306/europa?useUnicode=true&characterEncoding=utf-8&autoReconnect=true&tinyInt1isBit=false",
       "dbtable" -> table,
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "bislave",

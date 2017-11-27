@@ -43,7 +43,8 @@ object WebLocation extends DimensionBase {
     "district",
     "longitude",
     "latitude",
-    "isp"
+    "isp",
+    "town_id"
   )
 
 
@@ -189,11 +190,12 @@ object WebLocation extends DimensionBase {
          |a.latitude as latitude,
          |a.isp as isp,
          |a.city as prefecture_level_city,
-         |b.executive_level
+         |b.executive_level,
+         |b.town_id
          |from ip_info a
          |left join
          |(
-         |select t1.city,t1.area,t1.city_level,t1.executive_level,t1.prefecture_level_city from
+         |select t1.city,t1.area,t1.city_level,t1.executive_level,t1.prefecture_level_city,t1.town_id from
          |city_info t1 left join city_info t2 on t1.city=t2.prefecture_level_city
          |where t2.prefecture_level_city is null
          |) b
@@ -221,7 +223,8 @@ object WebLocation extends DimensionBase {
          |a.longitude,
          |a.latitude,
          |a.isp,
-         |a.prefecture_level_city
+         |a.prefecture_level_city,
+         |a.town_id
          |from tmp_table a left join city_info b
          |on a.prefecture_level_city=b.city
       """.stripMargin

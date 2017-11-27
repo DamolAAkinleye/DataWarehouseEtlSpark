@@ -59,6 +59,8 @@ object PlayPathClick extends FactEtlBase {
     ("link_value", "link_value"),
     ("ad_putting_id", " cast(ad_putting_id as BIGINT)"),
     ("position_type", "position_type"),
+    ("data_source","data_source"),
+    ("recommend_type","recommend_type"),
     ("dim_date", " dim_date"),
     ("dim_time", "dim_time")
   )
@@ -128,7 +130,9 @@ object PlayPathClick extends FactEtlBase {
       ("positionIndex", null, StringType),
       ("positionType", null, StringType),
       ("positionArea", null, StringType),
-      ("buttonType", null, StringType)
+      ("buttonType", null, StringType),
+      ("dataSource", null, StringType),
+      ("recommendType" ,null, StringType)
     )
 
     val fields1 = List(
@@ -141,7 +145,9 @@ object PlayPathClick extends FactEtlBase {
       ("positionType", null, StringType),
       ("positionArea", null, StringType),
       ("buttonType", null, StringType),
-      ("pageType", "home", StringType)
+      ("pageType", "home", StringType),
+      ("dataSource", null, StringType),
+      ("recommendType" ,null, StringType)
     )
     val launcher = s"/log/whaley/parquet/$startDate/launcher"
     val wui = s"/log/boikgpokn78sb95kjhfrendoj8ilnoi7/parquet/$startDate/positionClick"
@@ -182,6 +188,8 @@ object PlayPathClick extends FactEtlBase {
         "adPuttingId as ad_putting_id",
         "positionType as position_type",
         "accountId as account_id",
+        "dataSource as data_source",
+        "recommendType as recommend_type",
         "datetime as date_time"
       ).unionAll(
         getLauncherInfo.selectExpr(
@@ -199,6 +207,8 @@ object PlayPathClick extends FactEtlBase {
           "adPuttingId as ad_putting_id",
           "positionType as position_type",
           "accountId as account_id",
+          "dataSource as data_source",
+          "recommendType as recommend_type",
           "datetime as date_time"
         )
       ).unionAll(
@@ -217,6 +227,8 @@ object PlayPathClick extends FactEtlBase {
           "adPuttingId as ad_putting_id",
           "positionType as position_type",
           "accountId as account_id",
+          "dataSource as data_source",
+          "recommendType as recommend_type",
           "datetime as date_time"
         )
       ).unionAll(getMovieInfo.selectExpr(
@@ -234,6 +246,8 @@ object PlayPathClick extends FactEtlBase {
         "adPuttingId as ad_putting_id",
         "positionType as position_type",
         "accountId as account_id",
+        "dataSource as data_source",
+        "recommendType as recommend_type",
         "datetime as date_time"
       )
       ).unionAll(
@@ -252,6 +266,8 @@ object PlayPathClick extends FactEtlBase {
           "adPuttingId as ad_putting_id",
           "positionType as position_type",
           "accountId as account_id",
+          "dataSource as data_source",
+          "recommendType as recommend_type",
           "datetime as date_time"
         )
       )
@@ -286,6 +302,8 @@ object PlayPathClick extends FactEtlBase {
         "adPuttingId as ad_putting_id",
         "positionType as position_type",
         "accountId as account_id",
+        "dataSource as data_source",
+        "recommendType as recommend_type",
         "datetime as date_time"
       )
         .unionAll(
@@ -304,6 +322,8 @@ object PlayPathClick extends FactEtlBase {
             "adPuttingId as ad_putting_id",
             "positionType as position_type",
             "accountId as account_id",
+            "dataSource as data_source",
+            "recommendType as recommend_type",
             "datetime as date_time"
           )
         ).unionAll(getMovieInfo.selectExpr(
@@ -321,6 +341,8 @@ object PlayPathClick extends FactEtlBase {
         "adPuttingId as ad_putting_id",
         "positionType as position_type",
         "accountId as account_id",
+        "dataSource as data_source",
+        "recommendType as recommend_type",
         "datetime as date_time"
       )
       )
@@ -357,6 +379,8 @@ object PlayPathClick extends FactEtlBase {
         "adPuttingId as ad_putting_id",
         "positionType as position_type",
         "accountId as account_id",
+        "dataSource as data_source",
+        "recommendType as recommend_type",
         "datetime as date_time"
       ).unionAll(
         getChannelInfo.selectExpr(
@@ -374,6 +398,8 @@ object PlayPathClick extends FactEtlBase {
           "adPuttingId as ad_putting_id",
           "positionType as position_type",
           "accountId as account_id",
+          "dataSource as data_source",
+          "recommendType as recommend_type",
           "datetime as date_time"
         )
       ).unionAll(getMovieInfo.selectExpr(
@@ -391,6 +417,8 @@ object PlayPathClick extends FactEtlBase {
         "adPuttingId as ad_putting_id",
         "positionType as position_type",
         "accountId as account_id",
+        "dataSource as data_source",
+        "recommendType as recommend_type",
         "datetime as date_time"
       )
       ).unionAll(
@@ -409,6 +437,8 @@ object PlayPathClick extends FactEtlBase {
           "adPuttingId as ad_putting_id",
           "positionType as position_type",
           "accountId as account_id",
+          "dataSource as data_source",
+          "recommendType as recommend_type",
           "datetime as date_time"
         )
       )

@@ -17,6 +17,7 @@ object ParamsParseUtil {
         head("ParamsParse", "1.2")
         opt[Boolean]("isOnline").action((x, c) => c.copy(isOnline = x))
         opt[Boolean]("debug").action((x, c) => c.copy(debug = x))
+        opt[String]("mode").action((x, c) => c.copy(mode = x))
         opt[String]("startDate").action((x, c) => c.copy(startDate = x)).
           validate(e => try {
             readFormat.parse(e)

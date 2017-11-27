@@ -83,6 +83,12 @@ class ListCategoryUtilsTest {
       ("kids_anim*动画专题", "", MEDUSA, "kids", "show_kidsSite", "动画专题"),
       ("home*my_tv*kids-kids_home-kids_home-kids_anim*动画明星", "", MEDUSA, "kids", "show_kidsSite", "动画明星"),
       ("home*classification*kids-kids_home-tingerge*儿歌明星", "", MEDUSA, "kids", "show_kidsSongSite", "儿歌明星"),
+
+      //316资讯奇趣
+      ("home*classification*interest-interest*分类入口*1-interest*收藏", "", MEDUSA, "interest", "site_interest", "收藏"),
+      ("home*classification*interest-interest*分类入口*4-interest*极限挑战", "", MEDUSA, "interest", "site_interest", "极限挑战"),
+      ("home*classification*interest-interest*分类入口*4-interest*天生萌物*电台", "", MEDUSA, "interest", "site_interest", "天生萌物"),
+
       //sports
       ("home*my_tv*4-sports*League*qipai-league*围棋", "", MEDUSA, "sports", "leagueEntry", "qipai"),
       ("home*my_tv*7-sports*League*dj", "", MEDUSA, "sports", "leagueEntry", "dj"),
