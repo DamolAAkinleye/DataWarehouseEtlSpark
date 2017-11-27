@@ -44,17 +44,16 @@ trait BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         if (p.startDate != null) {
-          var date = p.startDate
+          val date = p.startDate
           p.paramMap.put("date", date)
-          execute(p)
-          while (p.endDate != null && date < p.endDate) {
-            date = DateFormatUtils.enDateAdd(date, 1)
-            p.paramMap.put("date", date)
-            execute(p)
-          }
-        } else {
-          execute(p)
         }
+        if(p.mode != null) {
+          if(!List("all", "increment").contains(p.mode)) {
+            throw new RuntimeException("mode must be all or increment")
+          }
+        }
+        execute(p)
+
       }
       case None => {
         throw new RuntimeException("parameters wrong")

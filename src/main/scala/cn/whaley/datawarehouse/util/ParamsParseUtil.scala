@@ -25,13 +25,7 @@ object ParamsParseUtil {
           } catch {
             case e: Exception => failure("wrong date format, should be 'yyyyMMdd'")
           })
-        opt[String]("endDate").action((x, c) => c.copy(endDate = x)).
-          validate(e => try {
-            readFormat.parse(e)
-            success
-          } catch {
-            case e: Exception => failure("wrong date format, should be 'yyyyMMdd'")
-          })
+
       }
       parser.parse(args, default) match {
         case Some(p) => Some(p)
