@@ -189,11 +189,12 @@ abstract class FactEtlBase extends BaseClass {
     */
   private def backup(p: Params, df: DataFrame, topicName: String): Unit = {
     val date = p.paramMap("date")
-    val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + "00"
+    val hour = if (p.startHour == null) {"00"} else {p.startHour}
+    val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + hour
     val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
-    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + "00"
+    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + hour
     val onLineFactBackupParentDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date
-    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator +  date
+    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator +  date + hour
     println("线上数据目录:" + onLineFactDir)
     println("线上数据备份目录:" + onLineFactBackupDir)
     println("线上数据临时目录:" + onLineFactDirTmp)

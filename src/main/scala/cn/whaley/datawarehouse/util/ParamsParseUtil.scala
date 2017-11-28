@@ -25,6 +25,16 @@ object ParamsParseUtil {
           } catch {
             case e: Exception => failure("wrong date format, should be 'yyyyMMdd'")
           })
+        opt[String]("startHour").action((x, c) => c.copy(startHour = x)).
+          validate(e => try {
+            if(e.length == 2 && e.toInt >=0 && e.toInt <=23) {
+              success
+            } else {
+              failure("wrong date format")
+            }
+          } catch {
+            case e: Exception => failure("wrong date format, should be 'HH'")
+          })
 
       }
       parser.parse(args, default) match {
