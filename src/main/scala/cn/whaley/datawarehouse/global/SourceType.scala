@@ -9,5 +9,6 @@ object SourceType extends Enumeration{
   type SourceType = Value
   val jdbc = Value
   val parquet = Value
+  val ods = Value
   val custom = Value  //自定义获取源数据
 }

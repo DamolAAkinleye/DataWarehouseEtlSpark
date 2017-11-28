@@ -26,4 +26,9 @@ object DataExtractUtils {
     sourceDf
   }
 
+  def readFromOds(sqlContext: SQLContext, tableName: String, startDate: String): DataFrame = {
+    val sourceDf = sqlContext.sql(s"select * from $tableName where key_day = $startDate")
+    sourceDf
+  }
+
 }

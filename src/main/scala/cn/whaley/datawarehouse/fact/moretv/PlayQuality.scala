@@ -140,16 +140,27 @@ object PlayQuality extends FactEtlBase {
       ("userType", null, StringType)
     )
 
+//    //节目信息
+//    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_VIDEO_INFO, realStartDate)
+//    //起播
+//    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_START, realStartDate)
+//    //解析
+//    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_PARSE, realStartDate)
+//    //缓冲
+//    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BUFFER, realStartDate)
+//    //结束播放
+//    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_END, realStartDate)
+
     //节目信息
-    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_VIDEO_INFO, realStartDate)
+    var getVideoDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_player_sdk_getvideoinfo", startDate)
     //起播
-    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_START, realStartDate)
+    var startPlayDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_player_sdk_startplay", startDate)
     //解析
-    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_PARSE, realStartDate)
+    var parseDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_player_sdk_inner_outer_auth_parse", startDate)
     //缓冲
-    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BUFFER, realStartDate)
+    var bufferDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_player_sdk_buffer", startDate)
     //结束播放
-    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_END, realStartDate)
+    var endPlayDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_player_sdk_endplay", startDate)
 
     getVideoDf = addColumn(getVideoDf, fields)
     startPlayDf = addColumn(startPlayDf, fields)

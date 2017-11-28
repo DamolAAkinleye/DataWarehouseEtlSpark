@@ -3,6 +3,7 @@ package cn.whaley.datawarehouse.fact.moretv
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.DateFormatUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
@@ -14,9 +15,11 @@ import org.apache.spark.sql.functions._
   */
 object UserLogin extends FactEtlBase {
 
-//  debug = true
+  //  debug = true
 
   topicName = "fact_medusa_user_login"
+
+  readSourceType = parquet
 
   parquetPath = LogPath.MEDUSA_LOGIN_LOG_PATH
 

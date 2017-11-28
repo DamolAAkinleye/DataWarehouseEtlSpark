@@ -13,7 +13,7 @@ object DetailView extends FactEtlBase{
 
   topicName = "fact_whaley_detail_view"
 
-  parquetPath = LogPath.HELIOS_DETAIL
+  odsTableName = "ods_view.log_whaleytv_main_detail"
 
   partition = 200
 
