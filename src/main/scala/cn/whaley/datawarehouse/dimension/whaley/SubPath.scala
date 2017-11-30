@@ -35,4 +35,6 @@ object SubPath extends DimensionBase{
 
    dimensionName = "dim_whaley_subpath"
 
+  fullUpdate = true
+
  }

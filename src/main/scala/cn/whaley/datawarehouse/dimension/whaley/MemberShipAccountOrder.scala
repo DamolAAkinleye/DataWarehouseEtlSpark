@@ -25,6 +25,8 @@ object MemberShipAccountOrder extends DimensionBase {
 
   dimensionName = "dim_whaley_membership_account_order"
 
+  sourceTimeCol = "updateTime"
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
     val sq = sqlContext
 

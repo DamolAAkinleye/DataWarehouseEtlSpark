@@ -28,6 +28,8 @@ object AreaSourceAgg extends DimensionBase {
 
   dimensionName = "dim_whaley_area_source_agg"
 
+  fullUpdate = true
+
   override def readSource(readSourceType: Value): DataFrame = {
     /**
       * 站点树维度

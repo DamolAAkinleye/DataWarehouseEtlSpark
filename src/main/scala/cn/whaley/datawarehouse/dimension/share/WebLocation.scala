@@ -50,6 +50,7 @@ object WebLocation extends DimensionBase {
 
   readSourceType = custom
 
+  fullUpdate = true
 
   override def readSource(readSourceType: SourceType): DataFrame = {
     val countryBlackList = List("保留地址", "骨干网")

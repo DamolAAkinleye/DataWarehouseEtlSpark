@@ -40,6 +40,8 @@ object ProductSN extends DimensionBase {
 
   dimensionName = "dim_whaley_product_sn"
 
+  sourceTimeCol = "login_time"
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
 

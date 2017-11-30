@@ -36,5 +36,6 @@ object Channel extends DimensionBase {
 
   sourceFilterWhere = "channel_sid is not null and channel_sid <> ''"
 
+  sourceTimeCol = "publish_time"
 
 }

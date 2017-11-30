@@ -62,12 +62,14 @@ object TerminalUser extends DimensionBase {
 
   dimensionName = "dim_medusa_terminal_user"
 
-  override def readSource(readSourceType: Value): DataFrame = {
-    val df = super.readSource(readSourceType)
+  sourceTimeCol = "lastLoginTime"
+
+  override def filterSource(sourceDf: DataFrame): DataFrame = {
+
     val udFunctionSeries = udf(getAppSeries: String => String)
     val udFunctionVersion = udf(getAppVersion: String => String)
 
-    val newDf = df.withColumn("app_version", udFunctionVersion(col("current_version")))
+    val newDf = sourceDf.withColumn("app_version", udFunctionVersion(col("current_version")))
       .withColumn("app_series", udFunctionSeries(col("current_version")))
       .withColumnRenamed("ip", "origin_ip")
 
@@ -76,9 +78,11 @@ object TerminalUser extends DimensionBase {
     val accountDf = sqlContext.read.format("jdbc").options(accountSource).load()
       .where("product = 'moretv'").selectExpr("uid", "real_client_ip").dropDuplicates(List("uid"))
 
-    newDf.as("a").join(accountDf.as("b"), expr("a.user_id = b.uid"), "leftouter")
+    val df = newDf.as("a").join(accountDf.as("b"), expr("a.user_id = b.uid"), "leftouter")
       .selectExpr("a.*", "case when b.real_client_ip is null or trim(real_client_ip) = '' " +
         "then a.origin_ip else b.real_client_ip end as ip")
+
+    super.filterSource(df)
 
   }
 

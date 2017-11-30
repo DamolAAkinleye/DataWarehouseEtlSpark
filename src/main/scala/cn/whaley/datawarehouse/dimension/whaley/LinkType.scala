@@ -26,6 +26,8 @@ object LinkType extends DimensionBase {
     "link_value_name"
   )
 
+  fullUpdate = true
+
   override def readSource(readSourceType: Value): DataFrame = {
 
     val subjectType = DataExtractUtils.readFromParquet(sqlContext,LogPath.DIM_WHALEY_SUBJECT).

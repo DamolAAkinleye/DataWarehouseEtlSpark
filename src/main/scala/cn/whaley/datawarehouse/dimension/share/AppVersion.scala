@@ -27,6 +27,7 @@ object AppVersion extends DimensionBase {
   sourceDb = MysqlDB.dwDimensionDb(tableName)
   dimensionName = "dim_app_version"
 
+  fullUpdate = true
 
 //  override def execute(args: Array[String]): Unit = {
 //    val jdbcDF = sqlContext.read.format("jdbc").options(MysqlDB.dwDimensionDb(tableName)).load()

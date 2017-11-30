@@ -1,4 +1,3 @@
 type=command
 mainclass=cn.whaley.datawarehouse.dimension.whaley.SportsMatch
-command=sh ${working.dir}/../../bin/submit.sh ${mainclass}  --isOnline  ${isOnline}
-
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass}  --isOnline  ${isOnline} --mode {mode}

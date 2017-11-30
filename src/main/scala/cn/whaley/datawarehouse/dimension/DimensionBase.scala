@@ -55,18 +55,39 @@ abstract class DimensionBase extends BaseClass {
     */
   var fullUpdate: Boolean = false
 
+  /**
+    * 增量更新时间字段，只在增量更新模式下有用
+    */
+  var sourceTimeCol: String = "update_time"
+
 
   override def extract(params: Params): DataFrame = {
     //初始化参数处理和验证
     valid(params)
 
     //读取源数据
-    val sourceDf = readSource(readSourceType)
+    val sourceDf =
+      if(fullUpdate) {
+        readSource(readSourceType)
+      } else {
+        readSourceIncr(readSourceType)
+      }
 
     //过滤源数据
     val filteredSourceDf = filterSource(sourceDf)
 
     filteredSourceDf.persist()
+
+    if(!fullUpdate) {
+      val count = filteredSourceDf.count()
+      if (count == 0) {
+        println("源数据为空。。。。。。。。")
+        return null
+      } else {
+        println("源数据更新条数：" + count)
+      }
+    }
+
 
     //过滤后源数据主键唯一性判断和处理
     checkPrimaryKeys(filteredSourceDf, columns.primaryKeys)
@@ -83,9 +104,8 @@ abstract class DimensionBase extends BaseClass {
   private def valid(params: Params): Unit = {
     if (params.mode == "all") {
       fullUpdate = true
-    } else if (params.mode == "increment") {
-      fullUpdate = false
-    }
+    } //不支持通过参数设置为增量更新模式，因为不是所有维度都支持增量更新
+
     columns.trackingColumns = if (columns.trackingColumns == null) List() else columns.trackingColumns
     if (columns.primaryKeys == null || columns.primaryKeys.isEmpty) {
       throw new RuntimeException("业务主键未设置！")
@@ -116,7 +136,10 @@ abstract class DimensionBase extends BaseClass {
 
   def readSourceIncr(readSourceType: Value): DataFrame = {
     if (readSourceType == null || readSourceType == jdbc) {
-      sqlContext.read.format("jdbc").options(sourceDb).load()
+      val date = DateUtils.round(DateUtils.addHours(new Date(), -1), Calendar.HOUR_OF_DAY)
+      val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+      val dateStr = sdf.format(date)
+      sqlContext.read.format("jdbc").options(sourceDb).load().where(s"$sourceTimeCol >= '$dateStr'")
     } else {
       null
     }
@@ -162,10 +185,15 @@ abstract class DimensionBase extends BaseClass {
 
   override def transform(params: Params, filteredSourceDf: DataFrame): DataFrame = {
 
+    if(filteredSourceDf == null) return null
+
     val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionName
 
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
+      if (!fullUpdate) {
+        throw new RuntimeException("维度第一次创建，请使用全量模式")
+      }
       val result = DataFrameUtil.dfZipWithIndex(
         DataFrameUtil.addDimTime(
           filteredSourceDf.selectExpr(columns.getSourceColumns :_*),
@@ -352,6 +380,7 @@ abstract class DimensionBase extends BaseClass {
     */
   private def backup(p: Params, df: DataFrame, dimensionType: String): Unit = {
 
+    if(df == null) {return}
     val cal = Calendar.getInstance
     val date = DateFormatUtils.readFormat.format(cal.getTime)
     val onLineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionType
