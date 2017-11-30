@@ -2,5 +2,5 @@
 type=command
 table=fact_medusa_play
 mainclass=cn.whaley.datawarehouse.fact.moretv.PlayFinal
-command=sh ${working.dir}/../../bin/fact_submit.sh ${mainclass} --startDate ${startDate} --endDate ${endDate} --isOnline  ${isOnline}
-command.1=sh ${working.dir}/../../bin/addPartition.sh --table ${table} --startDate ${startDate} --endDate ${endDate} --hour ${hour}
+command=sh ${working.dir}/../../bin/fact_submit.sh ${mainclass} --startDate ${startDate} --endDate ${endDate}  --startHour ${startHour} --endHour ${endHour} --isOnline  ${isOnline}
+command.1=sh ${working.dir}/../../bin/addPartition.sh --table ${table} --startDate ${startDate} --endDate ${endDate}  --startHour ${startHour} --endHour ${endHour} --isOnline  ${isOnline}

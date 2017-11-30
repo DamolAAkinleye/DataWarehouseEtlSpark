@@ -78,7 +78,7 @@ object PageExpose extends FactEtlBase {
       "account_sk")
   )
 
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
     val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
     val realStartDate = DateFormatUtils.readFormat.format(date)
 
@@ -87,7 +87,7 @@ object PageExpose extends FactEtlBase {
 
     //频道页和详情页曝光
 //    var channelExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_CHANNEL_EXPOSE, realStartDate)
-    var channelExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_channel_expose", startDate)
+    var channelExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_channel_expose", startDate, startHour)
 
     channelExposeDf = channelExposeDf.selectExpr(metaFields ++ List("alg", "biz", "area", "contentType",
       "split(videoSid, ',') as sidList",
@@ -97,7 +97,7 @@ object PageExpose extends FactEtlBase {
 
     //首页曝光
 //    var launcherExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_LAUNCHER_EXPOSE, realStartDate)
-    var launcherExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_launcher_expose", startDate)
+    var launcherExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_launcher_expose", startDate, startHour)
 
 
     launcherExposeDf = launcherExposeDf.selectExpr(metaFields ++ List("alg", "biz", "area", "'home' as contentType",
@@ -109,7 +109,7 @@ object PageExpose extends FactEtlBase {
 
     //视频退出播放页曝光
 //    var playBackExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BACK, realStartDate)
-    var playBackExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_play_back", startDate)
+    var playBackExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_play_back", startDate, startHour)
 
     playBackExposeDf = playBackExposeDf.selectExpr(metaFields ++ List("alg", "biz", "null as area", "contentType", "sidList",
       "cast (1 as long) as expose_page_num", "null as expose_type", "'play_back' as page"): _*)

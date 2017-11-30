@@ -48,9 +48,10 @@ object MemberOrder extends FactEtlBase{
     ("dim_time","dim_time")
   )
 
-  override def readSource(sourceDate: String): DataFrame = {
+  override def readSource(sourceDate: String, sourceHour: String): DataFrame = {
     val sourceDB = MysqlDB.medusaMemberDB("business_order")
     val businessOrderDF = DataExtractUtils.readFromJdbc(sqlContext,sourceDB)
+    //TODO
     businessOrderDF.filter(s"substring(create_time,0,10) = '${DateFormatUtils.cnFormat.format(DateFormatUtils.readFormat.parse(sourceDate))}'")
   }
 

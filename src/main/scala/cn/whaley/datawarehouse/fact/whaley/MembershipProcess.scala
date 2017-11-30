@@ -49,10 +49,10 @@ object MembershipProcess extends FactEtlBase{
     List(DimensionJoinCondition(Map("account_id" -> "account_id"))), "account_sk")
   )
 
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
 
 //    DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_WHALEYVIP_GETBUYVIPPROCESS,startDate)
-    DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_whaleyvip_getbuyvipprocess", startDate)
+    DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_whaleyvip_getbuyvipprocess", startDate, startHour)
       .selectExpr(
             "productSN as product_sn",
             "productLine as product_line",

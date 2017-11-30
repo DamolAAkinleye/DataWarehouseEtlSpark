@@ -25,7 +25,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
   /**
     * step 1, get data source
     * */
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
     println("------- before readSource "+Calendar.getInstance().getTime)
     val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
     val reallyStartDate=DateFormatUtils.readFormat.format(date)
@@ -38,9 +38,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     if (medusaFlag && moretvFlag) {
 //      val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate).withColumn("flag",lit(MEDUSA))
 //      val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
-      val medusaDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_play", startDate)
+      val medusaDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_play", startDate, startHour)
         .withColumn("flag",lit(MEDUSA))
-      val moretvDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main20_playview", startDate)
+      val moretvDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main20_playview", startDate, startHour)
         .withColumn("flag",lit(MORETV))
 
       val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext)

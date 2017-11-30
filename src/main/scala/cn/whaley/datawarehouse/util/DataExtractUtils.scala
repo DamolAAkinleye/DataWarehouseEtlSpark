@@ -21,13 +21,16 @@ object DataExtractUtils {
     val sourceDf = sqlContext.read.parquet(filePath)
     sourceDf
   }
+
   def readFromParquet(sqlContext: SQLContext, sourceParquetPath: String): DataFrame = {
     val sourceDf = sqlContext.read.parquet(sourceParquetPath)
     sourceDf
   }
 
-  def readFromOds(sqlContext: SQLContext, tableName: String, startDate: String): DataFrame = {
-    val sourceDf = sqlContext.sql(s"select * from $tableName where key_day = $startDate")
+  def readFromOds(sqlContext: SQLContext, tableName: String, startDate: String, startHour: String): DataFrame = {
+    val sql = s"select * from $tableName where key_day = $startDate" +
+      (if (startHour != null) "and key_hour = " + startHour else "")
+    val sourceDf = sqlContext.sql(sql)
     sourceDf
   }
 

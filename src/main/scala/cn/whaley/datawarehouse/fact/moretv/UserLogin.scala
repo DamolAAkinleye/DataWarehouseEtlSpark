@@ -32,6 +32,8 @@ object UserLogin extends FactEtlBase {
 
   )
 
+  partition = 180
+
   columnsFromSource = List(
     ("product_serial", "productSerial"),
     ("sys_ver", "systemVersion"),
@@ -75,11 +77,6 @@ object UserLogin extends FactEtlBase {
       , "app_version_sk")
   )
 
-  override def readSource(startDate: String): DataFrame = {
-    //电视猫的读取目录需要加一天
-    val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
-    super.readSource(DateFormatUtils.readFormat.format(date)).repartition(180)
-  }
 
   def getIpKey(ip: String): Long = {
     try {

@@ -3,5 +3,5 @@
 type=command
 table=fact_whaley_membership_order_right
 mainclass=cn.whaley.datawarehouse.fact.whaley.MembershipOrderRight
-command=sh ${working.dir}/../../../bin/fact_submit.sh ${mainclass} --startDate ${startDate} --endDate ${endDate}  --isOnline  ${isOnline}
-command.1=sh ${working.dir}/../../../bin/addPartition.sh --table ${table} --startDate ${startDate} --endDate ${endDate} --hour ${hour}
+command=sh ${working.dir}/../../../bin/fact_submit_day.sh ${mainclass} --startDate ${startDate} --endDate ${endDate}  --isOnline  ${isOnline}
+command.1=sh ${working.dir}/../../../bin/addPartition_day.sh --table ${table} --startDate ${startDate} --endDate ${endDate} --hour 00

@@ -91,7 +91,7 @@ object ProgramClick extends FactEtlBase {
   val subject_regex = "^([a-zA-Z]+)([0-9]+)$"
   val entrance_regex = "^([a-zA-Z]+_?)+$"
 
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
     sqlContext.udf.register("getPageFromPath", getPageFromPath _)
     sqlContext.udf.register("getAccessAreaFromPath", getAccessAreaFromPath _)
     sqlContext.udf.register("getLocationCode", getLocationCode _)
@@ -104,7 +104,7 @@ object ProgramClick extends FactEtlBase {
       "buildDate", "datetime", "ip", "cityLevel")
 
     //    val launcherClickOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_LAUNCHER_CLICK, realStartDate)
-    val launcherClickOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_homeaccess", startDate)
+    val launcherClickOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_homeaccess", startDate, startHour)
 
     //首页点击
     val launcherClickDf = launcherClickOriginDf.selectExpr(metaFields ++ List("alg", "biz",
@@ -112,7 +112,7 @@ object ProgramClick extends FactEtlBase {
       "getLinkValue(accessLocation) as linkValue", "null as contentType", "'launcher' as page"): _*)
 
     //    val detailOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_DETAIL, realStartDate)
-    val detailOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_detail", startDate)
+    val detailOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_detail", startDate, startHour)
     detailOriginDf.persist()
 
     //列表页点击
@@ -140,7 +140,7 @@ object ProgramClick extends FactEtlBase {
         "'play_back' as page"): _*)
 
     //    val playOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, realStartDate)
-    val playOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_play", startDate)
+    val playOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_play", startDate, startHour)
 
     //短视频退出推荐
     val hotBackClick = playOriginDf.where("pathSub like 'guessyoulike%'")

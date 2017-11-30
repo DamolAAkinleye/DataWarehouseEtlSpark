@@ -9,7 +9,7 @@ import cn.whaley.datawarehouse.fact.constant.Constants._
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
-import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
+import cn.whaley.datawarehouse.util.{DataExtractUtils, DataFrameUtil, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.storage.StorageLevel
@@ -63,9 +63,9 @@ abstract class FactEtlBase extends BaseClass {
       case Some(d) => {
         println("数据时间：" + d)
         if (partition == 0) {
-          readSource(d.toString)
+          readSource(d.toString, params.startHour)
         } else {
-          readSource(d.toString).repartition(partition)
+          readSource(d.toString, params.startHour).repartition(partition)
         }
       }
       case None =>
@@ -73,28 +73,17 @@ abstract class FactEtlBase extends BaseClass {
     }
   }
 
-  def readSource(sourceDate: String): DataFrame = {
+  def readSource(sourceDate: String, sourceHour: String): DataFrame = {
     if (sourceDate == null) {
       null
     } else if (readSourceType == null || readSourceType == ods) {
-      readFromOds(odsTableName, sourceDate)
+      DataExtractUtils.readFromOds(sqlContext, odsTableName, sourceDate, sourceHour)
     } else if (readSourceType == parquet) {
-      readFromParquet(parquetPath, sourceDate)
+      DataExtractUtils.readFromParquet(sqlContext, parquetPath, sourceDate)
     }
     else {
       null
     }
-  }
-
-  def readFromParquet(path: String, sourceDate: String): DataFrame = {
-    val filePath = path.replace(LogPath.DATE_ESCAPE, sourceDate)
-    val sourceDf = sqlContext.read.parquet(filePath)
-    sourceDf
-  }
-
-  def readFromOds(tableName: String, sourceDate: String): DataFrame = {
-    val sourceDf = sqlContext.read.table(tableName).where("key_day=" + sourceDate)
-    sourceDf
   }
 
   /**
