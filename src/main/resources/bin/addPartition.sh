@@ -50,8 +50,8 @@ done
    exit 0
   fi
 
-startTimeParam=`date -d "1 hours "$startDate $startHour +"%Y%m%d %H"`
-endTimeParam=`date -d "1 hours "$endDate $endHour +"%Y%m%d %H"`
+startTimeParam=`date -d "1 hours $startDate $startHour" +"%Y%m%d %H"`
+endTimeParam=`date -d "1 hours $endDate $endHour" +"%Y%m%d %H"`
 
 startDate=`date -d "$startTimeParam" +%Y%m%d`
 startHour=`date -d "$startTimeParam" +%H`
@@ -76,7 +76,7 @@ while [[ $startTime -le $endTime ]]
    echo "hive addPartitions  ${startTime} is fail ..."
    exit 1
   fi
-  startTimeParam=`date -d "1 hours "$startDate $startHour +"%Y%m%d %H"`
+  startTimeParam=`date -d "1 hours $startDate $startHour" +"%Y%m%d %H"`
   startDate=`date -d "$startTimeParam" +%Y%m%d`
   startHour=`date -d "$startTimeParam" +%H`
   startTime=$startDate$startHour
