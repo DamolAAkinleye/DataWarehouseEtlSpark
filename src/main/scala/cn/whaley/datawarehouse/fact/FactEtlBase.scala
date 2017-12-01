@@ -183,7 +183,7 @@ abstract class FactEtlBase extends BaseClass {
     val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
     val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + hour
     val onLineFactBackupParentDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date
-    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator +  date + hour
+    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator +    + hour
     println("线上数据目录:" + onLineFactDir)
     println("线上数据备份目录:" + onLineFactBackupDir)
     println("线上数据临时目录:" + onLineFactDirTmp)
