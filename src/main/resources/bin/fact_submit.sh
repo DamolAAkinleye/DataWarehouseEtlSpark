@@ -4,10 +4,10 @@ startDateParam=$3
 endDateParam=$5
 startHourParam=$7
 endHourParam=$9
-startDate=`date -d "-1 hours "$startDateParam $startHourParam +%Y%m%d`
-endDate=`date -d "-1 hours "$endDateParam $endHourParam +%Y%m%d`
-startHour=`date -d "-1 hours "$startDateParam $startHourParam +%H`
-endHour=`date -d "-1 hours "$endDateParam $endHourParam +%H`
+startDate=`date -d "-1 hours $startDateParam $startHourParam" +%Y%m%d`
+endDate=`date -d "-1 hours $endDateParam $endHourParam" +%Y%m%d`
+startHour=`date -d "-1 hours $startDateParam $startHourParam" +%H`
+endHour=`date -d "-1 hours $endDateParam $endHourParam" +%H`
 echo "start of data is $startDate $startHour"
 echo "end of data is $endDate $endHour"
 
@@ -119,7 +119,7 @@ do
         exit 1
     fi
 
-    startTimeParam=`date -d "1 hours "$startDate $startHour +"%Y%m%d %H"`
+    startTimeParam=`date -d "1 hours $startDate $startHour" +"%Y%m%d %H"`
     startDate=`date -d "$startTimeParam" +%Y%m%d`
     startHour=`date -d "$startTimeParam" +%H`
     startTime=$startDate$startHour

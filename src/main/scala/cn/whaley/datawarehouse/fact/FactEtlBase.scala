@@ -97,7 +97,12 @@ abstract class FactEtlBase extends BaseClass {
     completeSourceDf.printSchema()
     completeSourceDf.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    println("完整事实表行数：" + completeSourceDf.count())
+    val count = completeSourceDf.count()
+    println("完整事实表行数：" + count)
+
+    if(count == 0) {
+      throw new RuntimeException("未读取到源数据！")
+    }
     //    if (debug) {
     //      println("完整事实表行数：" + completeSourceDf.count())
     //      HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
