@@ -113,7 +113,7 @@ do
     --conf spark.sql.parquet.compression.codec=gzip \
     --conf spark.memory.storageFraction=0.4 \
     --conf spark.memory.fraction=0.75 \
-    --class "$MainClass" $spark_mainJar --startDate $startDate --startHour $startHour $Args
+    --class "$MainClass" $spark_mainJar --date $startDate --hour $startHour $Args
     if [ $? -ne 0 ];then
         echo "Execution failed, startDate of data is ${startTime}  ..."
         exit 1
