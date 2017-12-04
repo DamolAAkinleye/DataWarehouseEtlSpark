@@ -149,10 +149,9 @@ object PlayPathClick extends FactEtlBase {
       ("dataSource", null, StringType),
       ("recommendType" ,null, StringType)
     )
-    val launcher = s"/log/whaley/parquet/$startDate/launcher"
-    val wui = s"/log/boikgpokn78sb95kjhfrendoj8ilnoi7/parquet/$startDate/positionClick"
+   // val launcher = s"/log/whaley/parquet/$startDate/launcher"
+   // val wui = s"/log/boikgpokn78sb95kjhfrendoj8ilnoi7/parquet/$startDate/positionClick"
 
-    if (HdfsUtil.isHDFSFileExist(launcher) && HdfsUtil.isHDFSFileExist(wui)) {
 
 //      var getWuiLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_LAUNCHER, startDate)
 //      var getLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_LAUNCHER, startDate)
@@ -274,180 +273,10 @@ object PlayPathClick extends FactEtlBase {
 
 
     }
-    else if (HdfsUtil.isHDFSFileExist(launcher) && (!HdfsUtil.isHDFSFileExist(wui))) {
-//      var getLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_LAUNCHER, startDate)
-//      var getChannelInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_CHANNEL_Click, startDate)
-//      var getMovieInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_MOVIE_Click, startDate)
-
-      var getLauncherInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_launcher", startDate, startHour)
-      var getChannelInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_channelhome_click", startDate, startHour)
-      var getMovieInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_whaleymovie_moviehomeaccess", startDate, startHour)
-
-      getLauncherInfo = addColumn(getLauncherInfo, fields1)
-      getChannelInfo = addColumn(getChannelInfo, fields)
-      getMovieInfo = addColumn(getMovieInfo, fields)
-
-      getLauncherInfo.selectExpr(
-        "romVersion as rom_version",
-        "firmwareVersion as firmware_version",
-        "productLine as product_line",
-        "productSN as product_sn",
-        "pageType as page",
-        "accessAera as   area_name",
-        "accessLocation  as  location_code",
-        "linkValue as link_value",
-        "locationIndex  as  location_index",
-        "linkType as link_type",
-        "accessLocation as  sid ",
-        "adPuttingId as ad_putting_id",
-        "positionType as position_type",
-        "accountId as account_id",
-        "dataSource as data_source",
-        "recommendType as recommend_type",
-        "datetime as date_time"
-      )
-        .unionAll(
-          getChannelInfo.selectExpr(
-            "romVersion as rom_version",
-            "firmwareVersion as firmware_version",
-            "productLine as product_line",
-            "productSN as product_sn",
-            "contentType as page",
-            "accesssArea as area_name",
-            "accessLocation as  location_code",
-            "linkValue as link_value",
-            "accessLocation as  sid ",
-            "locationIndex as location_index",
-            "linkType as link_type",
-            "adPuttingId as ad_putting_id",
-            "positionType as position_type",
-            "accountId as account_id",
-            "dataSource as data_source",
-            "recommendType as recommend_type",
-            "datetime as date_time"
-          )
-        ).unionAll(getMovieInfo.selectExpr(
-        "romVersion as rom_version",
-        "firmwareVersion as firmware_version",
-        "productLine as product_line",
-        "productSN as product_sn",
-        "contentType as page",
-        "accesssArea as area_name",
-        "accessLocation as  location_code",
-        "linkValue as link_value",
-        "accessLocation as  sid ",
-        "locationIndex as location_index",
-        "linkType as link_type",
-        "adPuttingId as ad_putting_id",
-        "positionType as position_type",
-        "accountId as account_id",
-        "dataSource as data_source",
-        "recommendType as recommend_type",
-        "datetime as date_time"
-      )
-      )
-    }
-    else if (!HdfsUtil.isHDFSFileExist(launcher) && HdfsUtil.isHDFSFileExist(wui)){
-//      var getWuiLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_LAUNCHER, startDate)
-//      var getChannelInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_CHANNEL_Click, startDate)
-//      var getMovieInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_MOVIE_Click, startDate)
-//      var getWuiButton = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_BUTTON, startDate)
-      var getWuiLauncherInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_launcher", startDate, startHour)
-      var getChannelInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_channelhome_click", startDate, startHour)
-      var getMovieInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_whaleymovie_moviehomeaccess", startDate, startHour)
-      var getWuiButton = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_wui20_buttonclick", startDate, startHour)
-        .where("buttonType = 'signal' or buttonType = 'search' ")
 
 
-      getWuiLauncherInfo = addColumn(getWuiLauncherInfo, fields)
-      getChannelInfo = addColumn(getChannelInfo, fields)
-      getMovieInfo = addColumn(getMovieInfo, fields)
-      getWuiButton = addColumn(getWuiButton, fields)
-
-      getWuiLauncherInfo.selectExpr(
-        "romVersion as rom_version",
-        "firmwareVersion as firmware_version",
-        "productLine as product_line",
-        "productSN as product_sn",
-        "pageType as page",
-        "case when positionArea='我的电视' then positionArea else tableName end as area_name",
-        "elementCode as  location_code",
-        "linkValue as link_value",
-        "linkValue as  sid ",
-        "positionIndex as location_index",
-        "linkType as link_type",
-        "adPuttingId as ad_putting_id",
-        "positionType as position_type",
-        "accountId as account_id",
-        "dataSource as data_source",
-        "recommendType as recommend_type",
-        "datetime as date_time"
-      ).unionAll(
-        getChannelInfo.selectExpr(
-          "romVersion as rom_version",
-          "firmwareVersion as firmware_version",
-          "productLine as product_line",
-          "productSN as product_sn",
-          "contentType as page",
-          "accesssArea as area_name",
-          "accessLocation as  location_code",
-          "linkValue as link_value",
-          "accessLocation as  sid ",
-          "locationIndex as location_index",
-          "linkType as link_type",
-          "adPuttingId as ad_putting_id",
-          "positionType as position_type",
-          "accountId as account_id",
-          "dataSource as data_source",
-          "recommendType as recommend_type",
-          "datetime as date_time"
-        )
-      ).unionAll(getMovieInfo.selectExpr(
-        "romVersion as rom_version",
-        "firmwareVersion as firmware_version",
-        "productLine as product_line",
-        "productSN as product_sn",
-        "contentType as page",
-        "trim(accesssArea) as area_name",
-        "accessLocation as  location_code",
-        "linkValue as link_value",
-        "accessLocation as  sid ",
-        "locationIndex as location_index",
-        "linkType as link_type",
-        "adPuttingId as ad_putting_id",
-        "positionType as position_type",
-        "accountId as account_id",
-        "dataSource as data_source",
-        "recommendType as recommend_type",
-        "datetime as date_time"
-      )
-      ).unionAll(
-        getWuiButton.selectExpr(
-          "romVersion as rom_version",
-          "firmwareVersion as firmware_version",
-          "productLine as product_line",
-          "productSN as product_sn",
-          "pageType as page",
-          "buttonType as area_name",
-          "elementCode as  location_code",
-          "linkValue as link_value",
-          "linkValue as  sid ",
-          "positionIndex as location_index",
-          "linkType as link_type",
-          "adPuttingId as ad_putting_id",
-          "positionType as position_type",
-          "accountId as account_id",
-          "dataSource as data_source",
-          "recommendType as recommend_type",
-          "datetime as date_time"
-        )
-      )
-
-    }
-    else null
 
 
-  }
 
 
   def addColumn(df: DataFrame, fields: List[(String, Any, DataType)]): DataFrame = {
