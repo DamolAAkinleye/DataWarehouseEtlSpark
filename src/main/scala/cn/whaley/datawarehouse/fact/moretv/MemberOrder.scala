@@ -48,9 +48,11 @@ object MemberOrder extends FactEtlBase{
   override def readSource(sourceDate: String, sourceHour: String): DataFrame = {
     val sourceDB = MysqlDB.medusaMemberDB("business_order")
     val businessOrderDF = DataExtractUtils.readFromJdbc(sqlContext,sourceDB)
-    //TODO
-    businessOrderDF.filter(s"substring(create_time,0,10) = '${DateFormatUtils.cnFormat.format(DateFormatUtils.readFormat.parse(sourceDate))}'").
-      filter(s"substring(create_time,12,2) = '${sourceHour}'")
+    var df = businessOrderDF.filter(s"substring(create_time,0,10) = '${DateFormatUtils.cnFormat.format(DateFormatUtils.readFormat.parse(sourceDate))}'")
+    if(sourceHour != null) {
+      df = df.filter(s"substring(create_time,12,2) = '$sourceHour'")
+    }
+    df
   }
 
   override def load(params: Params, df: DataFrame) = {
