@@ -18,6 +18,7 @@ object EntranceTypeUtils extends LogConfig {
   private val MEDUSA_ENTRANCE_REGEX = ("home\\*(classification|foundation|my_tv)\\*[0-9-]{0,2}([a-z_]*)").r
   private val MEDUSA_ENTRANCE_REGEX_WITHOUT_LOCATION_CODE = ("(live|recommendation|search|setting)").r
   private val MORETV_ENTRANCE_REGEX = ("home-(TVlive|live|search|history|watchhistory|hotrecommend)").r
+  private val MEDUSA_ENTRANCE_MY_TV_317_REGEX = ("home\\*my_tv\\*1-accountcenter_home\\*([a-zA-Z0-9&\\u4e00-\\u9fa5]+)").r
 
   private def getEntranceCodeByPathETL(path: String, flag: String, code: String): String = {
     var result: String = null
@@ -31,6 +32,21 @@ object EntranceTypeUtils extends LogConfig {
               case Some(p) => {
                 launcher_area_code = p.group(1)
                 launcher_location_code = p.group(2)
+
+                //修复317 路径打点问题，在317上"我的电视"模块的历史与收藏已经合并在一起了：home*my_tv*1-accountcenter_home*收藏追看/home*my_tv*1-accountcenter_home*观看历史
+                if(launcher_location_code == "accountcenter_home") {
+                  MEDUSA_ENTRANCE_MY_TV_317_REGEX findFirstMatchIn path match {
+                    case Some(p) => {
+                      p.group(1) match {
+                        case "观看历史" => launcher_location_code = "history"
+                        case "收藏追看"|"明星关注"|"标签订阅"|"节目预约"|"专题收藏" => launcher_location_code = "collect"
+                        case _ =>
+                      }
+                    }
+                    case None =>
+                  }
+
+                }
               }
               case None =>
             }
