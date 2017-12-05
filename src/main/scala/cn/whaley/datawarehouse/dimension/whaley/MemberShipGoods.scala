@@ -26,6 +26,8 @@ object MemberShipGoods extends DimensionBase {
 
   dimensionName = "dim_whaley_membership_goods"
 
+  sourceTimeCol = "publishTime"
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
     val sq = sqlContext
     import sq.implicits._

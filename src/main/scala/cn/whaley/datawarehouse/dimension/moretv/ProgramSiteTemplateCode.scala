@@ -31,4 +31,6 @@ object ProgramSiteTemplateCode extends DimensionBase {
   sourceDb = MysqlDB.medusaCms("mtv_program_site_templateCode", "id", 1, 2010000000, 1)
 
   dimensionName = "dim_medusa_program_site_template_code"
+
+  fullUpdate = true
 }

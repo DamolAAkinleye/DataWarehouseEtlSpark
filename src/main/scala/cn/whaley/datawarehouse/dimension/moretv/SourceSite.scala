@@ -30,6 +30,8 @@ object SourceSite extends DimensionBase {
 
   dimensionName = "dim_medusa_source_site"
 
+  fullUpdate = true
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
     sourceDf.filter("status = 1").filter("id <> 1").withColumn(
       //补充源数据中纪录片code缺失

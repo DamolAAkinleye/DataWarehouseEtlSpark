@@ -30,6 +30,7 @@ object UserDate extends DimensionBase {
     "day_type")
   dimensionName = "dim_date"
 
+  fullUpdate = true
 
   override def readSource(readSourceType: SourceType): DataFrame = {
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")

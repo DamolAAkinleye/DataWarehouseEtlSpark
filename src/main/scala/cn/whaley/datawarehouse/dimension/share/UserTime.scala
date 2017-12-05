@@ -24,6 +24,8 @@ object UserTime extends DimensionBase {
     "period")
   dimensionName = "dim_time"
 
+  fullUpdate = true
+
   override def readSource(readSourceType: SourceType): DataFrame = {
 
     val rdd = sc.makeRDD(getTimeSeq.map(s => Row.fromTuple(s)))

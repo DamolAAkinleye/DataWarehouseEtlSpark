@@ -43,7 +43,7 @@ object OnOff extends FactEtlBase{
     List(DimensionJoinCondition(Map("account_id" -> "account_id"))), "account_sk")
   )
 
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
     val fields = List(
       ("productSN",null,StringType),
       ("productLine",null,StringType),
@@ -59,8 +59,12 @@ object OnOff extends FactEtlBase{
       ("datetime",null,StringType)
     )
 
-    var onDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_ON,startDate)
-    var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
+//    var onDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_ON,startDate)
+//    var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
+
+    var onDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_on", startDate, startHour)
+    var offDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_off", startDate, startHour)
+
     onDf = addColumn(onDf,fields)
     offDf = addColumn(offDf,fields)
 

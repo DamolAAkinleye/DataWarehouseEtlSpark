@@ -28,4 +28,6 @@ object Singer extends DimensionBase {
   sourceDb = MysqlDB.whaleyCms("mtv_singer", "sid", 1, 500000, 10)
 
   dimensionName = "dim_whaley_singer"
+
+  sourceTimeCol = "updateTime"
 }

@@ -72,7 +72,7 @@ object LogPath {
   val MEDUSA_BUSINESS_ORDER = s"/data_warehouse/ods_view.db/db_snapshot_medusa_business_order/key_day=${DATE_ESCAPE}"
 
   // 电视猫订单事实表
-  val FACT_MEDUSA_ORDER = s"/data_warehouse/dw_facts/fact_medusa_member_order/${DATE_ESCAPE}/00"
+  val FACT_MEDUSA_ORDER = s"/data_warehouse/dw_facts/fact_medusa_member_order/${DATE_ESCAPE}/*"
 
   // 电视猫订单&购买入口映射表
   val ORDER_ENTRANCE_UID_MAPPED = "/data_warehouse/dw_normalized/medusa_order_uid_entrance_mapping"

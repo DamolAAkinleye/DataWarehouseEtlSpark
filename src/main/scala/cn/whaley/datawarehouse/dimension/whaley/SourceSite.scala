@@ -34,6 +34,8 @@ object SourceSite extends DimensionBase {
 
   dimensionName = "dim_whaley_source_site"
 
+  fullUpdate = true
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     //补充站点树

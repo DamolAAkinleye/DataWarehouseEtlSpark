@@ -26,13 +26,6 @@ abstract class DimensionBase extends BaseClass {
     */
   val columns = new Columns
 
-  //  /**
-  //    * 读取原始数据dataframe的方式，默认是jdbc
-  //    *
-  //    * @see [[SourceType]]
-  //    */
-  //  var readSourceType: Value = jdbc
-
   /**
     * 来源读取配置jdbc参数，仅当readSourceType设置为jdbc时有效
     */
@@ -55,30 +48,46 @@ abstract class DimensionBase extends BaseClass {
     */
   var sourceColumnMap: Map[String, String] = Map()
 
-  //  override def execute(params: Params): Unit = {
-  //
-  //    val result = doExecute()
-  //
-  //    println("backup start ....")
-  //    backup(params, result, dimensionName)
-  //    println("backup end ....")
-  //
-  //    //TODO 新数据验证
-  //
-  //  }
+  /**
+    * 是否执行全量更新
+    * 在全量更新模式下，输入数据必须是当前状态下的维度全量数据，原来的维度信息存在的行如果再新源数据中不存在会被标记为失效
+    * 增量模式下，输入数据可以只包含变化的行。增量模式下不能增加列
+    */
+  var fullUpdate: Boolean = false
+
+  /**
+    * 增量更新时间字段，只在增量更新模式下有用
+    */
+  var sourceTimeCol: String = "update_time"
 
 
   override def extract(params: Params): DataFrame = {
     //初始化参数处理和验证
-    valid()
+    valid(params)
 
     //读取源数据
-    val sourceDf = readSource(readSourceType)
+    val sourceDf =
+      if(fullUpdate) {
+        readSource(readSourceType)
+      } else {
+        readSourceIncr(readSourceType)
+      }
 
     //过滤源数据
     val filteredSourceDf = filterSource(sourceDf)
 
     filteredSourceDf.persist()
+
+    if(!fullUpdate) {
+      val count = filteredSourceDf.count()
+      if (count == 0) {
+        println("源数据为空。。。。。。。。")
+        return null
+      } else {
+        println("源数据更新条数：" + count)
+      }
+    }
+
 
     //过滤后源数据主键唯一性判断和处理
     checkPrimaryKeys(filteredSourceDf, columns.primaryKeys)
@@ -92,7 +101,11 @@ abstract class DimensionBase extends BaseClass {
   /**
     * 验证参数，优化配置
     */
-  private def valid(): Unit = {
+  private def valid(params: Params): Unit = {
+    if (params.mode == "all") {
+      fullUpdate = true
+    } //不支持通过参数设置为增量更新模式，因为不是所有维度都支持增量更新
+
     columns.trackingColumns = if (columns.trackingColumns == null) List() else columns.trackingColumns
     if (columns.primaryKeys == null || columns.primaryKeys.isEmpty) {
       throw new RuntimeException("业务主键未设置！")
@@ -116,6 +129,17 @@ abstract class DimensionBase extends BaseClass {
   def readSource(readSourceType: Value): DataFrame = {
     if (readSourceType == null || readSourceType == jdbc) {
       sqlContext.read.format("jdbc").options(sourceDb).load()
+    } else {
+      null
+    }
+  }
+
+  def readSourceIncr(readSourceType: Value): DataFrame = {
+    if (readSourceType == null || readSourceType == jdbc) {
+      val date = DateUtils.truncate(DateUtils.addHours(new Date(), -1), Calendar.HOUR_OF_DAY)
+      val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+      val dateStr = sdf.format(date)
+      sqlContext.read.format("jdbc").options(sourceDb).load().where(s"$sourceTimeCol >= '$dateStr'")
     } else {
       null
     }
@@ -161,10 +185,15 @@ abstract class DimensionBase extends BaseClass {
 
   override def transform(params: Params, filteredSourceDf: DataFrame): DataFrame = {
 
+    if(filteredSourceDf == null) return null
+
     val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionName
 
     //首次创建维度
     if (!HdfsUtil.pathIsExist(onlineDimensionDir)) {
+      if (!fullUpdate) {
+        throw new RuntimeException("维度第一次创建，请使用全量模式")
+      }
       val result = DataFrameUtil.dfZipWithIndex(
         DataFrameUtil.addDimTime(
           filteredSourceDf.selectExpr(columns.getSourceColumns :_*),
@@ -191,7 +220,11 @@ abstract class DimensionBase extends BaseClass {
 
     if (debug) println("新增加列：" + newColumns)
 
-    //新增的行
+    if(!fullUpdate && newColumns.nonEmpty) {
+      throw new RuntimeException("有新增列，必须用全量更新模式运行")
+    }
+
+    //新增的行，业务键在新的源数据中存在但是在之前的维度中不存在的行
     val addDf =
       filteredSourceDf.as("b").join(
         originalDf.where(columns.invalidTimeKey + " is null").as("a"), columns.primaryKeys, "leftouter"
@@ -234,9 +267,10 @@ abstract class DimensionBase extends BaseClass {
     val todayStr = sdf.format(today)
 
 
-    //现有维度表中已经存在的行，已经根据现有源信息做了字段更新，更新了因源数据删除导致的失效，但是未更新因为追踪历史记录的列变化导致的失效
-    //如果维度表中已经存在的业务键在源信息中被删除了，则会保留维度表中的值
+    //现有维度表中已经存在的行，已经根据现有源信息做了字段更新
+    //因为追踪历史记录的列变化导致的失效的没有处理，在下一部分处理
     //若trackingColumn原本为null，源数据有值后，会在直接在该主键的所有行上变更，也就是说，历史记录默认不记录null值
+    //如果维度表中已经存在的业务键在新的源信息中被删除了，则会保留维度表中的值。在全量更新的模式下，会添加上失效时间，在增量模式下不会更新失效时间
     val originalExistDf = originalDf.as("a").join(
       filteredSourceDf.as("b"),
       columns.primaryKeys.map(s => originalDf(s) === filteredSourceDf(s)).reduceLeft(_ && _),
@@ -250,10 +284,15 @@ abstract class DimensionBase extends BaseClass {
     })
       ++ List(columns.validTimeKey).map(s => "a." + s)
       ++ List(columns.invalidTimeKey).map(s =>
-      //"a." + s   //如果源数据确保主键不会变，则可以使用这个逻辑。在这个逻辑下，可以允许filteredSourceDf只包含源数据中变动的行，
-      //同时要注意，在需要增加列时，filteredSourceDf必须要包含完整源数据
-      "cast(CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null " +
-        s"THEN '$todayStr' ELSE a.$s END as timestamp) as $s")
+      if(fullUpdate) {
+        //更新filteredSourceDf中不存在的行，使其失效
+        "cast(CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null " +
+          s"THEN '$todayStr' ELSE a.$s END as timestamp) as $s"
+      } else {
+        //增量模式，可以允许filteredSourceDf只包含源数据中变动的行
+        //同时要注意，在需要增加列时，filteredSourceDf必须要包含完整源数据
+        "a." + s
+      })
       : _*
     )
 
@@ -341,6 +380,7 @@ abstract class DimensionBase extends BaseClass {
     */
   private def backup(p: Params, df: DataFrame, dimensionType: String): Unit = {
 
+    if(df == null) {return}
     val cal = Calendar.getInstance
     val date = DateFormatUtils.readFormat.format(cal.getTime)
     val onLineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionType

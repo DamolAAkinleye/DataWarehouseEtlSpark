@@ -28,4 +28,5 @@ object Activity extends DimensionBase{
 
   dimensionName = "dim_whaley_activity"
 
+  fullUpdate = true
 }

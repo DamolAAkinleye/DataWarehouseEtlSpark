@@ -26,4 +26,6 @@ object DangerousCityLevel extends DimensionBase {
 
   sourceFilterWhere = "judge = 1"
 
+  fullUpdate = true
+
 }

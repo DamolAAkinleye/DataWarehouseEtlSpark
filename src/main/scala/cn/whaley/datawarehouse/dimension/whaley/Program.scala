@@ -41,6 +41,8 @@ object Program extends DimensionBase {
 
   dimensionName = "dim_whaley_program"
 
+  sourceTimeCol = "publish_time"
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     sqlContext.udf.register("myReplace",myReplace _)

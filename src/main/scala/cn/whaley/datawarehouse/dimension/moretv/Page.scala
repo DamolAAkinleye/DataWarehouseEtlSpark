@@ -38,6 +38,8 @@ object Page extends DimensionBase {
     "page_id" -> "id"
   )
 
+  fullUpdate = true
+
   override def readSource(readSourceType: Value): DataFrame = {
 
     //首页

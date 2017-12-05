@@ -51,7 +51,7 @@ object MembershipOrderRight extends FactEtlBase{
     List(DimensionJoinCondition(Map("whaleyAccount" -> "account_id"))), "account_sk")
   )
 
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
 
 
     val cal = Calendar.getInstance()

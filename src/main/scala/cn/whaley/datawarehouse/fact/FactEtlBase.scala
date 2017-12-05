@@ -9,7 +9,7 @@ import cn.whaley.datawarehouse.fact.constant.Constants._
 import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
-import cn.whaley.datawarehouse.util.{DataFrameUtil, HdfsUtil, Params}
+import cn.whaley.datawarehouse.util.{DataExtractUtils, DataFrameUtil, HdfsUtil, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.storage.StorageLevel
@@ -26,6 +26,8 @@ abstract class FactEtlBase extends BaseClass {
   var topicName: String = _
 
   var parquetPath: String = _
+
+  var odsTableName: String = _
 
   var addColumns: List[UserDefinedColumn] = _
 
@@ -61,9 +63,9 @@ abstract class FactEtlBase extends BaseClass {
       case Some(d) => {
         println("数据时间：" + d)
         if (partition == 0) {
-          readSource(d.toString)
+          readSource(d.toString, params.startHour)
         } else {
-          readSource(d.toString).repartition(partition)
+          readSource(d.toString, params.startHour).repartition(partition)
         }
       }
       case None =>
@@ -71,20 +73,17 @@ abstract class FactEtlBase extends BaseClass {
     }
   }
 
-  def readSource(sourceDate: String): DataFrame = {
+  def readSource(sourceDate: String, sourceHour: String): DataFrame = {
     if (sourceDate == null) {
       null
-    } else if (readSourceType == null || readSourceType == parquet) {
-      readFromParquet(parquetPath, sourceDate)
-    } else {
+    } else if (readSourceType == null || readSourceType == ods) {
+      DataExtractUtils.readFromOds(sqlContext, odsTableName, sourceDate, sourceHour)
+    } else if (readSourceType == parquet) {
+      DataExtractUtils.readFromParquet(sqlContext, parquetPath, sourceDate)
+    }
+    else {
       null
     }
-  }
-
-  def readFromParquet(path: String, sourceDate: String): DataFrame = {
-    val filePath = path.replace(LogPath.DATE_ESCAPE, sourceDate)
-    val sourceDf = sqlContext.read.parquet(filePath)
-    sourceDf
   }
 
   /**
@@ -98,7 +97,12 @@ abstract class FactEtlBase extends BaseClass {
     completeSourceDf.printSchema()
     completeSourceDf.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    println("完整事实表行数：" + completeSourceDf.count())
+    val count = completeSourceDf.count()
+    println("完整事实表行数：" + count)
+
+    if(count == 0) {
+      throw new RuntimeException("未读取到源数据！")
+    }
     //    if (debug) {
     //      println("完整事实表行数：" + completeSourceDf.count())
     //      HdfsUtil.deleteHDFSFileOrPath(FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + "debug" + File.separator + "completeSource")
@@ -179,11 +183,12 @@ abstract class FactEtlBase extends BaseClass {
     */
   private def backup(p: Params, df: DataFrame, topicName: String): Unit = {
     val date = p.paramMap("date")
-    val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + "00"
+    val hour = if (p.startHour == null) {"00"} else {p.startHour}
+    val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + hour
     val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
-    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + "00"
+    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + hour
     val onLineFactBackupParentDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date
-    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator +  date
+    val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator + date + File.separator + hour
     println("线上数据目录:" + onLineFactDir)
     println("线上数据备份目录:" + onLineFactBackupDir)
     println("线上数据临时目录:" + onLineFactDirTmp)

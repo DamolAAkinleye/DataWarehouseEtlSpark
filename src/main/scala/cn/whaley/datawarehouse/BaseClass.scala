@@ -6,8 +6,7 @@ import cn.whaley.datawarehouse.global.Globals._
 import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.{DateFormatUtils, Params, ParamsParseUtil}
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.hive.HiveContext
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.reflect.io.File
@@ -21,9 +20,9 @@ trait BaseClass {
   /**
     * define some parameters
     */
+  var spark: SparkSession = null
   var sc: SparkContext = null
   implicit var sqlContext: SQLContext = null
-  var hiveContext: HiveContext = null
 
   var readSourceType: Value = _
 
@@ -44,17 +43,16 @@ trait BaseClass {
     ParamsParseUtil.parse(args) match {
       case Some(p) => {
         if (p.startDate != null) {
-          var date = p.startDate
+          val date = p.startDate
           p.paramMap.put("date", date)
-          execute(p)
-          while (p.endDate != null && date < p.endDate) {
-            date = DateFormatUtils.enDateAdd(date, 1)
-            p.paramMap.put("date", date)
-            execute(p)
-          }
-        } else {
-          execute(p)
         }
+        if(p.mode != null) {
+          if(!List("all", "increment").contains(p.mode)) {
+            throw new RuntimeException("mode must be all or increment")
+          }
+        }
+        execute(p)
+
       }
       case None => {
         throw new RuntimeException("parameters wrong")
@@ -69,11 +67,12 @@ trait BaseClass {
     * 全局变量初始化
     */
   def init(): Unit = {
-    sc = new SparkContext(config)
-    sqlContext = SQLContext.getOrCreate(sc)
-
-    //    hiveContext = new HiveContext(sc)
-    //    DataIO.init("hdfs://hans/test/config.json")
+    spark = SparkSession.builder()
+      .config(config)
+      .enableHiveSupport()
+      .getOrCreate()
+    sc = spark.sparkContext
+    sqlContext = spark.sqlContext
   }
 
   def beforeExecute(): Unit = {

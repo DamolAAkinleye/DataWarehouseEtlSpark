@@ -3,6 +3,7 @@ package cn.whaley.datawarehouse.fact.moretv
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
 import cn.whaley.datawarehouse.fact.constant.LogPath
+import cn.whaley.datawarehouse.global.SourceType._
 import cn.whaley.datawarehouse.util.DateFormatUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
@@ -14,11 +15,13 @@ import org.apache.spark.sql.functions._
   */
 object UserLogin extends FactEtlBase {
 
-//  debug = true
+  //  debug = true
 
   topicName = "fact_medusa_user_login"
 
-  parquetPath = LogPath.MEDUSA_LOGIN_LOG_PATH
+  readSourceType = ods
+
+  odsTableName = "ods_view.log_medusa_main3x_loginlog"
 
   addColumns = List(
     UserDefinedColumn("ipKey", udf(getIpKey: String => Long), List("ip")),
@@ -28,6 +31,8 @@ object UserLogin extends FactEtlBase {
     UserDefinedColumn("app_version", udf(getAppVersion: String => String), List("version"))
 
   )
+
+  partition = 180
 
   columnsFromSource = List(
     ("product_serial", "productSerial"),
@@ -72,11 +77,6 @@ object UserLogin extends FactEtlBase {
       , "app_version_sk")
   )
 
-  override def readSource(startDate: String): DataFrame = {
-    //电视猫的读取目录需要加一天
-    val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
-    super.readSource(DateFormatUtils.readFormat.format(date)).repartition(180)
-  }
 
   def getIpKey(ip: String): Long = {
     try {

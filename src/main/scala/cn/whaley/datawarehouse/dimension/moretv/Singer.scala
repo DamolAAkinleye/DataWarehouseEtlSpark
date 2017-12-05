@@ -40,4 +40,5 @@ object Singer extends DimensionBase {
 
   sourceFilterWhere = "singer_id is not null and singer_id <> ''"
 
+  sourceTimeCol = "updateTime"
 }

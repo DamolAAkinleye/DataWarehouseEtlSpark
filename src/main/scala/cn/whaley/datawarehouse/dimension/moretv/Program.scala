@@ -29,8 +29,10 @@ object Program extends DimensionBase {
 
   dimensionName = "dim_medusa_program"
 
-  override def readSource(readSourceType: _root_.cn.whaley.datawarehouse.global.SourceType.Value): DataFrame = {
-    val programDF = sqlContext.read.format("jdbc").options(sourceDb).load()
+  sourceTimeCol = "publish_time"
+
+  override def filterSource(sourceDf: DataFrame): DataFrame = {
+//    sourceDf.persist()
     val contentProgram = sqlContext.read.format("jdbc").options(contentProgramDB).load()
     val tvbBBCPackageProgram = sqlContext.read.format("jdbc").options(contentPackageProgramDB).load().filter("relation_status = 'bound'")
       .persist(StorageLevel.MEMORY_AND_DISK)
@@ -44,16 +46,12 @@ object Program extends DimensionBase {
       withColumn("package_name", lit("腾讯节目包")).
       select(vipProgramColumns.map(col):_*)
     val vipProgramDF = tencentProgramDF.union(tvbPackageProgramDF).union(bbcPackageProgramDF)
-    programDF.join(vipProgramDF,programDF("sid") === vipProgramDF("program_code"),"left_outer").
+    val newDf = sourceDf.join(vipProgramDF,sourceDf("sid") === vipProgramDF("program_code"),"left_outer").
       withColumn("is_vip", if(col("package_code") != null) lit(1) else lit(0))
-  }
-
-  override def filterSource(sourceDf: DataFrame): DataFrame = {
-//    sourceDf.persist()
 
     sqlContext.udf.register("myReplace",myReplace _)
 
-    sourceDf.registerTempTable("mtv_basecontent")
+    newDf.registerTempTable("mtv_basecontent")
 
     val programDf = sqlContext.sql("select sid, id, display_name, content_type, " +
       " duration, parent_id, video_type, type, " +

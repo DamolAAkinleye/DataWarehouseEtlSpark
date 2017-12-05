@@ -49,7 +49,7 @@ object Play3xCombineUtils extends LogConfig {
   var factDataFrameWithIndex:DataFrame= null
   /** 合并操作
     * */
-  def get3xCombineDataFrame(factDataFrame: DataFrame, sqlContext: SQLContext, sc: SparkContext): DataFrame = {
+  def get3xCombineDataFrame(factDataFrame: DataFrame, sqlContext: SQLContext): DataFrame = {
     //进行索引编号
     factDataFrameWithIndex = DataFrameUtil.dfZipWithIndex(factDataFrame, INDEX_NAME)
     factDataFrameWithIndex.persist(StorageLevel.MEMORY_AND_DISK_SER)
