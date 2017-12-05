@@ -6,7 +6,7 @@ cd `dirname $0`
 pwd=`pwd`
 echo $pwd
 
-ARGS=`getopt -o d:t:s:e:h --long database:,table:,startDate:,endDate:,hour: -- "$@"`
+ARGS=`getopt -o d:t:s:e:on --long database:,table:,startDate:,endDate:,isOnline: -- "$@"`
 
 #将规范化后的命令行参数分配至位置参数（$1,$2,...)
 eval set -- "${ARGS}"
@@ -26,8 +26,8 @@ do
         -e|--endDate)
             endDate=$2;
             shift 2;;
-        -h|--hour)
-            hour=$2;
+        -on|--isOnline)
+            isOnline=$2;
             shift 2;;
         --)
             shift;
@@ -39,8 +39,12 @@ do
     esac
 done
 
+  if [ $isOnline != 'true' ];then
+   echo "do not need to add partition"
+   exit 0
+  fi
 
-hour_p=$hour
+hour_p=00
 
 day_p=`date -d "-1 days "$startDate +%Y%m%d`
 endDate=`date -d "-1 days "$endDate +%Y%m%d`

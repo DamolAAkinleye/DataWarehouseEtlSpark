@@ -13,6 +13,9 @@ Params=($@)
 MainClass=${Params[0]}
 Length=${#Params[@]}
 Args=${Params[@]:5:Length-5}
+if [[ ${Length} -ge 9 && "${Params[5]}" == "--startHour" && "${Params[7]}" == "--endHour" ]]; then
+    Args=${Params[@]:9:Length-9}
+fi
 
 cd `dirname $0`
 pwd=`pwd`
