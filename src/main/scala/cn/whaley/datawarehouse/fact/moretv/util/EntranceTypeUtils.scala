@@ -16,7 +16,7 @@ object EntranceTypeUtils extends LogConfig {
     * 对于moretv日志只有live,search有对应的路径信息且只有area_code
     */
   private val MEDUSA_ENTRANCE_REGEX = ("home\\*(classification|foundation|my_tv)\\*[0-9-]{0,2}([a-z_]*)").r
-  private val MEDUSA_ENTRANCE_REGEX_WITHOUT_LOCATION_CODE = ("(live|recommendation|search|setting)").r
+  private val MEDUSA_ENTRANCE_REGEX_WITHOUT_LOCATION_CODE = ("(live|recommendation|search|setting|hotSubject|taste)").r
   private val MORETV_ENTRANCE_REGEX = ("home-(TVlive|live|search|history|watchhistory|hotrecommend)").r
 
   private def getEntranceCodeByPathETL(path: String, flag: String, code: String): String = {
@@ -112,9 +112,9 @@ object EntranceTypeUtils extends LogConfig {
           " launcher_area_code in ('classification','foundation','my_tv')", null, " launcherAreaCode in ('classification','foundation','my_tv')"
         ),
         DimensionJoinCondition(
-          /** launcher_location_code is null,join with launcher_area_code. (live,recommendation,search,setting) */
+          /** launcher_location_code is null,join with launcher_area_code. (live,recommendation,search,setting,hotSubject,taste) */
           Map("launcherAreaCode" -> "launcher_area_code"),
-          " launcher_area_code in ('live','recommendation','search','setting')", null, " launcherAreaCode in ('live','recommendation','search','setting')"
+          " launcher_area_code in ('live','recommendation','search','setting','hotSubject','taste')", null, " launcherAreaCode in ('live','recommendation','search','setting','hotSubject','taste')"
         )
       ),
       "launcher_entrance_sk")
