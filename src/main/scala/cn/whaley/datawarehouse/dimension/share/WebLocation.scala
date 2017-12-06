@@ -225,7 +225,7 @@ object WebLocation extends DimensionBase {
          |a.latitude,
          |a.isp,
          |a.prefecture_level_city,
-         |a.town_id
+         |if(a.town_id is null, b.town_id, a.town_id) as town_id
          |from tmp_table a left join city_info b
          |on a.prefecture_level_city=b.city
       """.stripMargin
