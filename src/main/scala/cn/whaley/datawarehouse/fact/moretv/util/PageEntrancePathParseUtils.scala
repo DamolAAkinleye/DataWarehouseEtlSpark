@@ -7,7 +7,7 @@ import org.apache.avro.TestAnnotation
 /**
   * Created by wu.jiulin on 2017/5/2.
   *
-  * 频道主页来源维度(少儿，音乐，体育)
+  * 频道主页来源维度(少儿，音乐，体育，奇趣，资讯，电竞)
   * 解析出pathMain或者path里的area_code和location_code，然后关联dim_medusa_page_entrance维度表，获得代理键
   * 1.kids和sports没有location_code. mv下的mvTopHomePage和mvRecommendHomePage有一部分location_code is null的情况,需要特殊处理
   * 2.kids的路径解析不出dim_medusa_page_entrance维度表的area_code,需要根据medusa_path_program_site_code_map维度表获得
@@ -19,6 +19,7 @@ object PageEntrancePathParseUtils extends LogConfig {
 
   private val PAGE_ENTRANCE_KIDS_REGEX = (".*(kids_home)-([A-Za-z_]*)").r
   private val PAGE_ENTRANGE_INTEREST_REGEX =(".*(interest-interest|interest-home)\\*(.*[\\u4e00-\\u9fa5])").r
+  private val PAGE_ENTRANGE_GAME_REGEX =(".*(game-game)\\*(.*[A-Za-z_][A-Za-z])\\*(.*[1-9])").r
   private val PAGE_ENTRANGE_HOT_REGEX =(".*(hot-hot|hot-home)\\*(.*[\\u4e00-\\u9fa5])").r
   private val PAGE_ENTRANCE_MV_REGEX = (".*(mv)\\*([A-Za-z_]*)\\*([a-zA-Z_]*)").r
   private val PAGE_ENTRANCE_SPORTS_REGEX = (".*(sports)\\*([A-Za-z_]*)").r
@@ -119,6 +120,23 @@ object PageEntrancePathParseUtils extends LogConfig {
           else{
             area_code = p.group(2)
           }
+        }
+        case None =>
+      }
+    }
+
+    /** game: game-game表示游戏首页**/
+    if(path.contains("game-game")){
+      PAGE_ENTRANGE_GAME_REGEX findFirstMatchIn path match {
+        case Some(p) => {
+          page_code = p.group(1).split("-")(0)
+          if(p.group(2).contains("*")){
+              area_code = p.group(2).split("[*]")(0)
+            }
+            else{
+              area_code = p.group(2)
+          }
+          location_code=p.group(3)
         }
         case None =>
       }
