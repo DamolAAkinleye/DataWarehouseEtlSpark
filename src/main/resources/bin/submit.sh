@@ -100,4 +100,5 @@ $spark_home/bin/spark-submit -v \
 --conf spark.sql.parquet.compression.codec=gzip \
 --conf spark.memory.storageFraction=0.4 \
 --conf spark.memory.fraction=0.75 \
+--conf spark.network.timeout=300s \
 --class "$MainClass" $spark_mainJar $Args
