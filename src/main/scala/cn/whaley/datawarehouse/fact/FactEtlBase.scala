@@ -45,6 +45,8 @@ abstract class FactEtlBase extends BaseClass {
     */
   var factTime: String = "concat(dim_date, '', dim_time)"
 
+  var dfLineCount = 0L
+
   //  override def execute(params: Params): Unit = {
   //    val result = doExecute(params)
   //
@@ -97,10 +99,10 @@ abstract class FactEtlBase extends BaseClass {
     completeSourceDf.printSchema()
     completeSourceDf.persist(StorageLevel.MEMORY_AND_DISK_SER)
 
-    val count = completeSourceDf.count()
-    println("完整事实表行数：" + count)
+    dfLineCount = completeSourceDf.count()
+    println("完整事实表行数：" + dfLineCount)
 
-    if(count == 0) {
+    if(dfLineCount == 0) {
       throw new RuntimeException("未读取到源数据！")
     }
     //    if (debug) {
@@ -194,16 +196,16 @@ abstract class FactEtlBase extends BaseClass {
     println("线上数据临时目录:" + onLineFactDirTmp)
 
     //防止文件碎片
-     /*   val total_count = BigDecimal(df.count())
-        val load_to_hdfs_partition = Math.max(1, (total_count / THRESHOLD_VALUE).intValue())
-        println("load_to_hdfs_partition:" + load_to_hdfs_partition)*/
+    val total_count = BigDecimal(dfLineCount)
+    val load_to_hdfs_partition = (total_count / FACT_THRESHOLD_VALUE).intValue() + 1
+    println("load_to_hdfs_partition:" + load_to_hdfs_partition)
 
     val isTmpExist = HdfsUtil.IsDirExist(onLineFactDirTmp)
     if(isTmpExist){
       HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
     }
     println("生成线上维度数据到临时目录:" + onLineFactDirTmp)
-    df.write.parquet(onLineFactDirTmp)
+    df.coalesce(load_to_hdfs_partition).write.parquet(onLineFactDirTmp)
     /*if (partition == 0) {
       df.write.parquet(onLineFactDirTmp)
     } else {
