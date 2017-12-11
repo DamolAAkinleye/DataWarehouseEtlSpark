@@ -138,7 +138,7 @@ abstract class DimensionBase extends BaseClass {
 
   def readSourceIncr(readSourceType: Value): DataFrame = {
     if (readSourceType == null || readSourceType == jdbc) {
-      val date = DateUtils.truncate(DateUtils.addHours(new Date(), -1), Calendar.HOUR_OF_DAY)
+      val date = DateUtils.truncate(DateUtils.addHours(new Date(), -3), Calendar.HOUR_OF_DAY)
       val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
       val dateStr = sdf.format(date)
       sqlContext.read.format("jdbc").options(sourceDb).load().where(s"$sourceTimeCol >= '$dateStr'")
