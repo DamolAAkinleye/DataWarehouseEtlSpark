@@ -205,7 +205,7 @@ abstract class FactEtlBase extends BaseClass {
       HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
     }
     println("生成线上维度数据到临时目录:" + onLineFactDirTmp)
-    df.coalesce(load_to_hdfs_partition).write.parquet(onLineFactDirTmp)
+    df.repartition(load_to_hdfs_partition).write.parquet(onLineFactDirTmp)
     /*if (partition == 0) {
       df.write.parquet(onLineFactDirTmp)
     } else {
