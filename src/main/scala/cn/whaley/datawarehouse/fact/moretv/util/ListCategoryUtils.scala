@@ -116,6 +116,10 @@ object ListCategoryUtils extends LogConfig {
     else if (pathMain.contains(UDFConstantDimension.HOT_HOT)||pathMain.contains(UDFConstantDimension.HOT_HOME)){
       result = HotPathParseUtils.pathMainParse(pathMain,index_input)
     }
+     /** 游戏game */
+    else if (pathMain.contains(UDFConstantDimension.GAME_GAME)){
+      result = GamePathParseUtils.pathMainParse(pathMain,index_input)
+    }
 
       /** 体育sports */
       else if (pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) {
@@ -265,6 +269,21 @@ object ListCategoryUtils extends LogConfig {
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
           s"site_content_type in ('$CHANNEL_HOT','$CHANNEL_INTEREST')",null,s" flag='$MEDUSA' and mainCategory in('$CHANNEL_HOT','$CHANNEL_INTEREST')"
         ),
+
+        //获得游戏列表维度sk ，[只有一级，二级,三级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category"),
+          s"site_content_type in ('$CHANNEL_GAME') and (fourth_category is null or fourth_category='' or fourth_category='null')",
+          null,s" flag='$MEDUSA' and mainCategory in('$CHANNEL_GAME') and (fourthCategory is null or fourthCategory='' or fourthCategory='null')"
+        ),
+
+        //获得游戏列表维度sk ，[有一级，二级,三级，四级维度]
+        DimensionJoinCondition(
+          Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category_code","thirdCategory"->"third_category_code","fourthCategory"->"fourth_category"),
+          s"site_content_type in ('$CHANNEL_GAME') and fourth_category is not null and fourth_category<>'' and fourth_category<>'null'",
+          null,s" flag='$MEDUSA' and mainCategory in('$CHANNEL_GAME') and fourthCategory is not null and fourthCategory<>'' and fourthCategory<>'null'"
+        ),
+
 
         //moretv日志里的少儿维度，三级入口需要使用code关联, [有一级，二级,三级维度]
         DimensionJoinCondition(

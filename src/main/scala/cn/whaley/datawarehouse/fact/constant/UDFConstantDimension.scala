@@ -75,6 +75,7 @@ object UDFConstantDimension {
   val INTEREST_HOME = "interest-home"
   val HOT_HOT = "hot-hot*分类入口"
   val HOT_HOME = "hot-home*分类入口"
+  val GAME_GAME = "game-game"
   val SPORTS_LIST_DIMENSION_TRAIT = "sports*"
   val MV_CATEGORY = "mv_category"
   val MV_POSTER = "mv_poster"
