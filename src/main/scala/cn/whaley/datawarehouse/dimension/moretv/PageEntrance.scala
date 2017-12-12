@@ -31,7 +31,7 @@ object PageEntrance extends DimensionBase {
     "page_entrance_id" -> "id"
   )
 
-
+  var sourceDbFromCms: Map[String, String] = _
   sourceDb = MysqlDB.dwDimensionDb("moretv_page_entrance")
 
   //TODO 读取电视猫cms中的表

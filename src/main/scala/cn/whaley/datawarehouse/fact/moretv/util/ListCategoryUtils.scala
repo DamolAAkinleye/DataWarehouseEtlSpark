@@ -63,10 +63,10 @@ object ListCategoryUtils extends LogConfig {
     result
   }
 
-  /** 解析列表页四级入口，针对sports */
+  /** 解析列表页四级入口，针对sports 和 game*/
   def getListFourthCategory(pathMain: String, path: String, flag: String): String = {
     var result: String = null
-    if (pathMain==null || !pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT)) return result
+    if (pathMain==null || (!pathMain.contains(UDFConstantDimension.SPORTS_LIST_DIMENSION_TRAIT) && !pathMain.contains(UDFConstantDimension.GAME_GAME))) return result
     flag match {
       case MEDUSA => {
         result = getListCategoryMedusaETL(pathMain, 4)
@@ -75,6 +75,7 @@ object ListCategoryUtils extends LogConfig {
     }
     result
   }
+
 
   /**
     * 获取列表页入口信息

@@ -84,11 +84,13 @@ class ListCategoryUtilsTest {
       ("home*my_tv*kids-kids_home-kids_home-kids_anim*动画明星", "", MEDUSA, "kids", "show_kidsSite", "动画明星"),
       ("home*classification*kids-kids_home-tingerge*儿歌明星", "", MEDUSA, "kids", "show_kidsSongSite", "儿歌明星"),
 
-      //316资讯奇趣
+      //interest(hot类似)
       ("home*classification*interest-interest*分类入口*1-interest*收藏", "", MEDUSA, "interest", "site_interest", "收藏"),
       ("home*classification*interest-interest*分类入口*4-interest*极限挑战", "", MEDUSA, "interest", "site_interest", "极限挑战"),
       ("home*classification*interest-interest*分类入口*4-interest*天生萌物*电台", "", MEDUSA, "interest", "site_interest", "天生萌物"),
 
+      //game
+      ("home*classification*game-game*lp_gaming_site*3-game*英雄联盟", "", MEDUSA, "game", "moreGame", "英雄联盟"),
       //sports
       ("home*my_tv*4-sports*League*qipai-league*围棋", "", MEDUSA, "sports", "leagueEntry", "qipai"),
       ("home*my_tv*7-sports*League*dj", "", MEDUSA, "sports", "leagueEntry", "dj"),
@@ -180,7 +182,8 @@ class ListCategoryUtilsTest {
       ("home*classification*3-sports*League*jiewu-league*Breaking", "", MEDUSA, "sports", "leagueEntry", "jiewu", "Breaking"),
       ("home*my_tv*4-sports*newsHomePage*tvn8xzu9wytu", "", MEDUSA, "sports", "horizontal", "newsHomePage", null),
       ("home*my_tv*xiqu-xiqu*吕剧", "", MEDUSA, "xiqu", "吕剧", null, null),
-      ("home*classification*3-sports*League*dj-league", "", MEDUSA, "sports", "leagueEntry", "dj", null)
+      ("home*classification*3-sports*League*dj-league", "", MEDUSA, "sports", "leagueEntry", "dj", null) ,
+      ("home*classification*game-game*lp_gaming_site*2-game*special*yxlm*热门推荐", "", MEDUSA, "game", "gameArea", "yxlm","热门推荐")
     )
 
     val testCaseList = moretvTestCaseList ++ medusaTestCaseList

@@ -26,9 +26,9 @@ object GamePathParseUtils {
           res = "game"
         }else if(path.contains("special")){
           val (area,category,tab) = parse4xListCategoryInfo(path)
-          if(out_index == 2) res = area  else if(out_index == 3) res = category else res = tab
+          if(out_index == 2) res = area  else if(out_index == 3) res = category else if(out_index == 4) res = tab
         }
-        else{
+        else if(path.contains("-game*")){
           val (area,category) = parse3xListCategoryInfo(path)
           if(out_index == 2) res = area  else if(out_index == 3) res = category
         }
