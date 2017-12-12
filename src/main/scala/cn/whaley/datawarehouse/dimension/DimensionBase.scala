@@ -31,6 +31,7 @@ abstract class DimensionBase extends BaseClass {
     */
   var sourceDb: Map[String, String] = _
 
+
   /**
     * 维度表名称，同时也是hdfs上的目录名
     */

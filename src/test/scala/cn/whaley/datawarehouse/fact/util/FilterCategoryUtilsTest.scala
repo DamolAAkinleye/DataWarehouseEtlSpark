@@ -28,6 +28,7 @@ class FilterCategoryUtilsTest {
       ("xxx","home-comic-multi_search-hot-qita-riben-2014-similar",MORETV,"hot","qita","riben","2014", "comic"),
       ("xxx","home-movie-multi_search-score-zhanzheng-all-2014-peoplealsolike",MORETV,"score","zhanzheng","all","2014", "movie"),
       ("xxx","home-tv-multi_search-hot-all-neidi-1990-1999",MORETV,"hot","all","neidi","1990-1999", "tv")
+
     )
       testCaseList.foreach(w => {
         println(w._1+","+w._2+","+w._3+","+w._4+","+w._5+","+w._6+","+w._7)
