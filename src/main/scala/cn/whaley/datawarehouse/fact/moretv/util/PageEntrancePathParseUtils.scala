@@ -136,7 +136,9 @@ object PageEntrancePathParseUtils extends LogConfig {
             else{
               area_code = p.group(2)
           }
-          location_code=p.group(3)
+          if(path.contains("lp_gaming_site") || path.contains("lp_gaming_match") || path.contains("lp_gaming_subject_rec")) {
+            location_code = p.group(3)
+          }
         }
         case None =>
       }
