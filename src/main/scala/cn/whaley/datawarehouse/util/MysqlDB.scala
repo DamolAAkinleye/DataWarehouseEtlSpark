@@ -129,10 +129,10 @@ object MysqlDB {
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "bislave",
       "password" -> "slave4bi@whaley",
-      "partitionColumn" -> "serial_number",
+      "partitionColumn" -> "id",
       "lowerBound" -> "1",
-      "upperBound" -> "500000",
-      "numPartitions" -> "10")
+      "upperBound" -> "25000000",
+      "numPartitions" -> "100")
   }
 
 
