@@ -99,7 +99,11 @@ trait BaseClass {
     */
   def destroy(): Unit = {
     if (sc != null) {
-      sqlContext.clearCache()
+      try {
+        sqlContext.clearCache()
+      } catch {
+        case e: Throwable =>
+      }
       sc.stop()
     }
   }
