@@ -96,5 +96,8 @@ object ProgramTagMappingOther extends NormalizedEtlBase {
       s"'$tagTypeName' as tag_type")
   }
 
+  override def load(params: Params, df: DataFrame): Unit = {
+    save(params, df)
+  }
 
 }

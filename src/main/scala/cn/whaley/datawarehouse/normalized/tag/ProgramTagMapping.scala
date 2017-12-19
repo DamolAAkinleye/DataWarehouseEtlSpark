@@ -1,6 +1,7 @@
 package cn.whaley.datawarehouse.normalized.tag
 
 import cn.whaley.datawarehouse.normalized.NormalizedEtlBase
+import cn.whaley.datawarehouse.normalized.tag.ProgramTag.save
 import cn.whaley.datawarehouse.util.{DataExtractUtils, MysqlDB, Params}
 import org.apache.spark.sql.DataFrame
 
@@ -56,5 +57,9 @@ object ProgramTagMapping extends NormalizedEtlBase {
 
   override def transform(params: Params, df: DataFrame): DataFrame = {
     df
+  }
+
+  override def load(params: Params, df: DataFrame): Unit = {
+    save(params, df)
   }
 }
