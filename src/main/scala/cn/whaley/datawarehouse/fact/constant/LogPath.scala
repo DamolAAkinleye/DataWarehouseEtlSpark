@@ -79,7 +79,7 @@ object LogPath {
 
 
   // 电视猫会员购买页面入口吊起日志
-  val MEDUSA_PURCHASE_ENTRANCE = s"/log/medusa/parquet/${DATE_ESCAPE}/medusa-vipentrance-click"
+  val MEDUSA_PURCHASE_ENTRANCE = s"/log/medusa/parquet/${DATE_ESCAPE}/medusa-vipentrance-click/*"
 
   // 腾讯sid转换为微鲸sid
   val TENCENT_CID_2_SID = s"/user/hive/warehouse/ai.db/dim_qqid2sid/product_line=moretv/key_time=${DATE_ESCAPE}"

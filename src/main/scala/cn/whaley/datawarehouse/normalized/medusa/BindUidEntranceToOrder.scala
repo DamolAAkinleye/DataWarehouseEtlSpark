@@ -45,17 +45,22 @@ object BindUidEntranceToOrder extends BaseClass{
         /** 订单事实表数据*/
         val todayOrderDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.FACT_MEDUSA_ORDER, p.toString)
         val bindSidDF = todayOrderDF.join(dimQqid2SidDF,todayOrderDF("cid") === dimQqid2SidDF("qqid")).drop(dimQqid2SidDF("qqid")).drop(todayOrderDF("cid"))
-        val containSidDF = bindSidDF.filter("sid is not null").withColumnRenamed("sid","video_sid")
+
 
         /** 入口日志与登录账户日志*/
-        val calendar = Calendar.getInstance()
-        calendar.setTime(DateFormatUtils.readFormat.parse(p.toString))
-        calendar.add(Calendar.DAY_OF_MONTH, 1)
-        val pathDate = DateFormatUtils.readFormat.format(calendar.getTime)
-        val entranceDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PURCHASE_ENTRANCE, pathDate).
+//        val calendar = Calendar.getInstance()
+//        calendar.setTime(DateFormatUtils.readFormat.parse(p.toString))
+//        calendar.add(Calendar.DAY_OF_MONTH, 1)
+//        val pathDate = DateFormatUtils.readFormat.format(calendar.getTime)
+
+        val entranceDF = DataExtractUtils.readFromOds(sqlContext,"ods_view.log_medusa_main3x_medusa_vipentrance_click",p.toString,null).
           select("userId","accountId","entrance","videoSid","date","datetime", "happenTime")
-        val accountLoginDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_ACCOUNT_LOGIN, pathDate).
+        val accountLoginDF = DataExtractUtils.readFromOds(sqlContext,"ods_view.log_medusa_main3x_mtvaccount",p.toString,null).
           select("userId","accountId","date")
+//        val entranceDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PURCHASE_ENTRANCE, pathDate).
+//          select("userId","accountId","entrance","videoSid","date","datetime", "happenTime")
+//        val accountLoginDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_ACCOUNT_LOGIN, pathDate).
+//          select("userId","accountId","date")
         val bindAccount2EntranceDF = bindAccountInfo(accountLoginDF, entranceDF)
         val bindGoodOrderDF = bindSidDF.join(dimGoodDF, bindSidDF("good_sk") === dimGoodDF("good_sk")).drop(dimGoodDF("good_sk"))
         val finalOrderDF = bindGoodOrderDF.join(dimAccountDF, bindGoodOrderDF("account_sk") === dimAccountDF("account_sk")).drop(dimAccountDF("account_sk"))
@@ -71,7 +76,8 @@ object BindUidEntranceToOrder extends BaseClass{
         }
 
         // 修正入口数据
-        val refineDF = containSidDF.join(mappedDF, containSidDF("order_code") === mappedDF("order_code"),"lefter").
+        val containSidDF = finalOrderDF.filter("sid is not null").withColumnRenamed("sid","video_sid")
+        val refineDF = containSidDF.join(mappedDF, containSidDF("order_code") === mappedDF("order_code"),"left").
           select(containSidDF("order_code"),containSidDF("account_id"),containSidDF("dim_date"),containSidDF("good_sk"),
             mappedDF("user_id"),containSidDF("video_sid")).withColumn("entrance", lit("authentication")).
           select("order_code","account_id","dim_date","good_sk","user_id","entrance","video_sid")
