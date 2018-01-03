@@ -39,6 +39,7 @@ object MemberOrder extends FactEtlBase{
     ("trade_status","trade_status"),
     ("pay_status","pay_status"),
     ("duration","duration"),
+    ("cid", "cid"),
     ("create_time","create_time"),
     ("update_time","update_time"),
     ("dim_date","dim_date"),
