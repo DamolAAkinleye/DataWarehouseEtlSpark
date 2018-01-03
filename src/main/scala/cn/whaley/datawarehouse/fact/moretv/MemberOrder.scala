@@ -56,7 +56,7 @@ object MemberOrder extends FactEtlBase{
   }
 
   override def load(params: Params, df: DataFrame) = {
-    val goodsDF = DataExtractUtils.readFromParquet(sqlContext,LogPath.DIM_MEDUSA_MEMBER_GOOD).select("good_sk","good_name").withColumnRenamed("good_sk", "dim_good_sk")
+    val goodsDF = DataExtractUtils.readFromParquet(sqlContext,LogPath.DIM_MEDUSA_MEMBER_GOOD).filter("dim_invalid_time is null and is_valid = 1").select("good_sk","good_name").withColumnRenamed("good_sk", "dim_good_sk")
     val finalDf = addContMonOrderFlag(params,df,goodsDF)
     super.load(params,finalDf)
   }
