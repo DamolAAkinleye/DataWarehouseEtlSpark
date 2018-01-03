@@ -17,7 +17,7 @@ object MemberGoods extends DimensionBase{
   columns.primaryKeys = List("good_code","good_price")
 
   columns.allColumns = List(
-    "good_code", "good_name", "good_price", "duration", "member_code", "member_name"
+    "good_code", "good_name", "good_price", "duration", "member_code", "member_name", "is_valid"
   )
 
 
@@ -29,7 +29,8 @@ object MemberGoods extends DimensionBase{
     columns.allColumns(2) -> "good_price",
     columns.allColumns(3) -> "duration",
     columns.allColumns(4) -> "member_code",
-    columns.allColumns(5) -> "member_name"
+    columns.allColumns(5) -> "member_name",
+    columns.allColumns(6) -> "is_valid"
   )
 
   sourceDb = MysqlDB.dwDimensionDb("medusa_member_goods")
