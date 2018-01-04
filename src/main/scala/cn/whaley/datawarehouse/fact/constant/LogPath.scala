@@ -72,13 +72,17 @@ object LogPath {
   val MEDUSA_BUSINESS_ORDER = s"/data_warehouse/ods_view.db/db_snapshot_medusa_business_order/key_day=${DATE_ESCAPE}"
 
   // 电视猫订单事实表
-  val FACT_MEDUSA_ORDER = s"/data_warehouse/dw_facts/fact_medusa_member_order/${DATE_ESCAPE}/00"
+  val FACT_MEDUSA_ORDER = s"/data_warehouse/dw_facts/fact_medusa_member_order/${DATE_ESCAPE}/*"
 
   // 电视猫订单&购买入口映射表
   val ORDER_ENTRANCE_UID_MAPPED = "/data_warehouse/dw_normalized/medusa_order_uid_entrance_mapping"
 
 
   // 电视猫会员购买页面入口吊起日志
-  val MEDUSA_PURCHASE_ENTRANCE = s"/log/medusa/parquet/${DATE_ESCAPE}/medusa-vipentrance-click"
+  val MEDUSA_PURCHASE_ENTRANCE = s"/log/medusa/parquet/${DATE_ESCAPE}/medusa-vipentrance-click/*"
+
+  // 腾讯sid转换为微鲸sid
+  val TENCENT_CID_2_SID = s"/user/hive/warehouse/ai.db/dim_qqid2sid/product_line=moretv/key_time=${DATE_ESCAPE}"
+  val TENCENT_CID_2_SID_ALL = "/user/hive/warehouse/ai.db/dim_qqid2sid/product_line=moretv/*/"
 
 }

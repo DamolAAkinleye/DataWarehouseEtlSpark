@@ -2,7 +2,6 @@ package cn.whaley.datawarehouse.fact.moretv
 
 import cn.whaley.datawarehouse.common.{DimensionColumn, DimensionJoinCondition, Udf, UserDefinedColumn}
 import cn.whaley.datawarehouse.fact.FactEtlBase
-import cn.whaley.datawarehouse.fact.constant.LogPath
 import cn.whaley.datawarehouse.util.{DataExtractUtils, DateFormatUtils}
 import org.apache.commons.lang3.time.DateUtils
 import org.apache.spark.sql.DataFrame
@@ -92,7 +91,7 @@ object ProgramClick extends FactEtlBase {
   val subject_regex = "^([a-zA-Z]+)([0-9]+)$"
   val entrance_regex = "^([a-zA-Z]+_?)+$"
 
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
     sqlContext.udf.register("getPageFromPath", getPageFromPath _)
     sqlContext.udf.register("getAccessAreaFromPath", getAccessAreaFromPath _)
     sqlContext.udf.register("getLocationCode", getLocationCode _)
@@ -104,14 +103,16 @@ object ProgramClick extends FactEtlBase {
     val metaFields = List("userId", "accountId", "promotionChannel", "productModel", "apkSeries", "apkVersion",
       "buildDate", "datetime", "ip", "cityLevel")
 
-    val launcherClickOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_LAUNCHER_CLICK, realStartDate)
+    //    val launcherClickOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_LAUNCHER_CLICK, realStartDate)
+    val launcherClickOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_homeaccess", startDate, startHour)
 
     //首页点击
     val launcherClickDf = launcherClickOriginDf.selectExpr(metaFields ++ List("alg", "biz",
       "locationIndex", "accessArea as area", "getLocationCode(accessLocation) as locationCode",
       "getLinkValue(accessLocation) as linkValue", "null as contentType", "'launcher' as page"): _*)
 
-    val detailOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_DETAIL, realStartDate)
+    //    val detailOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_DETAIL, realStartDate)
+    val detailOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_detail", startDate, startHour)
     detailOriginDf.persist()
 
     //列表页点击
@@ -138,7 +139,8 @@ object ProgramClick extends FactEtlBase {
         "videoSid as linkValue", "contentType",
         "'play_back' as page"): _*)
 
-    val playOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, realStartDate)
+    //    val playOriginDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, realStartDate)
+    val playOriginDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_play", startDate, startHour)
 
     //短视频退出推荐
     val hotBackClick = playOriginDf.where("pathSub like 'guessyoulike%'")

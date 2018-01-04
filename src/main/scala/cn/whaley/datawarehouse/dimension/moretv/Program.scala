@@ -18,7 +18,7 @@ object Program extends DimensionBase {
   columns.trackingColumns = List()
   columns.allColumns = List("sid", "title", "content_type", "content_type_name", "duration", "video_type", "episode_index",
     "status", "type", "parent_sid", "area", "year", "video_length_type", "create_time", "publish_time","supply_type",
-    "package_code", "package_name", "is_vip", "source")
+    "package_code", "package_name", "is_vip", "tid", "qq_id")
 
   val vipProgramColumns = List("program_code","package_code","package_name")
 
@@ -29,8 +29,12 @@ object Program extends DimensionBase {
 
   dimensionName = "dim_medusa_program"
 
-  override def readSource(readSourceType: _root_.cn.whaley.datawarehouse.global.SourceType.Value): DataFrame = {
-    val programDF = sqlContext.read.format("jdbc").options(sourceDb).load()
+  sourceTimeCol = "publish_time"
+
+  fullUpdate = true
+
+  override def filterSource(sourceDf: DataFrame): DataFrame = {
+//    sourceDf.persist()
     val contentProgram = sqlContext.read.format("jdbc").options(contentProgramDB).load()
     val tvbBBCPackageProgram = sqlContext.read.format("jdbc").options(contentPackageProgramDB).load().filter("relation_status = 'bound'")
       .persist(StorageLevel.MEMORY_AND_DISK)
@@ -44,22 +48,26 @@ object Program extends DimensionBase {
       withColumn("package_name", lit("腾讯节目包")).
       select(vipProgramColumns.map(col):_*)
     val vipProgramDF = tencentProgramDF.union(tvbPackageProgramDF).union(bbcPackageProgramDF)
-    programDF.join(vipProgramDF,programDF("sid") === vipProgramDF("program_code"),"left_outer").
+    var newDf = sourceDf.join(vipProgramDF,sourceDf("sid") === vipProgramDF("program_code"),"left_outer").
       withColumn("is_vip", if(col("package_code") != null) lit(1) else lit(0))
-  }
 
-  override def filterSource(sourceDf: DataFrame): DataFrame = {
-//    sourceDf.persist()
+    //媒体文件表，包含腾讯tid字段
+    val mediaFileDb = MysqlDB.medusaCms("mtv_media_file", "id", 1, 250000000, 500)
+    val mediaFileDf = sqlContext.read.format("jdbc").options(mediaFileDb).load()
+      .where("status = 1 and source = 'tencent2' ")
+
+    newDf = newDf.join(mediaFileDf, newDf("id") === mediaFileDf("content_id") , "leftouter")
+      .select(newDf("*"), mediaFileDf("video_id").as("tid"))
 
     sqlContext.udf.register("myReplace",myReplace _)
 
-    sourceDf.registerTempTable("mtv_basecontent")
+    newDf.registerTempTable("mtv_basecontent")
 
     val programDf = sqlContext.sql("select sid, id, display_name, content_type, " +
       " duration, parent_id, video_type, type, " +
       "(case when status = 1 and origin_status = 1 then 1 else 0 end) status, " +
       " episode, area, year, " +
-      " videoLengthType, create_time, publish_time, supply_type ,package_code, package_name, is_vip,source" +
+      " videoLengthType, create_time, publish_time, supply_type ,package_code, package_name, is_vip, tid, qq_id" +
       " from mtv_basecontent where sid is not null and sid <> '' and display_name is not null ")
 
     programDf.persist()
@@ -71,8 +79,8 @@ object Program extends DimensionBase {
 
     sqlContext.sql("SELECT a.sid, b.sid as parent_sid, myReplace(a.display_name) as title, a.status, a.type, " +
       "a.content_type, c.name as content_type_name, a.duration, a.video_type, a.episode as episode_index, " +
-      "a.area, a.year, a.videoLengthType as video_length_type,a.supply_type, a.package_code, a.package_name, a.is_vip, " +
-      "a.source,a.create_time, " +
+      "a.area, a.year, a.videoLengthType as video_length_type,a.supply_type, a.package_code, a.package_name, a.is_vip, a.tid, a.qq_id, " +
+      "a.create_time, " +
       "a.publish_time " +
       " from program_table a" +
       " left join program_table b on a.parent_id = b.id" +

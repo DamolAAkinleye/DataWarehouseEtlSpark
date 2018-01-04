@@ -6,7 +6,7 @@ cd `dirname $0`
 pwd=`pwd`
 echo $pwd
 
-ARGS=`getopt -o d:t:s:e:h --long database:,table:,startDate:,endDate:,hour: -- "$@"`
+ARGS=`getopt -o d:t:s:e:sh:eh:on --long database:,table:,startDate:,endDate:,startHour:,endHour:,isOnline: -- "$@"`
 
 #将规范化后的命令行参数分配至位置参数（$1,$2,...)
 eval set -- "${ARGS}"
@@ -26,8 +26,14 @@ do
         -e|--endDate)
             endDate=$2;
             shift 2;;
-        -h|--hour)
-            hour=$2;
+        -sh|--startHour)
+            startHour=$2;
+            shift 2;;
+        -eh|--endHour)
+            endHour=$2;
+            shift 2;;
+        -on|--isOnline)
+            isOnline=$2;
             shift 2;;
         --)
             shift;
@@ -39,29 +45,40 @@ do
     esac
 done
 
+  if [ $isOnline != 'true' ];then
+   echo "do not need to add partition"
+   exit 0
+  fi
 
-hour_p=$hour
+startTimeParam=`date -d "1 hours $startDate $startHour" +"%Y%m%d %H"`
+endTimeParam=`date -d "1 hours $endDate $endHour" +"%Y%m%d %H"`
 
-day_p=`date -d "-1 days "$startDate +%Y%m%d`
-endDate=`date -d "-1 days "$endDate +%Y%m%d`
-
+startDate=`date -d "$startTimeParam" +%Y%m%d`
+startHour=`date -d "$startTimeParam" +%H`
+endDate=`date -d "$endTimeParam" +%Y%m%d`
+endHour=`date -d "$endTimeParam" +%H`
 
 echo "table is $table"
-echo "day_p is $day_p"
-echo "endDate is $endDate"
-echo "hour_p is $hour_p"
+echo "startTime is $startTimeParam"
+echo "endTime is $endTimeParam"
 
-while [[ $day_p -le $endDate ]]
+startTime=$startDate$startHour
+endTime=$endDate$endHour
+
+while [[ $startTime -le $endTime ]]
  do
-  echo "$day_p    ..................."
-  hive  -hivevar table=$table -hivevar day_p=$day_p -hivevar hour_p=$hour_p  -e '
+  echo "$startTime    ..................."
+  hive  -hivevar table=$table -hivevar day_p=$startDate -hivevar hour_p=$startHour  -e '
   use dw_facts;
   alter table ${hivevar:table} add if not exists partition (day_p=${hivevar:day_p},hour_p="${hivevar:hour_p}") location "/data_warehouse/dw_facts/${hivevar:table}/${hivevar:day_p}/${hivevar:hour_p}";
   '
   if [ $? -ne 0 ];then
-   echo "hive addPartitions  ${day_p} is fail ..."
+   echo "hive addPartitions  ${startTime} is fail ..."
    exit 1
   fi
-  day_p=`date -d "+1 days "$day_p +%Y%m%d`
+  startTimeParam=`date -d "1 hours $startDate $startHour" +"%Y%m%d %H"`
+  startDate=`date -d "$startTimeParam" +%Y%m%d`
+  startHour=`date -d "$startTimeParam" +%H`
+  startTime=$startDate$startHour
 done
 

@@ -18,20 +18,24 @@ object ParamsParseUtil {
         opt[Boolean]("isOnline").action((x, c) => c.copy(isOnline = x))
         opt[Boolean]("debug").action((x, c) => c.copy(debug = x))
         opt[String]("mode").action((x, c) => c.copy(mode = x))
-        opt[String]("startDate").action((x, c) => c.copy(startDate = x)).
+        opt[String]("date").action((x, c) => c.copy(startDate = x)).
           validate(e => try {
             readFormat.parse(e)
             success
           } catch {
             case e: Exception => failure("wrong date format, should be 'yyyyMMdd'")
           })
-        opt[String]("endDate").action((x, c) => c.copy(endDate = x)).
+        opt[String]("hour").action((x, c) => c.copy(startHour = x)).
           validate(e => try {
-            readFormat.parse(e)
-            success
+            if(e.length == 2 && e.toInt >=0 && e.toInt <=23) {
+              success
+            } else {
+              failure("wrong date format")
+            }
           } catch {
-            case e: Exception => failure("wrong date format, should be 'yyyyMMdd'")
+            case e: Exception => failure("wrong date format, should be 'HH'")
           })
+
       }
       parser.parse(args, default) match {
         case Some(p) => Some(p)

@@ -26,6 +26,8 @@ object MemberShipRight extends DimensionBase {
 
   dimensionName = "dim_whaley_membership_right"
 
+  fullUpdate = true
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
     val sq = sqlContext
     import sq.implicits._

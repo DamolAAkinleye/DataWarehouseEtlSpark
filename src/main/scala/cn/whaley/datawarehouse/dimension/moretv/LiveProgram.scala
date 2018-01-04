@@ -33,6 +33,8 @@ object LiveProgram extends DimensionBase {
 
   sourceDb = MysqlDB.medusaCms("mtv_live_program", "id", 1, 250, 1)
 
+  sourceTimeCol = "publish_time"
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     val sq = sqlContext

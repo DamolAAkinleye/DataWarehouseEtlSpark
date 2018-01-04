@@ -66,6 +66,8 @@ do
     fi
 done
 
+resFiles="$resFiles,/opt/hadoop/etc/hadoop/core-site.xml,/opt/hadoop/etc/hadoop/hdfs-site.xml,/opt/spark2/conf/hive-site.xml"
+
 for file in /data/apps/azkaban/etl2/lib/*.jar
 do
     if [[ "$file" == *${spark_mainJarName} ]]; then
@@ -95,8 +97,8 @@ $spark_home/bin/spark-submit -v \
 --conf spark.dynamicAllocation.initialExecutors=${spark_dynamicAllocation_initialExecutors} \
 --conf spark.default.parallelism=${spark_default_parallelism} \
 --conf spark.yarn.queue=${spark_yarn_queue} \
---conf spark.sql.caseSensitive=true \
 --conf spark.sql.parquet.compression.codec=gzip \
 --conf spark.memory.storageFraction=0.4 \
 --conf spark.memory.fraction=0.75 \
+--conf spark.network.timeout=300s \
 --class "$MainClass" $spark_mainJar $Args

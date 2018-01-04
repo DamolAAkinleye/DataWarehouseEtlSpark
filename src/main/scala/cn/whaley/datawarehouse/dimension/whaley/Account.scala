@@ -23,6 +23,8 @@ object Account extends DimensionBase {
 
   dimensionName = "dim_whaley_account"
 
+  fullUpdate = true
+
   override def filterSource(sourceDf: DataFrame): DataFrame = {
 
     sourceDf.registerTempTable("bbs_ucenter_helios_members")

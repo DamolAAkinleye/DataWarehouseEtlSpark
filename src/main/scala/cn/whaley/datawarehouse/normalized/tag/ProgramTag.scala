@@ -37,4 +37,8 @@ object ProgramTag extends NormalizedEtlBase{
       "a.is_blacklist",
       "a.tag_type")
   }
+
+  override def load(params: Params, df: DataFrame): Unit = {
+    save(params, df)
+  }
 }

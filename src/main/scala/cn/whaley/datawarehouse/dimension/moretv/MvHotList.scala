@@ -36,6 +36,8 @@ object MvHotList extends DimensionBase {
 
   sourceFilterWhere = "mv_hot_code is not null and trim(mv_hot_code) <> ''"
 
+  sourceTimeCol = "publish_time"
+
   override def beforeExecute(): Unit = {
     sqlContext.udf.register("parseRankId", parseRankId _)
   }

@@ -73,6 +73,7 @@ object MysqlDB {
       "password" -> "mlw321@moretv")
   }
 
+
   def whaleyCms(table: String, partitionColumn: String, lowerBound: Long, upperBound: Long, numPartitions: Int) = {
     Map("url" -> "jdbc:mysql://bigdata-appsvr-130-1:3306/mtv_cms?useUnicode=true&characterEncoding=utf-8&autoReconnect=true",
       "dbtable" -> table,
@@ -128,10 +129,10 @@ object MysqlDB {
       "driver" -> "com.mysql.jdbc.Driver",
       "user" -> "bislave",
       "password" -> "slave4bi@whaley",
-      "partitionColumn" -> "serial_number",
+      "partitionColumn" -> "id",
       "lowerBound" -> "1",
-      "upperBound" -> "500000",
-      "numPartitions" -> "10")
+      "upperBound" -> "25000000",
+      "numPartitions" -> "100")
   }
 
 

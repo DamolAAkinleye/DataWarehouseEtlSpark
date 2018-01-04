@@ -40,6 +40,8 @@ object Account extends DimensionBase {
 
   dimensionName = "dim_medusa_account"
 
+  fullUpdate = true
+
   override def readSource(readSourceType: Value): DataFrame = {
     val accountDF = sqlContext.read.format("jdbc").options(accountDB).load()
     val registerDF = sqlContext.read.format("jdbc").options(registerDB).load()

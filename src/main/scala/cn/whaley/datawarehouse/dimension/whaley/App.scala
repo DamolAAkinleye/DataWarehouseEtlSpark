@@ -28,4 +28,5 @@ object App extends DimensionBase{
 
   dimensionName = "dim_whaley_application"
 
+  fullUpdate = true
 }

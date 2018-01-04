@@ -55,4 +55,6 @@ object PromotionChannel extends DimensionBase {
   }
   dimensionName = "dim_medusa_promotion_channel"
 
+  fullUpdate = true
+
 }

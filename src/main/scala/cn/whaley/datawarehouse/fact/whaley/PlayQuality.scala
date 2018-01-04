@@ -87,7 +87,7 @@ object PlayQuality extends FactEtlBase {
 
   )
 
-  override def readSource(startDate: String): DataFrame = {
+  override def readSource(startDate: String, startHour: String): DataFrame = {
     sqlContext.udf.register("getVideoSid", getVideoSid _)
     sqlContext.udf.register("getEpisodeSid", getEpisodeSid _)
 
@@ -110,11 +110,17 @@ object PlayQuality extends FactEtlBase {
       ("datetime", null, StringType)
     )
 
-    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_GET_VIDEO, startDate)
-    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_START_PLAY, startDate)
-    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_PARSE, startDate)
-    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_BUFFER, startDate)
-    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_END_PLAY, startDate)
+//    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_GET_VIDEO, startDate)
+//    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_START_PLAY, startDate)
+//    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_PARSE, startDate)
+//    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_BUFFER, startDate)
+//    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_END_PLAY, startDate)
+
+    var getVideoDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_player_sdk_getvideoinfo", startDate, startHour)
+    var startPlayDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_player_sdk_startplay", startDate, startHour)
+    var parseDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_player_sdk_inner_outer_auth_parse", startDate, startHour)
+    var bufferDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_player_sdk_buffer", startDate, startHour)
+    var endPlayDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_player_sdk_endplay", startDate, startHour)
 
     getVideoDf = addColumn(getVideoDf, fields)
     startPlayDf = addColumn(startPlayDf, fields)
