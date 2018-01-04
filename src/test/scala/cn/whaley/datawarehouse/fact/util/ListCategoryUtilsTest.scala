@@ -182,8 +182,8 @@ class ListCategoryUtilsTest {
       ("home*classification*3-sports*League*jiewu-league*Breaking", "", MEDUSA, "sports", "leagueEntry", "jiewu", "Breaking"),
       ("home*my_tv*4-sports*newsHomePage*tvn8xzu9wytu", "", MEDUSA, "sports", "horizontal", "newsHomePage", null),
       ("home*my_tv*xiqu-xiqu*吕剧", "", MEDUSA, "xiqu", "吕剧", null, null),
-      ("home*classification*3-sports*League*dj-league", "", MEDUSA, "sports", "leagueEntry", "dj", null) ,
-      ("home*classification*game-game*lp_gaming_site*2-game*special*yxlm*热门推荐", "", MEDUSA, "game", "gameArea", "yxlm","热门推荐")
+      ("home*classification*3-sports*League*dj-league", "", MEDUSA, "sports", "leagueEntry", "dj", null),
+      ("home*classification*game-game*lp_gaming_site*2-game*special*yxlm*热门推荐", "", MEDUSA, "game", "gameArea", "yxlm", "热门推荐")
     )
 
     val testCaseList = moretvTestCaseList ++ medusaTestCaseList

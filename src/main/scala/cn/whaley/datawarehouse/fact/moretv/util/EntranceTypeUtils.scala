@@ -34,12 +34,12 @@ object EntranceTypeUtils extends LogConfig {
                 launcher_location_code = p.group(2)
 
                 //修复317 路径打点问题，在317上"我的电视"模块的历史与收藏已经合并在一起了：home*my_tv*1-accountcenter_home*收藏追看/home*my_tv*1-accountcenter_home*观看历史
-                if(launcher_location_code == "accountcenter_home") {
+                if (launcher_location_code == "accountcenter_home") {
                   MEDUSA_ENTRANCE_MY_TV_317_REGEX findFirstMatchIn path match {
                     case Some(p) => {
                       p.group(1) match {
                         case "观看历史" => launcher_location_code = "history"
-                        case "收藏追看"|"明星关注"|"标签订阅"|"节目预约"|"专题收藏" => launcher_location_code = "collect"
+                        case "收藏追看" | "明星关注" | "标签订阅" | "节目预约" | "专题收藏" => launcher_location_code = "collect"
                         case _ =>
                       }
                     }

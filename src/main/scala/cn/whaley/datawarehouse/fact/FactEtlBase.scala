@@ -102,7 +102,7 @@ abstract class FactEtlBase extends BaseClass {
     dfLineCount = completeSourceDf.count()
     println("完整事实表行数：" + dfLineCount)
 
-    if(dfLineCount == 0) {
+    if (dfLineCount == 0) {
       throw new RuntimeException("未读取到源数据！")
     }
     //    if (debug) {
@@ -185,10 +185,14 @@ abstract class FactEtlBase extends BaseClass {
     */
   private def backup(p: Params, df: DataFrame, topicName: String): Unit = {
     val date = p.paramMap("date")
-    val hour = if (p.startHour == null) {"00"} else {p.startHour}
+    val hour = if (p.startHour == null) {
+      "00"
+    } else {
+      p.startHour
+    }
     val onLineFactDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date") + File.separator + hour
     val onLineFactParentDir = FACT_HDFS_BASE_PATH + File.separator + topicName + File.separator + p.paramMap("date")
-    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date + File.separator  + hour
+    val onLineFactBackupDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator + date + File.separator + hour
     val onLineFactBackupParentDir = FACT_HDFS_BASE_PATH_BACKUP + File.separator + topicName + File.separator +  date
     val onLineFactDirTmp = FACT_HDFS_BASE_PATH_TMP + File.separator + topicName + File.separator + date + File.separator + hour
     println("线上数据目录:" + onLineFactDir)

@@ -38,13 +38,17 @@ abstract class NormalizedEtlBase  extends BaseClass {
     * @return a Unit.
     */
   private def backup(p: Params, df: DataFrame): Unit = {
-    if(tableName == null) return
+    if (tableName == null) return
     val date = p.paramMap("date")
-    val hour = if (p.startHour == null) {"00"} else {p.startHour}
+    val hour = if (p.startHour == null) {
+      "00"
+    } else {
+      p.startHour
+    }
     val onLineFactDir = NORMALIZED_TABLE_HDFS_BASE_PATH + File.separator + tableName + File.separator + p.paramMap("date") + File.separator + hour
     val onLineFactParentDir = NORMALIZED_TABLE_HDFS_BASE_PATH + File.separator + tableName + File.separator + p.paramMap("date")
-    val onLineFactBackupDir = HDFS_BASE_PATH_BACKUP + File.separator + tableName + File.separator +  date + File.separator  + hour
-    val onLineFactBackupParentDir = HDFS_BASE_PATH_BACKUP + File.separator + tableName + File.separator +  date
+    val onLineFactBackupDir = HDFS_BASE_PATH_BACKUP + File.separator + tableName + File.separator + date + File.separator + hour
+    val onLineFactBackupParentDir = HDFS_BASE_PATH_BACKUP + File.separator + tableName + File.separator + date
     val onLineFactDirTmp = HDFS_BASE_PATH_TMP + File.separator + tableName + File.separator + date + File.separator + hour
     println("线上数据目录:" + onLineFactDir)
     println("线上数据备份目录:" + onLineFactBackupDir)
@@ -57,7 +61,7 @@ abstract class NormalizedEtlBase  extends BaseClass {
     println("load_to_hdfs_partition:" + load_to_hdfs_partition)
 
     val isTmpExist = HdfsUtil.IsDirExist(onLineFactDirTmp)
-    if(isTmpExist){
+    if (isTmpExist) {
       HdfsUtil.deleteHDFSFileOrPath(onLineFactDirTmp)
     }
     println("生成线上数据到临时目录:" + onLineFactDirTmp)

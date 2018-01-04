@@ -19,7 +19,7 @@ object PageEntrancePathParseUtils extends LogConfig {
 
   private val PAGE_ENTRANCE_KIDS_REGEX = (".*(kids_home)-([A-Za-z_]*)").r
   private val PAGE_ENTRANGE_INTEREST_REGEX =(".*(interest-interest|interest-home)\\*(.*[\\u4e00-\\u9fa5])").r
-  private val PAGE_ENTRANGE_GAME_REGEX =(".*(game-game)\\*(.*[A-Za-z_][A-Za-z])\\*(.*[1-9])").r
+  private val PAGE_ENTRANGE_GAME_REGEX = (".*(game-game)\\*(.*[A-Za-z_][A-Za-z])\\*(.*[1-9])").r
   private val PAGE_ENTRANGE_HOT_REGEX =(".*(hot-hot|hot-home)\\*(.*[\\u4e00-\\u9fa5])").r
   private val PAGE_ENTRANCE_MV_REGEX = (".*(mv)\\*([A-Za-z_]*)\\*([a-zA-Z_]*)").r
   private val PAGE_ENTRANCE_SPORTS_REGEX = (".*(sports)\\*([A-Za-z_]*)").r
@@ -125,18 +125,18 @@ object PageEntrancePathParseUtils extends LogConfig {
       }
     }
 
-    /** game: game-game表示游戏首页**/
-    if(path.contains("game-game")){
+    /** game: game-game表示游戏首页 **/
+    if (path.contains("game-game")) {
       PAGE_ENTRANGE_GAME_REGEX findFirstMatchIn path match {
         case Some(p) => {
           page_code = p.group(1).split("-")(0)
-          if(p.group(2).contains("*")){
-              area_code = p.group(2).split("[*]")(0)
-            }
-            else{
-              area_code = p.group(2)
+          if (p.group(2).contains("*")) {
+            area_code = p.group(2).split("[*]")(0)
           }
-          if(path.contains("lp_gaming_site") || path.contains("lp_gaming_match") || path.contains("lp_gaming_subject_rec")) {
+          else {
+            area_code = p.group(2)
+          }
+          if (path.contains("lp_gaming_site") || path.contains("lp_gaming_match") || path.contains("lp_gaming_subject_rec")) {
             location_code = p.group(3)
           }
         }
