@@ -35,39 +35,39 @@ object BindUidEntranceToOrder extends BaseClass{
         val dimAccountDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_ACCOUNT).filter("dim_invalid_time is null")
         val dimGoodDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.DIM_MEDUSA_MEMBER_GOOD).filter("dim_invalid_time is null and is_valid = 1")
 
-        val dimQqid2SidDF = if(HdfsUtil.pathIsExist(LogPath.TENCENT_CID_2_SID.replace(LogPath.DATE_ESCAPE,p.toString))){
-           DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID,p.toString).select("qqid","sid")
-        }else {
-          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID_ALL).select("qqid","sid")
+        val dimQqid2SidDF = if (HdfsUtil.pathIsExist(LogPath.TENCENT_CID_2_SID.replace(LogPath.DATE_ESCAPE, p.toString))) {
+          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID, p.toString).select("qqid", "sid")
+        } else {
+          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID_ALL).select("qqid", "sid")
         }
 
 
         /** 订单事实表数据*/
         val todayOrderDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.FACT_MEDUSA_ORDER, p.toString)
-        val bindSidDF = todayOrderDF.join(dimQqid2SidDF,todayOrderDF("cid") === dimQqid2SidDF("qqid")).drop(dimQqid2SidDF("qqid")).drop(todayOrderDF("cid"))
+        val bindSidDF = todayOrderDF.join(dimQqid2SidDF, todayOrderDF("cid") === dimQqid2SidDF("qqid")).drop(dimQqid2SidDF("qqid")).drop(todayOrderDF("cid"))
 
 
         /** 入口日志与登录账户日志*/
-//        val calendar = Calendar.getInstance()
-//        calendar.setTime(DateFormatUtils.readFormat.parse(p.toString))
-//        calendar.add(Calendar.DAY_OF_MONTH, 1)
-//        val pathDate = DateFormatUtils.readFormat.format(calendar.getTime)
-//        val entranceDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PURCHASE_ENTRANCE, pathDate).
-//          select("userId","accountId","entrance","videoSid","date","datetime", "happenTime")
-//        val accountLoginDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_ACCOUNT_LOGIN, pathDate).
-//          select("userId","accountId","date")
+        //        val calendar = Calendar.getInstance()
+        //        calendar.setTime(DateFormatUtils.readFormat.parse(p.toString))
+        //        calendar.add(Calendar.DAY_OF_MONTH, 1)
+        //        val pathDate = DateFormatUtils.readFormat.format(calendar.getTime)
+        //        val entranceDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PURCHASE_ENTRANCE, pathDate).
+        //          select("userId","accountId","entrance","videoSid","date","datetime", "happenTime")
+        //        val accountLoginDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_ACCOUNT_LOGIN, pathDate).
+        //          select("userId","accountId","date")
 
-        val entranceDF = DataExtractUtils.readFromOds(sqlContext,"ods_view.log_medusa_main3x_medusa_vipentrance_click",p.toString,null).
-          select("userId","accountId","entrance","videoSid","date","datetime", "happenTime")
-        val accountLoginDF = DataExtractUtils.readFromOds(sqlContext,"ods_view.log_medusa_main3x_mtvaccount",p.toString,null).
-          select("userId","accountId","date")
+        val entranceDF = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_vipentrance_click", p.toString, null).
+          select("userId", "accountId", "entrance", "videoSid", "date", "datetime", "happenTime")
+        val accountLoginDF = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_mtvaccount", p.toString, null).
+          select("userId", "accountId", "date")
         val bindAccount2EntranceDF = bindAccountInfo(accountLoginDF, entranceDF)
         val bindGoodOrderDF = bindSidDF.join(dimGoodDF, bindSidDF("good_sk") === dimGoodDF("good_sk")).drop(dimGoodDF("good_sk"))
         val finalOrderDF = bindGoodOrderDF.join(dimAccountDF, bindGoodOrderDF("account_sk") === dimAccountDF("account_sk")).drop(dimAccountDF("account_sk"))
         val todayMappedOrder = bindEntrance(finalOrderDF, bindAccount2EntranceDF)
         val todayMappedOrderCode = todayMappedOrder.select("order_code")
         val todayUnMappedOrder = finalOrderDF.except(finalOrderDF.join(todayMappedOrderCode,Seq("order_code")))
-        val mappedDF =  if(HdfsUtil.pathIsExist(LogPath.ORDER_ENTRANCE_UID_MAPPED)){
+        val mappedDF = if (HdfsUtil.pathIsExist(LogPath.ORDER_ENTRANCE_UID_MAPPED)) {
           val previousMappedOrder = DataExtractUtils.readFromParquet(sqlContext, LogPath.ORDER_ENTRANCE_UID_MAPPED)
           val finalPreviousMappedOrder = previousMappedOrder.join(dimGoodDF,Seq("good_sk"))
           bindContinuousMonthOrder(todayUnMappedOrder, finalPreviousMappedOrder).union(todayMappedOrder).union(previousMappedOrder).distinct()
@@ -77,14 +77,14 @@ object BindUidEntranceToOrder extends BaseClass{
 
         // 修正入口数据
         mappedDF
-//        val containSidDF = finalOrderDF.filter("sid is not null").withColumnRenamed("sid","video_sid")
-//        val refineDF = containSidDF.join(mappedDF, containSidDF("order_code") === mappedDF("order_code"),"left").
-//          select(containSidDF("order_code"),containSidDF("account_id"),containSidDF("dim_date"),containSidDF("good_sk"),
-//            mappedDF("user_id"),containSidDF("video_sid")).withColumn("entrance", lit("authentication")).
-//          select("order_code","account_id","dim_date","good_sk","user_id","entrance","video_sid")
-//        val otherDF = mappedDF.select("order_code").except(refineDF.select("order_code"))
-//
-//        refineDF.union(mappedDF.join(otherDF,mappedDF("order_code") === otherDF("order_code")).drop(otherDF("order_code")))
+        //        val containSidDF = finalOrderDF.filter("sid is not null").withColumnRenamed("sid","video_sid")
+        //        val refineDF = containSidDF.join(mappedDF, containSidDF("order_code") === mappedDF("order_code"),"left").
+        //          select(containSidDF("order_code"),containSidDF("account_id"),containSidDF("dim_date"),containSidDF("good_sk"),
+        //            mappedDF("user_id"),containSidDF("video_sid")).withColumn("entrance", lit("authentication")).
+        //          select("order_code","account_id","dim_date","good_sk","user_id","entrance","video_sid")
+        //        val otherDF = mappedDF.select("order_code").except(refineDF.select("order_code"))
+        //
+        //        refineDF.union(mappedDF.join(otherDF,mappedDF("order_code") === otherDF("order_code")).drop(otherDF("order_code")))
 
       }
       case None => throw new RuntimeException("未设置时间参数！")

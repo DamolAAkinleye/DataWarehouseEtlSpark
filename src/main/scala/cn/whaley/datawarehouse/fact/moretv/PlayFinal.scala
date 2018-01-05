@@ -141,9 +141,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       "product_model_sk"),
 
    /** 获得推广渠道维度promotion_sk */
-//    new DimensionColumn("dim_medusa_promotion",
-//      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
-//      "promotion_sk"),
+    //    new DimensionColumn("dim_medusa_promotion",
+    //      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
+    //      "promotion_sk"),
 
 
     new DimensionColumn("dim_medusa_promotion_channel",
