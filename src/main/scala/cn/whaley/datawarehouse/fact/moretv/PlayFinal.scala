@@ -259,6 +259,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     //("display_id", "displayId"),//for now,not online filed
     //("player_type", "playerType"),//for now,not online filed
     ("version_flag", "flag"),
+    ("is_group_subject", "isgroupsubject"), //new column at V3.1.8
+    ("definition", "definition"), //new column at V3.1.8
+    ("definition_source", "definitionsource"), //new column at V3.1.8
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )
