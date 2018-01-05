@@ -257,7 +257,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     ("is_reservation", "case when trim(contentType) = 'reservation' then 'true' else 'false' end"),
     ("search_keyword", "searchKeyword"),
     ("product_model", "productModel"),
-    ("auto_clarity", "tencentAutoClarity"),
+//    ("auto_clarity", "tencentAutoClarity"),
     ("contain_ad", "case when containAd = '1' then 'true' else 'false' end"),
     ("app_enter_way", "appEnterWay"),
     ("play_type", "playType"),
