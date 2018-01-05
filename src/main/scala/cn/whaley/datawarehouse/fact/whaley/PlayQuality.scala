@@ -110,11 +110,11 @@ object PlayQuality extends FactEtlBase {
       ("datetime", null, StringType)
     )
 
-//    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_GET_VIDEO, startDate)
-//    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_START_PLAY, startDate)
-//    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_PARSE, startDate)
-//    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_BUFFER, startDate)
-//    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_END_PLAY, startDate)
+    //    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_GET_VIDEO, startDate)
+    //    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_START_PLAY, startDate)
+    //    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_PARSE, startDate)
+    //    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_BUFFER, startDate)
+    //    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_END_PLAY, startDate)
 
     var getVideoDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_player_sdk_getvideoinfo", startDate, startHour)
     var startPlayDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_player_sdk_startplay", startDate, startHour)

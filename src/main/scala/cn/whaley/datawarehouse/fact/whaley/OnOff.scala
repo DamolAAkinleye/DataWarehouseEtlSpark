@@ -59,8 +59,8 @@ object OnOff extends FactEtlBase{
       ("datetime",null,StringType)
     )
 
-//    var onDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_ON,startDate)
-//    var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
+    //    var onDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_ON,startDate)
+    //    var offDf = DataExtractUtils.readFromParquet(sqlContext,LogPath.HELIOS_OFF,startDate)
 
     var onDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_on", startDate, startHour)
     var offDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_off", startDate, startHour)

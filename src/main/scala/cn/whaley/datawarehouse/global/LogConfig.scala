@@ -24,7 +24,7 @@ trait LogConfig {
   val CHANNEL_SPORTS = "sports"
   val CHANNEL_TV="tv"
   val CHANNEL_HOT="hot"
-  val CHANNEL_GAME="game"
+  val CHANNEL_GAME = "game"
   val CHANNEL_VARIETY_PROGRAM="zongyi"
   val CHANNEL_OPERA="xiqu"
   val CHANNEL_COMIC="comic"

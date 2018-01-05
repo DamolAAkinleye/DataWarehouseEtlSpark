@@ -29,24 +29,24 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     println("------- before readSource "+Calendar.getInstance().getTime)
     val date = DateUtils.addDays(DateFormatUtils.readFormat.parse(startDate), 1)
     val reallyStartDate=DateFormatUtils.readFormat.format(date)
-//    val medusa_input_dir = DataExtractUtils.getParquetPath(LogPath.MEDUSA_PLAY, reallyStartDate)
-//    val moretv_input_dir = DataExtractUtils.getParquetPath(LogPath.MORETV_PLAYVIEW, reallyStartDate)
-//    val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
-//    val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
+    //    val medusa_input_dir = DataExtractUtils.getParquetPath(LogPath.MEDUSA_PLAY, reallyStartDate)
+    //    val moretv_input_dir = DataExtractUtils.getParquetPath(LogPath.MORETV_PLAYVIEW, reallyStartDate)
+    //    val medusaFlag = HdfsUtil.IsInputGenerateSuccess(medusa_input_dir)
+    //    val moretvFlag = HdfsUtil.IsInputGenerateSuccess(moretv_input_dir)
     val medusaFlag = true
     val moretvFlag = true
     if (medusaFlag && moretvFlag) {
-//      val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate).withColumn("flag",lit(MEDUSA))
-//      val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
+      //      val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate).withColumn("flag",lit(MEDUSA))
+      //      val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
       val medusaDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_play", startDate, startHour)
-        .withColumn("flag",lit(MEDUSA))
+        .withColumn("flag", lit(MEDUSA))
       val moretvDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main20_playview", startDate, startHour)
-        .withColumn("flag",lit(MORETV))
+        .withColumn("flag", lit(MORETV))
 
-      val medusaDfCombine=Play3xCombineUtils.get3xCombineDataFrame(medusaDf,sqlContext)
+      val medusaDfCombine = Play3xCombineUtils.get3xCombineDataFrame(medusaDf, sqlContext)
       val medusaRDD=medusaDfCombine.toJSON
 
-      val moretvDfFilter= Play2xFilterUtilsNew.get2xFilterDataFrame(moretvDf,sqlContext)
+      val moretvDfFilter = Play2xFilterUtilsNew.get2xFilterDataFrame(moretvDf, sqlContext)
       val moretvRDD=moretvDfFilter.toJSON
 
       val mergerRDD=medusaRDD.union(moretvRDD)
@@ -141,9 +141,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       "product_model_sk"),
 
    /** 获得推广渠道维度promotion_sk */
-//    new DimensionColumn("dim_medusa_promotion",
-//      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
-//      "promotion_sk"),
+    //    new DimensionColumn("dim_medusa_promotion",
+    //      List(DimensionJoinCondition(Map("promotionChannel" -> "promotion_code"))),
+    //      "promotion_sk"),
 
 
     new DimensionColumn("dim_medusa_promotion_channel",
@@ -266,6 +266,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     //("display_id", "displayId"),//for now,not online filed
     //("player_type", "playerType"),//for now,not online filed
     ("version_flag", "flag"),
+    ("is_group_subject", "isgroupsubject"), //new column at V3.1.8
+    ("definition", "definition"), //new column at V3.1.8
+    ("definition_source", "definitionsource"), //new column at V3.1.8
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )
