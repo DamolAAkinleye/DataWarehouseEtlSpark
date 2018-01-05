@@ -9,7 +9,7 @@ import org.apache.spark.storage.StorageLevel
 /**
   * Created by lituo on 2017/12/19.
   */
-object Program extends NormalizedEtlBase{
+object Program extends NormalizedEtlBase {
   /**
     * 源数据读取函数, ETL中的Extract
     * 如需自定义，可以在子类中重载实现
@@ -19,7 +19,7 @@ object Program extends NormalizedEtlBase{
 
   tableName = "medusa_program_base_info"
 
-  val vipProgramColumns = List("program_code","package_code","package_name")
+  val vipProgramColumns = List("program_code", "package_code", "package_name")
 
   override def extract(params: Params) = {
     val sourceDb = MysqlDB.medusaCms("mtv_basecontent", "id", 1, 2010000000, 500)
@@ -31,25 +31,25 @@ object Program extends NormalizedEtlBase{
     val contentProgram = sqlContext.read.format("jdbc").options(contentProgramDB).load()
     val tvbBBCPackageProgram = sqlContext.read.format("jdbc").options(contentPackageProgramDB).load().filter("relation_status = 'bound'")
       .persist(StorageLevel.MEMORY_AND_DISK)
-    val tvbPackageProgramDF = tvbBBCPackageProgram.filter("package_code = 'TVB'").select(vipProgramColumns.map(col):_*)
-    val bbcPackageProgramDF = tvbBBCPackageProgram.filter("package_code = 'BBC'").select(vipProgramColumns.map(col):_*)
+    val tvbPackageProgramDF = tvbBBCPackageProgram.filter("package_code = 'TVB'").select(vipProgramColumns.map(col): _*)
+    val bbcPackageProgramDF = tvbBBCPackageProgram.filter("package_code = 'BBC'").select(vipProgramColumns.map(col): _*)
     tvbBBCPackageProgram.unpersist()
 
     val tencentPackageProgram = contentProgram.filter("source = 'tencent2'")
     val tencentProgramDF = tencentPackageProgram.select("program_code").
-      withColumn("package_code",lit("TENCENT")).
+      withColumn("package_code", lit("TENCENT")).
       withColumn("package_name", lit("腾讯节目包")).
-      select(vipProgramColumns.map(col):_*)
+      select(vipProgramColumns.map(col): _*)
     val vipProgramDF = tencentProgramDF.union(tvbPackageProgramDF).union(bbcPackageProgramDF)
-    var newDf = sourceDf.join(vipProgramDF,sourceDf("sid") === vipProgramDF("program_code"),"left_outer").
-      withColumn("is_vip", if(col("package_code") != null) lit(1) else lit(0))
+    var newDf = sourceDf.join(vipProgramDF, sourceDf("sid") === vipProgramDF("program_code"), "left_outer").
+      withColumn("is_vip", if (col("package_code") != null) lit(1) else lit(0))
 
     //媒体文件表，包含腾讯tid字段
     val mediaFileDb = MysqlDB.medusaCms("mtv_media_file", "id", 1, 250000000, 500)
     val mediaFileDf = sqlContext.read.format("jdbc").options(mediaFileDb).load()
       .where("status = 1 and source = 'tencent2' ")
 
-    newDf = newDf.join(mediaFileDf, newDf("id") === mediaFileDf("content_id") , "leftouter")
+    newDf = newDf.join(mediaFileDf, newDf("id") === mediaFileDf("content_id"), "leftouter")
       .select(newDf("*"), mediaFileDf("video_id").as("tid"))
     newDf
   }
@@ -60,7 +60,7 @@ object Program extends NormalizedEtlBase{
     * @return
     */
   override def transform(params: Params, df: DataFrame) = {
-    sqlContext.udf.register("myReplace",myReplace _)
+    sqlContext.udf.register("myReplace", myReplace _)
 
     df.registerTempTable("mtv_basecontent")
 
@@ -90,7 +90,7 @@ object Program extends NormalizedEtlBase{
       " ORDER BY a.id").dropDuplicates(List("sid"))
   }
 
-  def myReplace(s:String): String ={
+  def myReplace(s: String): String = {
     var t = s
     t = t.replace("'", "")
     t = t.replace("\t", " ")

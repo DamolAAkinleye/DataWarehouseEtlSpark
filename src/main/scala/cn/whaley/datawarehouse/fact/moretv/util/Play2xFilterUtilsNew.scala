@@ -35,7 +35,7 @@ object Play2xFilterUtilsNew extends LogConfig {
   val repartitionNum=50
 
   /** 获得过滤结果 */
-    def get2xFilterDataFrame(factDataFrame: DataFrame,sqlContext: SQLContext): DataFrame = {
+  def get2xFilterDataFrame(factDataFrame: DataFrame, sqlContext: SQLContext): DataFrame = {
     factDataFrame.repartition(repartitionNum).registerTempTable(fact_table_name)
     //println("factDataFrame.count():" + factDataFrame.count())
     val totalFilterSql=

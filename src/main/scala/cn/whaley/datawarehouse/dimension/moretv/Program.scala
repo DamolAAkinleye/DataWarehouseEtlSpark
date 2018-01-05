@@ -34,7 +34,7 @@ object Program extends DimensionBase {
   fullUpdate = true
 
   override def filterSource(sourceDf: DataFrame): DataFrame = {
-//    sourceDf.persist()
+    //    sourceDf.persist()
     val contentProgram = sqlContext.read.format("jdbc").options(contentProgramDB).load()
     val tvbBBCPackageProgram = sqlContext.read.format("jdbc").options(contentPackageProgramDB).load().filter("relation_status = 'bound'")
       .persist(StorageLevel.MEMORY_AND_DISK)
@@ -48,7 +48,7 @@ object Program extends DimensionBase {
       withColumn("package_name", lit("腾讯节目包")).
       select(vipProgramColumns.map(col):_*)
     val vipProgramDF = tencentProgramDF.union(tvbPackageProgramDF).union(bbcPackageProgramDF)
-    var newDf = sourceDf.join(vipProgramDF,sourceDf("sid") === vipProgramDF("program_code"),"left_outer").
+    var newDf = sourceDf.join(vipProgramDF, sourceDf("sid") === vipProgramDF("program_code"), "left_outer").
       withColumn("is_vip", if(col("package_code") != null) lit(1) else lit(0))
 
     //媒体文件表，包含腾讯tid字段
@@ -56,7 +56,7 @@ object Program extends DimensionBase {
     val mediaFileDf = sqlContext.read.format("jdbc").options(mediaFileDb).load()
       .where("status = 1 and source = 'tencent2' ")
 
-    newDf = newDf.join(mediaFileDf, newDf("id") === mediaFileDf("content_id") , "leftouter")
+    newDf = newDf.join(mediaFileDf, newDf("id") === mediaFileDf("content_id"), "leftouter")
       .select(newDf("*"), mediaFileDf("video_id").as("tid"))
 
     sqlContext.udf.register("myReplace",myReplace _)

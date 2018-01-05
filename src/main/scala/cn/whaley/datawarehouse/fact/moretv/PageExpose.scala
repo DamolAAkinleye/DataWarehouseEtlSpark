@@ -86,7 +86,7 @@ object PageExpose extends FactEtlBase {
       "buildDate", "datetime", "ip", "cityLevel")
 
     //频道页和详情页曝光
-//    var channelExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_CHANNEL_EXPOSE, realStartDate)
+    //    var channelExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_CHANNEL_EXPOSE, realStartDate)
     var channelExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_channel_expose", startDate, startHour)
 
     channelExposeDf = channelExposeDf.selectExpr(metaFields ++ List("alg", "biz", "area", "contentType",
@@ -96,7 +96,7 @@ object PageExpose extends FactEtlBase {
 
 
     //首页曝光
-//    var launcherExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_LAUNCHER_EXPOSE, realStartDate)
+    //    var launcherExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_LAUNCHER_EXPOSE, realStartDate)
     var launcherExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_launcher_expose", startDate, startHour)
 
 
@@ -108,7 +108,7 @@ object PageExpose extends FactEtlBase {
 
 
     //视频退出播放页曝光
-//    var playBackExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BACK, realStartDate)
+    //    var playBackExposeDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BACK, realStartDate)
     var playBackExposeDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_play_back", startDate, startHour)
 
     playBackExposeDf = playBackExposeDf.selectExpr(metaFields ++ List("alg", "biz", "null as area", "contentType", "sidList",

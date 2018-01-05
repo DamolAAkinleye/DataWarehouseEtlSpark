@@ -68,7 +68,7 @@ abstract class DimensionBase extends BaseClass {
 
     //读取源数据
     val sourceDf =
-      if(fullUpdate) {
+      if (fullUpdate) {
         readSource(readSourceType)
       } else {
         readSourceIncr(readSourceType)
@@ -79,7 +79,7 @@ abstract class DimensionBase extends BaseClass {
 
     filteredSourceDf.persist()
 
-    if(!fullUpdate) {
+    if (!fullUpdate) {
       val count = filteredSourceDf.count()
       if (count == 0) {
         println("源数据为空。。。。。。。。")
@@ -186,7 +186,7 @@ abstract class DimensionBase extends BaseClass {
 
   override def transform(params: Params, filteredSourceDf: DataFrame): DataFrame = {
 
-    if(filteredSourceDf == null) return null
+    if (filteredSourceDf == null) return null
 
     val onlineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionName
 
@@ -221,7 +221,7 @@ abstract class DimensionBase extends BaseClass {
 
     if (debug) println("新增加列：" + newColumns)
 
-    if(!fullUpdate && newColumns.nonEmpty) {
+    if (!fullUpdate && newColumns.nonEmpty) {
       throw new RuntimeException("有新增列，必须用全量更新模式运行")
     }
 
@@ -285,7 +285,7 @@ abstract class DimensionBase extends BaseClass {
     })
       ++ List(columns.validTimeKey).map(s => "a." + s)
       ++ List(columns.invalidTimeKey).map(s =>
-      if(fullUpdate) {
+      if (fullUpdate) {
         //更新filteredSourceDf中不存在的行，使其失效
         "cast(CASE WHEN b." + columns.primaryKeys.head + s" is null and a.$s is null " +
           s"THEN '$todayStr' ELSE a.$s END as timestamp) as $s"
@@ -381,7 +381,9 @@ abstract class DimensionBase extends BaseClass {
     */
   private def backup(p: Params, df: DataFrame, dimensionType: String): Unit = {
 
-    if(df == null) {return}
+    if (df == null) {
+      return
+    }
     val cal = Calendar.getInstance
     val date = DateFormatUtils.readFormat.format(cal.getTime)
     val onLineDimensionDir = DIMENSION_HDFS_BASE_PATH + File.separator + dimensionType

@@ -50,14 +50,14 @@ object MemberOrder extends FactEtlBase{
     val sourceDB = MysqlDB.medusaMemberDB("business_order")
     val businessOrderDF = DataExtractUtils.readFromJdbc(sqlContext,sourceDB)
     var df = businessOrderDF.filter(s"substring(create_time,0,10) = '${DateFormatUtils.cnFormat.format(DateFormatUtils.readFormat.parse(sourceDate))}'")
-    if(sourceHour != null) {
+    if (sourceHour != null) {
       df = df.filter(s"substring(create_time,12,2) = '$sourceHour'")
     }
     df
   }
 
   override def load(params: Params, df: DataFrame) = {
-    val goodsDF = DataExtractUtils.readFromParquet(sqlContext,LogPath.DIM_MEDUSA_MEMBER_GOOD).filter("dim_invalid_time is null and is_valid = 1").select("good_sk","good_name").withColumnRenamed("good_sk", "dim_good_sk")
+    val goodsDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.DIM_MEDUSA_MEMBER_GOOD).filter("dim_invalid_time is null and is_valid = 1").select("good_sk", "good_name").withColumnRenamed("good_sk", "dim_good_sk")
     val finalDf = addContMonOrderFlag(params,df,goodsDF)
     super.load(params,finalDf)
   }

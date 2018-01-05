@@ -27,7 +27,7 @@ object ParamsParseUtil {
           })
         opt[String]("hour").action((x, c) => c.copy(startHour = x)).
           validate(e => try {
-            if(e.length == 2 && e.toInt >=0 && e.toInt <=23) {
+            if (e.length == 2 && e.toInt >= 0 && e.toInt <= 23) {
               success
             } else {
               failure("wrong date format")

@@ -46,8 +46,8 @@ trait BaseClass {
           val date = p.startDate
           p.paramMap.put("date", date)
         }
-        if(p.mode != null) {
-          if(!List("all", "increment").contains(p.mode)) {
+        if (p.mode != null) {
+          if (!List("all", "increment").contains(p.mode)) {
             throw new RuntimeException("mode must be all or increment")
           }
         }

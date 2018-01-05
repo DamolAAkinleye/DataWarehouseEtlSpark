@@ -149,20 +149,20 @@ object PlayPathClick extends FactEtlBase {
       ("dataSource", null, StringType),
       ("recommendType" ,null, StringType)
     )
-   // val launcher = s"/log/whaley/parquet/$startDate/launcher"
-   // val wui = s"/log/boikgpokn78sb95kjhfrendoj8ilnoi7/parquet/$startDate/positionClick"
+    // val launcher = s"/log/whaley/parquet/$startDate/launcher"
+    // val wui = s"/log/boikgpokn78sb95kjhfrendoj8ilnoi7/parquet/$startDate/positionClick"
 
 
-//      var getWuiLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_LAUNCHER, startDate)
-//      var getLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_LAUNCHER, startDate)
-//      var getChannelInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_CHANNEL_Click, startDate)
-//      var getMovieInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_MOVIE_Click, startDate)
-//      var getWuiButton = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_BUTTON, startDate)
-      var getWuiLauncherInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_wui20_positionclick", startDate, startHour)
-      var getLauncherInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_launcher", startDate, startHour)
-      var getChannelInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_channelhome_click", startDate, startHour)
-      var getMovieInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_whaleymovie_moviehomeaccess", startDate, startHour)
-      var getWuiButton = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_wui20_buttonclick", startDate, startHour)
+    //      var getWuiLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_LAUNCHER, startDate)
+    //      var getLauncherInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_LAUNCHER, startDate)
+    //      var getChannelInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_CHANNEL_Click, startDate)
+    //      var getMovieInfo = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_MOVIE_Click, startDate)
+    //      var getWuiButton = DataExtractUtils.readFromParquet(sqlContext, LogPath.HELIOS_WUI_BUTTON, startDate)
+    var getWuiLauncherInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_wui20_positionclick", startDate, startHour)
+    var getLauncherInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_launcher", startDate, startHour)
+    var getChannelInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_channelhome_click", startDate, startHour)
+    var getMovieInfo = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_main_helios_whaleymovie_moviehomeaccess", startDate, startHour)
+    var getWuiButton = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_whaleytv_wui20_buttonclick", startDate, startHour)
         .where("buttonType = 'signal' or buttonType = 'search' ")
 
 
