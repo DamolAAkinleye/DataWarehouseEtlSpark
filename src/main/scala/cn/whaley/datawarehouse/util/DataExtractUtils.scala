@@ -34,4 +34,14 @@ object DataExtractUtils {
     sourceDf
   }
 
+//  def readFromOds(sqlContext: SQLContext, tableName: String, startDate: String, startHour: String): DataFrame = {
+//    val path =
+//      if (startHour != null)
+//        s"/data_warehouse/ods_view.db/log_medusa_main3x_play/key_day=$startDate/key_hour=$startHour"
+//      else
+//        s"/data_warehouse/ods_view.db/log_medusa_main3x_play/key_day=$startDate/*"
+//    val sourceDf = sqlContext.read.parquet(path)
+//    sourceDf
+//  }
+
 }
