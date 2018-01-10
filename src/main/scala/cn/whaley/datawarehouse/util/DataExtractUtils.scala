@@ -29,8 +29,23 @@ object DataExtractUtils {
 
   def readFromOds(sqlContext: SQLContext, tableName: String, startDate: String, startHour: String): DataFrame = {
     val sql = s"select * from $tableName where key_day = '$startDate'" +
-      (if (startHour != null) s" and key_hour = '$startHour'"  else "")
+      (if (startHour != null) s" and key_hour = '$startHour'" else "")
     val sourceDf = sqlContext.sql(sql)
+    sourceDf
+  }
+
+  def readFromOdsParquet(sqlContext: SQLContext, tableName: String, startDate: String, startHour: String): DataFrame = {
+    val pathName = if(tableName.contains(".")) {
+      tableName.split("\\.").last
+    } else {
+      tableName
+    }
+    val path =
+      if (startHour != null)
+        s"/data_warehouse/ods_view.db/$pathName/key_day=$startDate/key_hour=$startHour"
+      else
+        s"/data_warehouse/ods_view.db/$pathName/key_day=$startDate/*"
+    val sourceDf = sqlContext.read.parquet(path)
     sourceDf
   }
 

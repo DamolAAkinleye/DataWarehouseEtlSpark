@@ -61,14 +61,13 @@ object Play3xCombineUtils extends LogConfig {
     val sqlString =
       s"""select concat_ws('_',userId,episodeSid,videoSid,pathMain,realIP) as key,duration,datetime,event,${INDEX_NAME},'' as start_event
           |from $fact_table_name
-          |where duration is not null
        """.stripMargin
     val shortDataFrame = sqlContext.sql(sqlString)
     shortDataFrame.registerTempTable(shortDataFrameTable)
     //(key,list(duration,datetime,event,r_index))
     import scala.util.control.Breaks._
     val rdd1 = shortDataFrame.rdd.map(
-      row => (row.getString(0), (row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))
+      row => (row.getString(0), (if(row.get(1) == null) 0l else row.getLong(1), row.getString(2), row.getString(3), row.getLong(4)))
     ).groupByKey()
     val rddCombineTmp = rdd1.map(x => {
       val ikey = x._1

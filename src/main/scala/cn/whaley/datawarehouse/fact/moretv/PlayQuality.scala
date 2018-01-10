@@ -140,16 +140,16 @@ object PlayQuality extends FactEtlBase {
       ("userType", null, StringType)
     )
 
-//    //节目信息
-//    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_VIDEO_INFO, realStartDate)
-//    //起播
-//    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_START, realStartDate)
-//    //解析
-//    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_PARSE, realStartDate)
-//    //缓冲
-//    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BUFFER, realStartDate)
-//    //结束播放
-//    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_END, realStartDate)
+    //    //节目信息
+    //    var getVideoDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_VIDEO_INFO, realStartDate)
+    //    //起播
+    //    var startPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_START, realStartDate)
+    //    //解析
+    //    var parseDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_PARSE, realStartDate)
+    //    //缓冲
+    //    var bufferDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_BUFFER, realStartDate)
+    //    //结束播放
+    //    var endPlayDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY_END, realStartDate)
 
     //节目信息
     var getVideoDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_player_sdk_getvideoinfo", startDate, startHour)
