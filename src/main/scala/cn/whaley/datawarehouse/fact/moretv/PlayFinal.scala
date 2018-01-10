@@ -53,6 +53,13 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       val mergerDataFrame = sqlContext.read.json(mergerRDD.rdd)
 //      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
       Play3xCombineUtils.factDataFrameWithIndex.unpersist()
+      println("##########medusa 318 test###############")
+      medusaDf.printSchema()
+      medusaDfCombine.printSchema()
+      mergerDataFrame.printSchema()
+      println("medusaDfCombine count is :" + medusaDfCombine.count())
+      println("mergerDataFrame count is :" + mergerDataFrame.count())
+
       mergerDataFrame
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
@@ -266,9 +273,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     //("display_id", "displayId"),//for now,not online filed
     //("player_type", "playerType"),//for now,not online filed
     ("version_flag", "flag"),
-    //    ("is_group_subject", "isgroupsubject"), //new column at V3.1.8
-    //    ("definition", "definition"), //new column at V3.1.8
-    //    ("definition_source", "definitionsource"), //new column at V3.1.8
+    ("is_group_subject", "isgroupsubject"), //new column at V3.1.8
+    ("definition", "definition"), //new column at V3.1.8
+    ("definition_source", "definitionsource"), //new column at V3.1.8
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )
