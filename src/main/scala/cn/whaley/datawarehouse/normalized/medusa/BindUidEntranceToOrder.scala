@@ -44,7 +44,7 @@ object BindUidEntranceToOrder extends BaseClass{
 
         /** 订单事实表数据*/
         val todayOrderDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.FACT_MEDUSA_ORDER, p.toString)
-        val bindSidDF = todayOrderDF.join(dimQqid2SidDF,todayOrderDF("cid") === dimQqid2SidDF("qqid")).drop(dimQqid2SidDF("qqid")).drop(todayOrderDF("cid"))
+//        val bindSidDF = todayOrderDF.join(dimQqid2SidDF,todayOrderDF("cid") === dimQqid2SidDF("qqid")).drop(dimQqid2SidDF("qqid")).drop(todayOrderDF("cid"))
 
 
         /** 入口日志与登录账户日志*/
@@ -62,7 +62,7 @@ object BindUidEntranceToOrder extends BaseClass{
         val accountLoginDF = DataExtractUtils.readFromOds(sqlContext,"ods_view.log_medusa_main3x_mtvaccount",p.toString,null).
           select("userId","accountId","date")
         val bindAccount2EntranceDF = bindAccountInfo(accountLoginDF, entranceDF)
-        val bindGoodOrderDF = bindSidDF.join(dimGoodDF, bindSidDF("good_sk") === dimGoodDF("good_sk")).drop(dimGoodDF("good_sk"))
+        val bindGoodOrderDF = todayOrderDF.join(dimGoodDF, todayOrderDF("good_sk") === dimGoodDF("good_sk")).drop(dimGoodDF("good_sk"))
         val finalOrderDF = bindGoodOrderDF.join(dimAccountDF, bindGoodOrderDF("account_sk") === dimAccountDF("account_sk")).drop(dimAccountDF("account_sk"))
         val todayMappedOrder = bindEntrance(finalOrderDF, bindAccount2EntranceDF)
         val todayMappedOrderCode = todayMappedOrder.select("order_code")
