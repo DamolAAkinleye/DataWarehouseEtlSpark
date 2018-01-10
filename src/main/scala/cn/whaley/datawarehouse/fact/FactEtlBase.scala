@@ -80,6 +80,8 @@ abstract class FactEtlBase extends BaseClass {
       null
     } else if (readSourceType == null || readSourceType == ods) {
       DataExtractUtils.readFromOds(sqlContext, odsTableName, sourceDate, sourceHour)
+    } else if (readSourceType == ods_parquet) {
+      DataExtractUtils.readFromOdsParquet(sqlContext, odsTableName, sourceDate, sourceHour)
     } else if (readSourceType == parquet) {
       DataExtractUtils.readFromParquet(sqlContext, parquetPath, sourceDate)
     }

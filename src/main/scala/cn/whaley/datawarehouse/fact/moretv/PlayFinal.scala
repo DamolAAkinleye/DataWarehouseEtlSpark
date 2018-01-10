@@ -38,9 +38,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     if (medusaFlag && moretvFlag) {
       //      val medusaDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_PLAY, reallyStartDate).withColumn("flag",lit(MEDUSA))
       //      val moretvDf = DataExtractUtils.readFromParquet(sqlContext, LogPath.MORETV_PLAYVIEW, reallyStartDate).withColumn("flag",lit(MORETV))
-      val medusaDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_play", startDate, startHour)
+      val medusaDf = DataExtractUtils.readFromOdsParquet(sqlContext, "ods_view.log_medusa_main3x_play", startDate, startHour)
         .withColumn("flag", lit(MEDUSA))
-      val moretvDf = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main20_playview", startDate, startHour)
+      val moretvDf = DataExtractUtils.readFromOdsParquet(sqlContext, "ods_view.log_medusa_main20_playview", startDate, startHour)
         .withColumn("flag", lit(MORETV))
 
       val medusaDfCombine = Play3xCombineUtils.get3xCombineDataFrame(medusaDf, sqlContext)
@@ -266,9 +266,9 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     //("display_id", "displayId"),//for now,not online filed
     //("player_type", "playerType"),//for now,not online filed
     ("version_flag", "flag"),
-    //    ("is_group_subject", "isgroupsubject"), //new column at V3.1.8
-    //    ("definition", "definition"), //new column at V3.1.8
-    //    ("definition_source", "definitionsource"), //new column at V3.1.8
+    ("is_group_subject", "isgroupsubject"), //new column at V3.1.8
+    ("definition", "definition"), //new column at V3.1.8
+    ("definition_source", "definitionsource"), //new column at V3.1.8
     ("dim_date", "dim_date"),
     ("dim_time", "dim_time")
   )
