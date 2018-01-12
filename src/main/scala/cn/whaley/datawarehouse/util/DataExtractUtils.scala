@@ -34,4 +34,19 @@ object DataExtractUtils {
     sourceDf
   }
 
+  def readFromOdsParquet(sqlContext: SQLContext, tableName: String, startDate: String, startHour: String): DataFrame = {
+    val pathName = if(tableName.contains(".")) {
+      tableName.split("\\.").last
+    } else {
+      tableName
+    }
+    val path =
+      if (startHour != null)
+        s"/data_warehouse/ods_view.db/$pathName/key_day=$startDate/key_hour=$startHour"
+      else
+        s"/data_warehouse/ods_view.db/$pathName/key_day=$startDate/*"
+    val sourceDf = sqlContext.read.parquet(path)
+    sourceDf
+  }
+
 }
