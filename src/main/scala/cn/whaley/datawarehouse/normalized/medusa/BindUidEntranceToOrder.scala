@@ -35,16 +35,16 @@ object BindUidEntranceToOrder extends BaseClass{
         val dimAccountDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.MEDUSA_ACCOUNT).filter("dim_invalid_time is null")
         val dimGoodDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.DIM_MEDUSA_MEMBER_GOOD).filter("dim_invalid_time is null and is_valid = 1")
 
-        val dimQqid2SidDF = if (HdfsUtil.pathIsExist(LogPath.TENCENT_CID_2_SID.replace(LogPath.DATE_ESCAPE, p.toString))) {
-          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID, p.toString).select("qqid", "sid")
-        } else {
-          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID_ALL).select("qqid", "sid")
-        }
+//        val dimQqid2SidDF = if (HdfsUtil.pathIsExist(LogPath.TENCENT_CID_2_SID.replace(LogPath.DATE_ESCAPE, p.toString))) {
+//          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID, p.toString).select("qqid", "sid")
+//        } else {
+//          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID_ALL).select("qqid", "sid")
+//        }
 
 
         /** 订单事实表数据*/
         val todayOrderDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.FACT_MEDUSA_ORDER, p.toString)
-        val bindSidDF = todayOrderDF.join(dimQqid2SidDF, todayOrderDF("cid") === dimQqid2SidDF("qqid")).drop(dimQqid2SidDF("qqid")).drop(todayOrderDF("cid"))
+//        val bindSidDF = todayOrderDF.join(dimQqid2SidDF,todayOrderDF("cid") === dimQqid2SidDF("qqid")).drop(dimQqid2SidDF("qqid")).drop(todayOrderDF("cid"))
 
 
         /** 入口日志与登录账户日志*/
@@ -62,7 +62,7 @@ object BindUidEntranceToOrder extends BaseClass{
         val accountLoginDF = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_mtvaccount", p.toString, null).
           select("userId", "accountId", "date")
         val bindAccount2EntranceDF = bindAccountInfo(accountLoginDF, entranceDF)
-        val bindGoodOrderDF = bindSidDF.join(dimGoodDF, bindSidDF("good_sk") === dimGoodDF("good_sk")).drop(dimGoodDF("good_sk"))
+        val bindGoodOrderDF = todayOrderDF.join(dimGoodDF, todayOrderDF("good_sk") === dimGoodDF("good_sk")).drop(dimGoodDF("good_sk"))
         val finalOrderDF = bindGoodOrderDF.join(dimAccountDF, bindGoodOrderDF("account_sk") === dimAccountDF("account_sk")).drop(dimAccountDF("account_sk"))
         val todayMappedOrder = bindEntrance(finalOrderDF, bindAccount2EntranceDF)
         val todayMappedOrderCode = todayMappedOrder.select("order_code")
@@ -158,10 +158,19 @@ object BindUidEntranceToOrder extends BaseClass{
     */
   def bindContinuousMonthOrder(originOrderDF:DataFrame, mappedOrderDF:DataFrame) = {
     // 选择出连续包月的订单
-    val consecutiveAccountDF = originOrderDF.filter(s"good_name = '${FilterType.CONSECUTIVE_MONTH_ORDER}'").select("account_id", "order_code")
+    val consecutiveAccountDF = originOrderDF.filter(s"good_name = '${FilterType.CONSECUTIVE_MONTH_ORDER}'").select("account_id", "order_code", "dim_date","good_sk")
+    val accountLastOrderDate = mappedOrderDF.filter(s"good_name = '${FilterType.CONSECUTIVE_MONTH_ORDER}'").select("account_id","dim_date").groupBy("account_id").agg(max("dim_date"))
     val consecutiveMappedDF = mappedOrderDF.filter(s"good_name = '${FilterType.CONSECUTIVE_MONTH_ORDER}'")
-//    val consecutiveMappedOrderDF = consecutiveMappedDF.join(consecutiveAccountDF, Seq("order_code")).drop(consecutiveAccountDF("account_id"))
-    consecutiveAccountDF.join(consecutiveMappedDF, Seq("account_id")).drop(consecutiveMappedDF("order_code")).
+    val df = consecutiveMappedDF.join(accountLastOrderDate, consecutiveMappedDF("account_id")===accountLastOrderDate("account_id") &&
+      consecutiveMappedDF("dim_date")===accountLastOrderDate("max(dim_date)")).
+      select(consecutiveMappedDF("account_id"),consecutiveMappedDF("user_id"),consecutiveMappedDF("entrance"),consecutiveMappedDF("video_sid"))
+    val df1 = df.groupBy("account_id").agg(max("user_id")).withColumnRenamed("max(user_id)","user_id")
+    val df2 = df.join(df1,df("account_id") === df1("account_id") && df("user_id") === df1("user_id")).select(df("account_id"),df("user_id"),df("entrance"),df("video_sid")).
+      groupBy("account_id","user_id").agg(max("entrance")).withColumnRenamed("max(entrance)","entrance")
+    val referMappedDF = df.join(df2,df("account_id") === df2("account_id") && df("user_id") === df2("user_id") && df("entrance") === df2("entrance")).
+      select(df("account_id"),df("user_id"),df("entrance"),df("video_sid")).
+      groupBy("account_id","user_id","entrance").agg(max("video_sid")).withColumnRenamed("max(video_sid)","video_sid")
+    consecutiveAccountDF.join(referMappedDF, Seq("account_id")).drop(referMappedDF("account_id")).
       select("order_code","account_id","dim_date","good_sk", "user_id","entrance","video_sid")
 
   }
