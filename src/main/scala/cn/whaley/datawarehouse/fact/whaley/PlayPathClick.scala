@@ -21,6 +21,10 @@ object PlayPathClick extends FactEtlBase {
     //WUI版本
     UserDefinedColumn("udc_wui_version", udf(LauncherEntranceUtils.wuiVersionFromPlay: (String, String) => String),
       List("rom_version", "firmware_version")),
+    //首页的Area
+    UserDefinedColumn("udc_launcher_access_area",
+      udf(LauncherEntranceUtils.getLauncherAreaFromClick: (String,String,String, String, String, String) => String),
+      List("rom_version", "firmware_version", "page", "area_name", "location_code", "location_index")),
     //首页的location
     UserDefinedColumn("udc_launcher_access_location",
       udf(LauncherEntranceUtils.getLauncherLocationFromClick: (String,String,String, String, String,  String, String) => String),
@@ -34,6 +38,7 @@ object PlayPathClick extends FactEtlBase {
     UserDefinedColumn("udc_page_location_code",
       udf(ChannelLauncherEntranceUtils.getPageLocationFromClick: (String, String) => String),
       List("page", "location_code")),
+
     //主页的索引
     UserDefinedColumn("udc_page_location_index",
       udf(ChannelLauncherEntranceUtils.getPageLocationIndexFromClick: (String) => Int),
@@ -63,6 +68,7 @@ object PlayPathClick extends FactEtlBase {
     ("recommend_type","recommend_type"),
     ("dim_date", " dim_date"),
     ("dim_time", "dim_time")
+
   )
 
 
@@ -81,9 +87,11 @@ object PlayPathClick extends FactEtlBase {
       List(DimensionJoinCondition(
         Map("udc_wui_version" -> "launcher_version",
           "udc_launcher_access_location" -> "access_location_code",
+          "udc_launcher_access_area" -> "access_area_code",
           "udc_launcher_location_index" -> "launcher_location_index")),
         DimensionJoinCondition(
           Map("udc_wui_version" -> "launcher_version",
+            "udc_launcher_access_area" -> "access_area_code",
             "udc_launcher_access_location" -> "access_location_code"),
             "launcher_location_index = -1")
       ), "launcher_entrance_sk"),
@@ -178,7 +186,7 @@ object PlayPathClick extends FactEtlBase {
         "productLine as product_line",
         "productSN as product_sn",
         "pageType as page",
-        "case when positionArea='我的电视' then positionArea else tableName end as area_name",
+        "case when positionArea='我的电视' then positionArea else tableCode end as area_name",
         "elementCode as  location_code",
         "linkValue as link_value",
         "linkValue as  sid ",

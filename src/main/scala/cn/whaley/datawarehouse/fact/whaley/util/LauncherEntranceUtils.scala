@@ -110,6 +110,40 @@ object LauncherEntranceUtils {
   }
 
   /**
+    * 根据首页点击日志获取首页的Area
+    * newModule5 表示分类，newModule1表示推荐，newModule2表示精选
+    * @param romVersion
+    * @param firmwareVersion
+    * @param page
+    * @param areaName
+    * @param locationCode
+    * @return
+    */
+  def getLauncherAreaFromClick(romVersion: String, firmwareVersion: String, page: String, areaName: String, locationCode: String,
+                                   locationIndex: String): String = {
+    try {
+      if (page == "home") {
+        if (LauncherEntranceUtils.wuiVersionFromPlay(romVersion, firmwareVersion) == "02") {
+          if (areaName == "我的电视")  "my_tv"
+          else if (areaName == "newModule1") "today_recommend"
+          else if (areaName == "newModule2" && locationCode == "top")  "discover"
+          else if (areaName == "newModule5"||areaName == "newModule3") "classification"
+          else if (areaName == "signal") "signal_source"
+          else if (areaName == "search") "search"
+          else     locationCode
+        } else {
+          areaName
+        }
+
+      } else null
+    } catch {
+      case ex: Exception => ""
+    }
+  }
+
+
+
+  /**
     * 根据首页点击日志获取首页的Location
     *
     * @param romVersion
@@ -147,7 +181,10 @@ object LauncherEntranceUtils {
           else locationCode
 
         } else {
-          if (areaName == "分类") linkValue.split("_")(1)
+          if ((areaName == "newModule5" || areaName == "newModule3") && linkValue=="site_clubmember") "vipClub"
+          else if ((areaName == "newModule5" || areaName == "newModule3") && linkValue=="site_vip" )  "vipClub"
+          else if ((areaName == "newModule5" || areaName == "newModule3") && linkValue=="site_sport" )  "sports"
+          else if  (areaName == "newModule5" )  linkValue.split("_")(1)
           else if (areaName == "signal" || areaName == "search") areaName
           else if (areaName == "我的电视") {
             if (locationIndex.toInt == 1) "history"
