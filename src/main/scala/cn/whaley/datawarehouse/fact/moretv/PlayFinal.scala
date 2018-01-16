@@ -53,13 +53,6 @@ object PlayFinal extends FactEtlBase with  LogConfig{
       val mergerDataFrame = sqlContext.read.json(mergerRDD.rdd)
 //      println("触发计算,mergerDataFrame.count"+mergerDataFrame.count())
       Play3xCombineUtils.factDataFrameWithIndex.unpersist()
-      println("##########medusa 318 test###############")
-      medusaDf.printSchema()
-      medusaDfCombine.printSchema()
-      mergerDataFrame.printSchema()
-      println("medusaDfCombine count is :" + medusaDfCombine.count())
-      println("mergerDataFrame count is :" + mergerDataFrame.count())
-
       mergerDataFrame
     }else{
       throw new RuntimeException("medusaFlag or moretvFlag is false")
