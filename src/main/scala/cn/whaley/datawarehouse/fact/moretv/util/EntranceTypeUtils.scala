@@ -16,9 +16,10 @@ object EntranceTypeUtils extends LogConfig {
     * 对于moretv日志只有live,search有对应的路径信息且只有area_code
     */
   private val MEDUSA_ENTRANCE_REGEX = ("home\\*(classification|foundation|my_tv)\\*[0-9-]{0,2}([a-z_]*)").r
-  private val MEDUSA_ENTRANCE_REGEX_WITHOUT_LOCATION_CODE = ("(live|recommendation|search|setting|hotSubject|taste)").r
+  private val MEDUSA_ENTRANCE_REGEX_WITHOUT_LOCATION_CODE = ("(live|recommendation|search|setting|hotSubject|taste|memberArea)").r
   private val MORETV_ENTRANCE_REGEX = ("home-(TVlive|live|search|history|watchhistory|hotrecommend)").r
   private val MEDUSA_ENTRANCE_MY_TV_317_REGEX = ("home\\*my_tv\\*1-accountcenter_home\\*([a-zA-Z0-9&\\u4e00-\\u9fa5]+)").r
+  private val MEDUSA_ENTRANCE_RECOMMEND_REGEX = "^home\\*(hotSubject|taste|recommendation|memberArea)\\*([0-9]+)$".r
 
   private def getEntranceCodeByPathETL(path: String, flag: String, code: String): String = {
     var result: String = null
@@ -118,6 +119,17 @@ object EntranceTypeUtils extends LogConfig {
     locationCode
   }
 
+
+  def getRecommendLocationIndex(pathMain: String): String = {
+    if (null != pathMain) {
+      MEDUSA_ENTRANCE_RECOMMEND_REGEX findFirstMatchIn pathMain match {
+        case Some(p) => p.group(2)
+        case None => null
+      }
+    }
+    else null
+  }
+
   /** 通过launcher_area_code和launcher_location_code取得launcher_entrance_sk */
   def getLauncherEntranceSK(): DimensionColumn = {
     new DimensionColumn("dim_medusa_launcher_entrance",
@@ -125,12 +137,12 @@ object EntranceTypeUtils extends LogConfig {
         DimensionJoinCondition(
           /** launcher_location_code is not null,join with launcher_area_code and launcher_location_code. (classification,foundation,my_tv) */
           Map("launcherAreaCode" -> "launcher_area_code", "launcherLocationCode" -> "launcher_location_code"),
-          " launcher_area_code in ('classification','foundation','my_tv')", null, " launcherAreaCode in ('classification','foundation','my_tv')"
+          null, null, null
         ),
         DimensionJoinCondition(
           /** launcher_location_code is null,join with launcher_area_code. (live,recommendation,search,setting,hotSubject,taste) */
           Map("launcherAreaCode" -> "launcher_area_code"),
-          " launcher_area_code in ('live','recommendation','search','setting','hotSubject','taste')", null, " launcherAreaCode in ('live','recommendation','search','setting','hotSubject','taste')"
+          null, null, null
         )
       ),
       "launcher_entrance_sk")

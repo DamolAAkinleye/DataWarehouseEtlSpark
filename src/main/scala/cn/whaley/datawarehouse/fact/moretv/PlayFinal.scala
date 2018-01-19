@@ -76,6 +76,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     UserDefinedColumn("fourthCategory", udf(ListCategoryUtils.getListFourthCategory: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherAreaCode", udf(EntranceTypeUtils.getEntranceAreaCode: (String, String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("launcherLocationCode", udf(EntranceTypeUtils.getEntranceLocationCode: (String, String,String) => String), List("pathMain", "path", "flag")),
+    UserDefinedColumn("launcherRecommendIndex", udf(EntranceTypeUtils.getRecommendLocationIndex: (String) => String), List("pathMain")),
     UserDefinedColumn("filterContentType", udf(FilterCategoryUtils.getFilterCategoryContentType: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategoryFirst", udf(FilterCategoryUtils.getFilterCategoryFirst: (String,String,String) => String), List("pathMain", "path", "flag")),
     UserDefinedColumn("filterCategorySecond", udf(FilterCategoryUtils.getFilterCategorySecond: (String,String,String) => String), List("pathMain", "path", "flag")),
@@ -266,6 +267,8 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     //("display_id", "displayId"),//for now,not online filed
     //("player_type", "playerType"),//for now,not online filed
     ("version_flag", "flag"),
+    ("launcher_recommend_index", "launcherRecommendIndex"),
+    ("recommend_type", "recommendType"),
     ("is_group_subject", "isgroupsubject"), //new column at V3.1.8
     ("definition", "definition"), //new column at V3.1.8
     ("definition_source", "definitionsource"), //new column at V3.1.8
