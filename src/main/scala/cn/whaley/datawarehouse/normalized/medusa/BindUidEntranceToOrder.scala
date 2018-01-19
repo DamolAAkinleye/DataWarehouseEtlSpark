@@ -58,7 +58,7 @@ object BindUidEntranceToOrder extends BaseClass{
         //          select("userId","accountId","date")
 
         val entranceDF = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_vipentrance_click", p.toString, null).
-          select("userId", "accountId", "entrance", "videoSid","recommendType", "date", "datetime", "happenTime")
+          select("userId", "accountId", "entrance", "videoSid","recommendType", "date", "datetime", "happenTime","alg","biz")
         val accountLoginDF = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_mtvaccount", p.toString, null).
           select("userId", "accountId", "date")
         val bindAccount2EntranceDF = bindAccountInfo(accountLoginDF, entranceDF)
@@ -105,7 +105,7 @@ object BindUidEntranceToOrder extends BaseClass{
     newDestinationDF.join(newSourceDF, newSourceDF("userId") === newDestinationDF("userId") && newSourceDF("date") === newDestinationDF("date"), "left_outer").
       withColumn("accountId", expr("case when destinationAccount > 0 then destinationAccount else sourceAccount end")).
       select(newDestinationDF("userId"), newDestinationDF("date"), newDestinationDF("datetime"),newDestinationDF("happenTime"), newDestinationDF("entrance"),
-        newDestinationDF("videoSid"),newDestinationDF("recommendType"),col("accountId"))
+        newDestinationDF("videoSid"),newDestinationDF("recommendType"),newDestinationDF("alg"),newDestinationDF("biz"),col("accountId"))
   }
 
   /**
@@ -142,7 +142,8 @@ object BindUidEntranceToOrder extends BaseClass{
     val df = orderEntranceByAccountDF.join(entranceDF,
       orderEntranceByAccountDF("account_id") === entranceDF("accountId") &&
         orderEntranceByAccountDF("max(happenTime)") === entranceDF("happenTime")).
-      select("order_code","account_id", "dim_date","good_sk","userId","entrance","videoSid","recommendType").withColumnRenamed("videoSid","video_sid").withColumnRenamed("recommendType","recommend_type").distinct()
+      select("order_code","account_id", "dim_date","good_sk","userId","entrance","videoSid","recommendType","alg","biz").
+      withColumnRenamed("videoSid","video_sid").withColumnRenamed("recommendType","recommend_type").distinct()
 
     val df1 = df.groupBy("order_code","account_id","dim_date","good_sk").agg(min("userId"))
 
@@ -161,7 +162,7 @@ object BindUidEntranceToOrder extends BaseClass{
     df.join(df3,df("order_code") === df3("order_code") && df("account_id") === df3("account_id") &&
       df("dim_date") === df3("dim_date") && df("good_sk") === df3("good_sk") && df("userId") === df3("userId") &&
       df("entrance") === df3("entrance") && df("video_sid") === df3("video_sid")).select(df("order_code"), df("account_id"), df("dim_date"),
-      df("good_sk"), df("userId"), df("entrance"), df("video_sid"), df("recommend_type")).withColumnRenamed("userId","user_id")
+      df("good_sk"), df("userId"), df("entrance"), df("video_sid"), df("recommend_type"), df("alg"), df("biz")).withColumnRenamed("userId","user_id")
 
   }
 
@@ -178,7 +179,8 @@ object BindUidEntranceToOrder extends BaseClass{
     val consecutiveMappedDF = mappedOrderDF.filter(s"good_name = '${FilterType.CONSECUTIVE_MONTH_ORDER}'")
     val df = consecutiveMappedDF.join(accountLastOrderDate, consecutiveMappedDF("account_id")===accountLastOrderDate("account_id") &&
       consecutiveMappedDF("dim_date")===accountLastOrderDate("max(dim_date)")).
-      select(consecutiveMappedDF("account_id"),consecutiveMappedDF("user_id"),consecutiveMappedDF("entrance"),consecutiveMappedDF("video_sid"),consecutiveMappedDF("recommend_type"))
+      select(consecutiveMappedDF("account_id"),consecutiveMappedDF("user_id"),consecutiveMappedDF("entrance"),
+        consecutiveMappedDF("video_sid"),consecutiveMappedDF("recommend_type"),consecutiveMappedDF("alg"),consecutiveMappedDF("biz"))
     val df1 = df.groupBy("account_id").agg(max("user_id"))
     val df2 = df.join(df1,df("account_id") === df1("account_id") && df("user_id") === df1("max(user_id)")).
       select(df("account_id"),df("user_id"),df("entrance"),df("video_sid")).
@@ -188,10 +190,10 @@ object BindUidEntranceToOrder extends BaseClass{
       groupBy("account_id","user_id","entrance").agg(max("video_sid"))
     val referMappedDF = df.join(df3, df("account_id") === df3("account_id") && df("user_id") === df3("user_id") &&
       df("entrance") === df3("entrance") && df("video_sid") === df3("max(video_sid)")).
-      select(df("account_id"),df("user_id"),df("entrance"),df("video_sid"),df("recommend_type"))
+      select(df("account_id"),df("user_id"),df("entrance"),df("video_sid"),df("recommend_type"),df("alg"),df("biz"))
 
     consecutiveAccountDF.join(referMappedDF, Seq("account_id")).drop(referMappedDF("account_id")).
-      select("order_code","account_id","dim_date","good_sk", "user_id","entrance","video_sid","recommend_type")
+      select("order_code","account_id","dim_date","good_sk", "user_id","entrance","video_sid","recommend_type","alg","biz")
 
   }
 
