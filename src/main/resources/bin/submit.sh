@@ -7,8 +7,9 @@
 
 Params=($@)
 MainClass=${Params[0]}
+owner=${Params[1]}
 Length=${#Params[@]}
-Args=${Params[@]:1:Length-1}
+Args=${Params[@]:2:Length-2}
 
 cd `dirname $0`
 pwd=`pwd`
@@ -83,7 +84,7 @@ done
 ts=`date +%Y%m%d_%H%M%S`
 set -x
 $spark_home/bin/spark-submit -v \
---name ${app_name:-$MainClass}_$ts \
+--name ${owner}_${app_name:-$MainClass}_$ts \
 --master ${spark_master} \
 --executor-memory $spark_executor_memory \
 --driver-memory $spark_driver_memory \
