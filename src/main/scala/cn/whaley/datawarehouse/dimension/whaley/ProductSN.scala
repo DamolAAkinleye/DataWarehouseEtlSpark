@@ -54,7 +54,7 @@ object ProductSN extends DimensionBase {
       "open_time, sold_time,login_time,wifi_mac ,current_ip" +
       s" from mtv_terminal where status =1 and activate_status =1 " +
       s"and serial_number not like 'XX%' " +
-      s"and (id !=1339211 or id != 10036711) and serial_number is not null " +
+      s"and (id !=1339211 and id != 10036711) and serial_number is not null " +
       s"and serial_number <> ''").registerTempTable("mtv_terminal_info")
 
 
