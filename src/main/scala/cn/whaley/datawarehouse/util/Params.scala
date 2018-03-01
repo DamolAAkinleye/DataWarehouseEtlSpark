@@ -13,6 +13,7 @@ case class  Params(
                     endDate: String = null,
                     debug: Boolean = false, //打印调试信息
                     mode: String = null, // 数据更新逻辑
+                    isRefresh: Boolean = false, // 是否需要重新刷历史数据
                     paramMap: mutable.Map[String, Any] = mutable.Map[String, Any]() //其他非命令行参数
                  )
 

@@ -18,6 +18,7 @@ object ParamsParseUtil {
         opt[Boolean]("isOnline").action((x, c) => c.copy(isOnline = x))
         opt[Boolean]("debug").action((x, c) => c.copy(debug = x))
         opt[String]("mode").action((x, c) => c.copy(mode = x))
+        opt[Boolean]("isRefresh").action((x, c) => c.copy(isRefresh = x))
         opt[String]("date").action((x, c) => c.copy(startDate = x)).
           validate(e => try {
             readFormat.parse(e)

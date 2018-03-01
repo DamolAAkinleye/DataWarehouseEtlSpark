@@ -29,6 +29,7 @@ object BindUidEntranceToOrder extends BaseClass{
     */
   override def extract(params: Params) = {
 
+    val refreshable = params.isRefresh
     params.paramMap.get("date") match {
       case Some(p) => {
         /** 维度表数据*/
@@ -40,7 +41,9 @@ object BindUidEntranceToOrder extends BaseClass{
 //        } else {
 //          DataExtractUtils.readFromParquet(sqlContext, LogPath.TENCENT_CID_2_SID_ALL).select("qqid", "sid")
 //        }
-
+        val calendar = Calendar.getInstance()
+        calendar.setTime(DateFormatUtils.readFormat.parse(p.toString))
+        val cnFormatDay = DateFormatUtils.cnFormat.format(calendar.getTime)
 
         /** 订单事实表数据*/
         val todayOrderDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.FACT_MEDUSA_ORDER, p.toString)
@@ -68,7 +71,14 @@ object BindUidEntranceToOrder extends BaseClass{
         val todayMappedOrderCode = todayMappedOrder.select("order_code")
         val todayUnMappedOrder = finalOrderDF.except(finalOrderDF.join(todayMappedOrderCode,Seq("order_code")))
         val mappedDF = if (HdfsUtil.pathIsExist(LogPath.ORDER_ENTRANCE_UID_MAPPED)) {
-          val previousMappedOrder = DataExtractUtils.readFromParquet(sqlContext, LogPath.ORDER_ENTRANCE_UID_MAPPED)
+          val oldDF = DataExtractUtils.readFromParquet(sqlContext, LogPath.ORDER_ENTRANCE_UID_MAPPED)
+          // 2018-03-01 如果需要添加新的字段的时候，需要恢复历史数据的时候，避免要从头开始计算
+          val previousMappedOrder = if(refreshable){
+            oldDF.filter(s"dim_date < '${cnFormatDay}'")
+          }else{
+            oldDF
+          }
+
           val finalPreviousMappedOrder = previousMappedOrder.join(dimGoodDF,Seq("good_sk"))
           bindContinuousMonthOrder(todayUnMappedOrder, finalPreviousMappedOrder).union(todayMappedOrder).union(previousMappedOrder).distinct()
         }else {
@@ -180,7 +190,7 @@ object BindUidEntranceToOrder extends BaseClass{
     val df = consecutiveMappedDF.join(accountLastOrderDate, consecutiveMappedDF("account_id")===accountLastOrderDate("account_id") &&
       consecutiveMappedDF("dim_date")===accountLastOrderDate("max(dim_date)")).
       select(consecutiveMappedDF("account_id"),consecutiveMappedDF("user_id"),consecutiveMappedDF("entrance"),
-        consecutiveMappedDF("video_sid"),consecutiveMappedDF("recommend_type"),consecutiveMappedDF("alg"),consecutiveMappedDF("biz"))
+        consecutiveMappedDF("video_sid"),consecutiveMappedDF("recommend_type"),consecutiveMappedDF("alg"),consecutiveMappedDF("biz"),consecutiveMappedDF("path"))
     val df1 = df.groupBy("account_id").agg(max("user_id"))
     val df2 = df.join(df1,df("account_id") === df1("account_id") && df("user_id") === df1("max(user_id)")).
       select(df("account_id"),df("user_id"),df("entrance"),df("video_sid")).
