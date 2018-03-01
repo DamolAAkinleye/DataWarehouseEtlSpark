@@ -3,4 +3,4 @@
 type=command
 dependencies=dimension_whaley_MvHotList,dimension_whaley_MvTopic,dimension_whaley_Radio,dimension_whaley_Singer,dimension_whaley_SportsMatch,dimension_whaley_Subject
 mainclass=cn.whaley.datawarehouse.dimension.whaley.LinkType
-command=sh ${working.dir}/../../bin/submit.sh ${mainclass}  --isOnline  ${isOnline}  --mode ${mode}
+command=sh ${working.dir}/../../bin/submit.sh ${mainclass} ${owner} --isOnline  ${isOnline}  --mode ${mode}
