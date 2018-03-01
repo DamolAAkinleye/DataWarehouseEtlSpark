@@ -58,7 +58,7 @@ object BindUidEntranceToOrder extends BaseClass{
         //          select("userId","accountId","date")
 
         val entranceDF = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_medusa_vipentrance_click", p.toString, null).
-          select("userId", "accountId", "entrance", "videoSid","recommendType", "date", "datetime", "happenTime","alg","biz")
+          select("userId", "accountId", "entrance", "videoSid","recommendType", "date", "datetime", "happenTime","alg","biz","path")
         val accountLoginDF = DataExtractUtils.readFromOds(sqlContext, "ods_view.log_medusa_main3x_mtvaccount", p.toString, null).
           select("userId", "accountId", "date")
         val bindAccount2EntranceDF = bindAccountInfo(accountLoginDF, entranceDF)
@@ -105,7 +105,7 @@ object BindUidEntranceToOrder extends BaseClass{
     newDestinationDF.join(newSourceDF, newSourceDF("userId") === newDestinationDF("userId") && newSourceDF("date") === newDestinationDF("date"), "left_outer").
       withColumn("accountId", expr("case when destinationAccount > 0 then destinationAccount else sourceAccount end")).
       select(newDestinationDF("userId"), newDestinationDF("date"), newDestinationDF("datetime"),newDestinationDF("happenTime"), newDestinationDF("entrance"),
-        newDestinationDF("videoSid"),newDestinationDF("recommendType"),newDestinationDF("alg"),newDestinationDF("biz"),col("accountId"))
+        newDestinationDF("videoSid"),newDestinationDF("recommendType"),newDestinationDF("alg"),newDestinationDF("biz"),newDestinationDF("path"),col("accountId"))
   }
 
   /**
@@ -142,7 +142,7 @@ object BindUidEntranceToOrder extends BaseClass{
     val df = orderEntranceByAccountDF.join(entranceDF,
       orderEntranceByAccountDF("account_id") === entranceDF("accountId") &&
         orderEntranceByAccountDF("max(happenTime)") === entranceDF("happenTime")).
-      select("order_code","account_id", "dim_date","good_sk","userId","entrance","videoSid","recommendType","alg","biz").
+      select("order_code","account_id", "dim_date","good_sk","userId","entrance","videoSid","recommendType","alg","biz","path").
       withColumnRenamed("videoSid","video_sid").withColumnRenamed("recommendType","recommend_type").distinct()
 
     val df1 = df.groupBy("order_code","account_id","dim_date","good_sk").agg(min("userId"))
@@ -162,7 +162,7 @@ object BindUidEntranceToOrder extends BaseClass{
     df.join(df3,df("order_code") === df3("order_code") && df("account_id") === df3("account_id") &&
       df("dim_date") === df3("dim_date") && df("good_sk") === df3("good_sk") && df("userId") === df3("userId") &&
       df("entrance") === df3("entrance") && df("video_sid") === df3("video_sid")).select(df("order_code"), df("account_id"), df("dim_date"),
-      df("good_sk"), df("userId"), df("entrance"), df("video_sid"), df("recommend_type"), df("alg"), df("biz")).withColumnRenamed("userId","user_id")
+      df("good_sk"), df("userId"), df("entrance"), df("video_sid"), df("recommend_type"), df("alg"), df("biz"),df("path")).withColumnRenamed("userId","user_id")
 
   }
 
@@ -190,10 +190,10 @@ object BindUidEntranceToOrder extends BaseClass{
       groupBy("account_id","user_id","entrance").agg(max("video_sid"))
     val referMappedDF = df.join(df3, df("account_id") === df3("account_id") && df("user_id") === df3("user_id") &&
       df("entrance") === df3("entrance") && df("video_sid") === df3("max(video_sid)")).
-      select(df("account_id"),df("user_id"),df("entrance"),df("video_sid"),df("recommend_type"),df("alg"),df("biz"))
+      select(df("account_id"),df("user_id"),df("entrance"),df("video_sid"),df("recommend_type"),df("alg"),df("biz"),df("path"))
 
     consecutiveAccountDF.join(referMappedDF, Seq("account_id")).drop(referMappedDF("account_id")).
-      select("order_code","account_id","dim_date","good_sk", "user_id","entrance","video_sid","recommend_type","alg","biz")
+      select("order_code","account_id","dim_date","good_sk", "user_id","entrance","video_sid","recommend_type","alg","biz","path")
 
   }
 
