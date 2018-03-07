@@ -252,6 +252,7 @@ object PlayFinal extends FactEtlBase with  LogConfig{
     ("content_type", "contentType" ),
     ("play_content_type",
       "case when pathMain like '%interest%' then  'interest' " +
+        "when businessContentType is not null and businessContentType != '' then businessContentType " +
         "when dim_medusa_subject.subject_content_type is not null then dim_medusa_subject.subject_content_type " +
         "when dim_medusa_program.content_type is not null then dim_medusa_program.content_type " +
         "when trim(contentType) = '' then null else contentType end"),
