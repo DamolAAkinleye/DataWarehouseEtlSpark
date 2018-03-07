@@ -97,6 +97,14 @@ object Page extends DimensionBase {
         //直播列表页
         siteDfOrigin.where(expr("parentId = 11076")).withColumn("page_code", lit("list_webcast")).
           withColumn("page_name", lit("直播列表页")).withColumn("content_type", lit("webcast"))
+      ).unionAll(
+        //粤语列表页
+        siteDfOrigin.where(expr("parentId = 11613")).withColumn("page_code", lit("list_cantonese")).
+          withColumn("page_name", lit("粤语列表页")).withColumn("content_type", lit("cantonese"))
+      ).unionAll(
+        //会员列表页
+        siteDfOrigin.where(expr("parentId = 11627")).withColumn("page_code", lit("list_member")).
+          withColumn("page_name", lit("会员列表页")).withColumn("content_type", lit("member"))
         //      ).unionAll(
         //        //听儿歌列表页
         //        siteDfOrigin.where(expr("parentId = 10261 and status = 1")).withColumn("page_code", lit("list_tingerge")).
