@@ -50,7 +50,8 @@ object SourceSite extends DimensionBase {
       " INNER JOIN mtv_program_site AS d ON ( c.parentId = d.id and d.status = 1) " +
       " WHERE d.parentId IN (0, 1)")
 
-    val df3 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, a.contentType site_content_type," +
+    val df3 = sqlContext.sql("SELECT cast(a.id as long) source_site_id, " +
+      "if(c.contentType in ('member','cantonese'),c.contentType,a.contentType) as site_content_type," + //319会员和粤语频道的站点树的contentType与所属频道不一致
       "c.name AS main_category, c.code AS main_category_code,  " +
       "b.name AS second_category, b.code AS second_category_code, " +
       "a.name AS third_category, a.code AS third_category_code," +
