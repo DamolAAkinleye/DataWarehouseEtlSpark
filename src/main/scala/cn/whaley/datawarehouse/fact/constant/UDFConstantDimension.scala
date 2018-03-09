@@ -80,7 +80,7 @@ object UDFConstantDimension {
   val MV_CATEGORY = "mv_category"
   val MV_POSTER = "mv_poster"
 
-  val MEDUSA_LIST_Page_LEVEL_1 = Array("movie","tv","zongyi","jilu","comic","xiqu","collect","accountcenter_home","account","hot")
+  val MEDUSA_LIST_Page_LEVEL_1 = Array("movie", "tv", "zongyi", "jilu", "comic", "xiqu", "collect", "accountcenter_home", "account", "hot", "member", "cantonese")
   // MEDUSA_LIST_Page_LEVEL_2 use MedusaPageDetailInfo , not need mv kids and sport in MEDUSA_LIST_Page_LEVEL_1
 
 

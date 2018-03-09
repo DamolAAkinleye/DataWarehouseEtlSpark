@@ -249,7 +249,7 @@ object ListCategoryUtils extends LogConfig {
         DimensionJoinCondition(
           Map("mainCategory" -> "site_content_type","secondCategory" -> "second_category"),
           "site_content_type is not null and main_category_code in " +
-            "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu')",
+            "('site_tv','site_movie','site_xiqu','site_comic','site_zongyi','site_hot','site_jilu','site_member','site_cantonese')",
           null,s" flag='$MEDUSA' and mainCategory not in ('$CHANNEL_SPORTS','$CHANNEL_KIDS','$CHANNEL_MV')"
         ),
         //获得MORETV中除了少儿，体育和音乐的列表维度sk ，[只有一级，二级维度]
